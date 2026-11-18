@@ -1,0 +1,29 @@
+SLUG pickabook
+TITLE Pick-A-Book
+COVER pab-detail-2.jpg
+TAGS Product Design, Furniture Design
+CLIENT Flat-pack brief (coursework)
+TEAM Alzena, Danikh Nizam
+YEAR 2025
+EARLIER yes
+MEDIUM Corrugated cardboard, flat-pack
+P Pick-A-Book is a flat-pack magazine rack made entirely from corrugated cardboard. The brief was to design a rack that ships flat, assembles without glue or tools, and holds at least ten magazines.
+P Its wavy outline is made of five parts: two toothed rings, two plain rings and one slotted wall that wraps around them. Magazines slide into the slots and peek out between the curves, so you can see every cover at a glance and pick the one you want.
+H Inspiration
+P The rack's wavy outline is inspired by Alvar Aalto's House of Culture in Helsinki, whose curved brick wall bends around the concert hall inside. The slots take after arrow slits, the narrow openings in castle walls that archers shot through: narrow outside, but enough to see what lies behind.
+IMG pab-plate-inspo.png
+H The rack
+W Filled | pab-cover.jpg | | The rack holding magazines, their covers framed by the slots.
+W Front | pab-front.jpg | | The slotted wall wraps the rings in one continuous wave.
+W From an angle | pab-angle.jpg | | Magazines slide into the slots from any side.
+W Up close | pab-front-close.jpg | | Five flat parts, no glue.
+W Toothed rings | pab-detail-1.jpg | | The toothed rings lock the wall into its curve.
+W Slots | pab-detail-2.jpg | | Narrow slots, like arrow slits, hold each magazine upright.
+H Designed in Rhino
+P The parts were modelled in Rhino, so the rings and slotted wall would fit together cleanly once cut.
+IMG pab-plate-cad.png
+H Flat-packed
+P Everything packs down into five flat pieces, with an illustrated manual that walks through the assembly step by step.
+IMG pab-plate-flat.png
+H Looking back
+P The final rack was built from materials reused from all of our earlier prototypes, which is why the cardboard does not look its best. If we returned to it, we would source better material and find a cleaner way to cut it than a penknife and the laser cutter.

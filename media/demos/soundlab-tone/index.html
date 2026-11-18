@@ -1,0 +1,84 @@
+<!doctype html><html lang="en"><head><script id="no-parent-scroll">if(window!==window.top){(function(){var f=HTMLElement.prototype.focus;HTMLElement.prototype.focus=function(o){return f.call(this,Object.assign({},o||{},{preventScroll:true}))};Element.prototype.scrollIntoView=function(){};var st=document.createElement("style");st.textContent="::-webkit-scrollbar{width:12px;height:12px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(128,128,128,.45);border-radius:12px;border:3px solid transparent;background-clip:content-box}::-webkit-scrollbar-corner{background:transparent}html{scrollbar-width:thin;scrollbar-color:rgba(128,128,128,.5) transparent}";(document.head||document.documentElement).appendChild(st);})()}</script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SoundLab · Tonal Exploration</title>
+<style>
+@font-face{font-family:S;src:url(../../../fonts/switzer-latin-400-normal.woff2) format("woff2");font-weight:400}
+@font-face{font-family:S;src:url(../../../fonts/switzer-latin-500-normal.woff2) format("woff2");font-weight:500}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#000;color:#F2F1EE;font-family:S,system-ui,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
+.stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity .5s ease}
+video.on{opacity:1}
+.ui{position:absolute;left:clamp(14px,2.6vw,32px);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:3}
+.row{display:flex;flex-direction:column;gap:10px}
+.caps{text-transform:uppercase;letter-spacing:.02em;font-weight:500;font-size:11px}
+.lbl{color:rgba(242,241,238,.55);margin-bottom:4px}
+.tone{appearance:none;border:1px solid rgba(242,241,238,.16);background:rgba(15,14,14,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#F2F1EE;font:inherit;display:flex;align-items:center;gap:12px;padding:10px 16px 10px 10px;border-radius:999px;cursor:pointer;min-width:168px;text-align:left;transition:border-color .3s,background .3s,transform .3s}
+.tone i{width:26px;height:26px;border-radius:50%;background:var(--c);opacity:.55;position:relative;flex:none;transition:opacity .3s,box-shadow .3s}
+.tone i::after{content:"";position:absolute;inset:9px;border-radius:50%;background:rgba(255,255,255,.85)}
+.tone b{display:block;font-weight:500;font-size:12px;letter-spacing:.02em;text-transform:uppercase}
+.tone small{display:block;font-size:11px;color:rgba(242,241,238,.55);margin-top:2px}
+.tone:hover{border-color:rgba(242,241,238,.4)}
+.tone.on{border-color:var(--c);background:rgba(15,14,14,.75)}
+.tone.on i{opacity:1;box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 30%,transparent),0 0 24px var(--c)}
+.stop{appearance:none;border:0;background:none;color:rgba(242,241,238,.55);font:inherit;cursor:pointer;padding:6px 10px;text-align:left}
+.stop:hover{color:#F2F1EE}
+.hint{position:absolute;left:50%;bottom:clamp(14px,4vh,28px);transform:translateX(-50%);color:rgba(242,241,238,.7);z-index:3;white-space:nowrap;transition:opacity .4s}
+.eq{display:inline-flex;gap:2px;align-items:flex-end;height:10px;margin-left:auto}
+.eq s{width:2px;background:currentColor;height:30%;opacity:0}
+.tone.on .eq s{opacity:1;animation:eq .9s ease-in-out infinite}
+.tone.on .eq s:nth-child(2){animation-delay:.2s}.tone.on .eq s:nth-child(3){animation-delay:.4s}
+@keyframes eq{0%,100%{height:30%}50%{height:100%}}
+@media (max-aspect-ratio:1/1){
+ .stage{bottom:auto;height:58%;overflow:hidden}
+ video{object-fit:cover;object-position:center 42%}
+ .ui{top:auto;left:0;right:0;bottom:0;transform:none;height:42%;flex-direction:column;align-items:stretch;justify-content:center;gap:12px;padding:0 14px 34px;background:linear-gradient(#000,#0b0a0c)}
+ .lbl{display:block;text-align:center;margin:0}
+ .row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+ .stop{display:block;text-align:center;align-self:center}
+ .tone{min-width:0;flex-direction:column;justify-content:center;gap:8px;padding:12px 6px;border-radius:14px}
+ .tone span:not(.eq){text-align:center}
+ .tone small{display:none}
+ .eq{margin:0}
+ .hint{bottom:10px;font-size:10px}
+}
+</style></head><body>
+<div class="stage" id="stage"></div>
+<div class="ui" role="group" aria-label="Choose a tone">
+ <p class="caps lbl">Pickup tone</p>
+ <div class="row"><button class="tone" data-k="BALANCE" style="--c:#B464FF"><i></i><span><b>Balance</b><small>Even and rounded</small></span><span class="eq"><s></s><s></s><s></s></span></button>
+ <button class="tone" data-k="HIGH" style="--c:#FF503C"><i></i><span><b>High</b><small>Bright and cutting</small></span><span class="eq"><s></s><s></s><s></s></span></button>
+ <button class="tone" data-k="MELLOW" style="--c:#C8DCFF"><i></i><span><b>Mellow</b><small>Warm and soft</small></span><span class="eq"><s></s><s></s><s></s></span></button>
+ </div>
+ <button class="stop caps" id="stop" type="button">Stop sound</button>
+</div>
+<p class="hint caps" id="hint">Pick a tone to hear it · sound on</p>
+<script>
+const R='https://assets.editor.p5js.org/68ee3462fa875f6f3d2e691f/';
+const SRC={BALANCE:['d04fba1e-561e-4823-8ceb-5aa784c44a0d.mp4','5a98bdad-f451-4a7c-85ee-8a969a0fbbf7.mp3'],
+           HIGH:['7852340d-9078-4306-852c-965fbd95e0b9.mp4','ca817c13-8ec8-49f9-9193-d50296b9ffe9.mp3'],
+           MELLOW:['abe06409-ff00-4a9c-896d-3284483d45e5.mp4','cd1e700e-24bc-46be-a10a-b83e8163942c.mp3']};
+const stage=document.getElementById('stage'),V={},A={};let cur=null,started=false;
+function withFallback(el,local,remote){el.src=local;el.addEventListener('error',function f(){if(el.src.indexOf(R)<0){el.src=remote;if(el.tagName==='VIDEO'||el.dataset.want)el.play().catch(()=>{});}},{once:true});}
+for(const k in SRC){
+  const v=document.createElement('video');v.muted=true;v.loop=true;v.poster='../../sl-tone-poster.webp';v.playsInline=true;v.preload='auto';v.setAttribute('playsinline','');
+  withFallback(v,k+'.mp4',R+SRC[k][0]);stage.appendChild(v);V[k]=v;
+  const a=new Audio();a.loop=true;a.preload='none';withFallback(a,k+'.mp3',R+SRC[k][1]);A[k]=a;
+}
+function show(k){for(const x in V){if(x===k){V[x].classList.add('on');V[x].play().catch(()=>{})}else{V[x].classList.remove('on');V[x].pause();}}}
+function select(k){
+  started=true;document.getElementById('hint').style.opacity=0;
+  for(const x in A){if(x!==k){A[x].pause();A[x].dataset.want='';}}
+  if(cur!==k){V[k].currentTime=0;A[k].currentTime=0;}
+  cur=k;show(k);A[k].dataset.want='1';A[k].play().catch(()=>{});
+  document.querySelectorAll('.tone').forEach(b=>{b.classList.toggle('on',b.dataset.k===k);b.setAttribute('aria-pressed',b.dataset.k===k)});
+}
+function stop(){for(const x in A){A[x].pause();A[x].dataset.want='';}document.querySelectorAll('.tone').forEach(b=>b.classList.remove('on'));}
+document.querySelectorAll('.tone').forEach(b=>b.addEventListener('click',()=>select(b.dataset.k)));
+document.getElementById('stop').addEventListener('click',stop);
+addEventListener('keydown',e=>{const m={'1':'BALANCE','2':'HIGH','3':'MELLOW'}[e.key];if(m)select(m);if(e.key===' '||e.key==='Escape')stop();});
+show('BALANCE');
+// pause everything when the panel scrolls out of view or the tab is hidden
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
+try{new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting){stop();for(const x in V)V[x].pause();}else if(cur||!started){show(cur||'BALANCE');}}),{threshold:0.15}).observe(document.body);}catch(e){}
+</script></body></html>

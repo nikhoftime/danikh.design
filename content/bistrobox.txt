@@ -1,0 +1,59 @@
+SLUG bistrobox
+TITLE Bistro Box Reimagined
+COVER sRHc1LrVQ0L014ySBuDbckx6AE.png
+TAGS Service & Experience Design, Spatial Design
+CLIENT -
+TEAM Kong Chia Shuen, Lu Enze, Terra Lee, Danikh Nizam, Emily
+YEAR 2025
+EARLIER yes
+MEDIUM SketchUp, Enscape, Keyshot
+P Bistro Box Reimagined began as a studio project grounded in human-centred design and the shared chaos of NUS canteens during lunch hour. We spent time observing how students squeezed through narrow walkways, how cleaners made long detours to the dishwashing area, and how stall staff often had to shout order numbers because the screens were placed in less visible areas. These small moments of stress revealed how movement, space and timing shape the dining experience, which became the foundation of our redesign.
+P We reimagined the canteen as a smoother, more intuitive journey. Curved panels guide people through the space while also shielding diners from the mess at the tray return, creating a more pleasant eating environment. Different floor materials subtly direct foot traffic, and a single unified queue removes confusion at the counters. Ordering kiosks and QR menus ease congestion, while clearer routes reduce strain on cleaners. We also introduced Bistro Bites, a 24-hour vending and resting space that repurposes an awkward corner where SDE students often pass through, giving late-night users a quiet spot to recharge.
+H Research
+W Research heatmaps | FkkUIyc5dzKYGz1W7mhMTcdJmtI.png | | Mapping the routes from SDE to Techno, the waiting areas, the cleaners' routes and the queue lines.
+W What we observed | nsTcmY3po2q9NQEfUFGlSYTz7xM.png | | Overcrowding at Bistro Box, and order numbers shown at the back where no one could see them.
+W What we observed | LkGTVIh8qX9j2c3gUgP0WBQ4c.png | | Rubbish bins and trolleys blocking the walk flow at the tray return.
+W Routes and queues | V8W8d4i6eOMpEJsJRhP2O9GE5Bk.png | | How SDE-to-Techno traffic, queue lines, waiting spots and cleaner routes overlap.
+W Customers | aQzVPzShFdQRpcAJZoMPHLZLGc.png | | "Where do I queue for this?" and "Why is the guy shouting at my food?"
+W Staff | vO8aSgSevqNWm67Qm1OeNfVMdUM.png | | Service staff have to shout order numbers; cleaning staff can only rest outside.
+W Students | I5teqDMGraZxYyboyNBS2d3sP4.png | | Common pain points: an exposed tray return, a confusing queueing system and unclear store separation.
+W Cleaners | aasyXYO5kcCrBXwzI0YTrrNfk.png | | Hectic routines, physical strain, poor waste disposal and no proper place to rest.
+W Personas and journeys | rgol2SHKHZhtNc1QzcPP1r5MGuc.png | | Customer journey maps for two student personas.
+W Service blueprint | 8hwC1EFIFg6MAhcusdod5VTyTI.png | | Peak hour at Bistro Box, across the customer, cashier and cleaner timelines.
+IMG VL83xTKuSIuvUTrcpZ9ZF27YcQ.gif
+H How might we · Customers
+P How might we create a visually appealing and seamless dining experience for customers through clear navigation and intuitive ordering?
+IMG 1yOH5zQBtbeXg6VjxjVysbCxfA.gif
+W Wayfinding · Flooring | dx5X8rTrY1bKvX0s5apvuzKS0.png | | Varying floor tiles guide people and reduce confusion.
+W Wayfinding · Entrance | yBqPOwUWMMP0skQjy1KMOWPgvM.gif | | The entrance from TechnoEdge.
+W Wayfinding · Panels | vmk8WYgEeuCiwT2PaaR33HyLM.png | | Wooden panels separate the dining and commuting zones.
+W Ordering · Self-ordering kiosk | 613rBjQtsiGSPl2oodm1aMtbCso.png | | Kiosks near the entrance take orders before the queue forms.
+W Ordering · Kiosk interface | GLio1Ig5x6nkSKuWYpR9MXdedE.png | | Pick a store, then a dish.
+W Ordering · QR code | igwu9jpZ2i3egXww6Vkd2BoiDA.png | | Or order from the table with a QR code.
+H How might we · Service staff
+P How might we support service staff by managing customer flow more effectively and reducing confusion at ordering points?
+IMG xOgevs1mgpVeItrqfZz2aHePcM.gif
+W Queueing · Collection area | 2XPLUzVasNjPiYnFVIvjF7jvdRU.gif | | Orders are collected at a dedicated area by the kiosks.
+W Queueing · Single queue | EM5PhArZwVJtUEmEBPNn3iMd8k.gif | | One queue and one collection point for each store.
+W Queueing · Stores | L0evhiO8sozmukZaQheHAeTIR2Q.png | | Each store is clearly labelled, so customers know where to wait.
+W Queueing · Collection area | rANUgtDrDrb9bm174llNvt6BnY0.png | | The collection area at peak hour.
+W Queueing · Collection area | D1zTAxyErTeRdAwcQIBcGJUK9KU.png | | Screens show which orders are ready, so no one has to shout.
+H How might we · Cleaners
+P How might we support cleaners by making tray collection more accessible and ensuring they have a dedicated, comfortable space to rest away from work areas?
+IMG L9uEHjb4TgGwT79NW9b86yta0.gif
+W Tray return · Curved flow | g5O9F2wC32VKb8M4N5zyrkwtuZ0.png | | A curved tray return keeps the flow moving and hides the mess.
+W Tray return · Entrance to rest area | vDvG0rMZn6U9H4wwZFq1nsegQ.png | | The entrance to the cleaners' rest area sits behind the tray return.
+W Tray return · Entrance to rest area | cUiky84UuVyOebCMuJqat9PJ1VQ.gif | | Cleaners slip in without crossing the dining area.
+W Tray return · Resting area | He929YARdmM8ebykFCOmpMpGQ.png | | A dedicated, private place to rest.
+W Tray return · Exit from rest area | phguiSBHnvplMBVYniuEG2neBfk.gif | | And step back out to work through a separate exit.
+W Tray return · More privacy | H6JHNwuSbgyItaXqXSBGjui1IFI.png | | Panels give the area more privacy.
+W Tray return · More privacy | 1XnaV8JQKwhQuEyT88OktXaVOw.png | | Out of sight of the diners, close to where the work is.
+H Bistro Bites, open 24 hours
+IMG ctCMUc0DKidLlai4zyVuU54jbI.gif
+W Bistro Bites | oeVYOZNJyEkZCElInYHiEUq1PbY.png | | A new space that stays open around the clock.
+W Vending | gYaXea91oj93qS8RZnymxKSE.png | | Meals and snacks from vending machines, any time of day.
+W Seating | zpkZ0sve8iCSgUTRk07ZGyqTqhg.png | | A quiet place to sit, eat or study late.
+H The new layout
+IMG yzxMcZJSd73z44Bdq3qSCthUz4U.png
+IMG m0Euh5KwAF3nrwWYc2xih1PzonA.png
+P The old layout against the new one, with independent service areas so functions do not clash.

@@ -1,0 +1,86 @@
+SLUG beyondboundaries
+TITLE Beyond Boundaries: From Demarcations to Dignified Coexistence
+CARD Beyond Boundaries
+COVER bb-cover-card.png
+TAGS Product Design, Spatial Design, Interaction Design, Service Design
+CLIENT (Concept)
+TEAM Chew Yan Xin, Jovan Tan Kim Swee & Danikh Nizam
+YEAR 2026
+SUM The brief | Observe an everyday situation closely, question the habits around it, and propose how design could change the way people act or live.
+SUM What we made | A system of urban planters that replaces the painted yellow smoking box with soft, green boundaries. Planters, seats, a sensor-integrated bin and an abstract responsive panel can be arranged for smoking or non-smoking areas.
+SUM My role | I designed the panel's abstract graphic, both of its visuals and the live responsive panel artefact. I also built the final 3D models in Rhino, prepared the rendering files in Twinmotion and KeyShot, and prepared the STL files for most printed parts. I spray-painted the physical models, made some of the plants and narrated the film. The concept was developed together as a team; the ashtray bin, panel mould and poster were made by teammates.
+MEDIUM Rhino, HTML/CSS/JavaScript, Physical Model
+P Beyond Boundaries is a system of urban planters that shapes how people behave in shared spaces. Instead of painted lines, planters, seats, a sensor-integrated bin and a responsive panel use soft, green boundaries to define a space, and the same pieces can be arranged for smoking or non-smoking areas.
+P For the designated smoking area, we challenged how the effects of smoking are usually shown. An abstract panel replaces graphic warnings, turning the smoking area into a place for reflection. The soft boundaries also change how the space reads from outside: people smoking inside are no longer boxed in and on display, but sitting in a planted space like anyone else.
+P Supervised by Christian Boucharenc for the Improving Our Daily Lives platform.
+H Design Brief
+P Inspired by Kenya Hara's research on observation, Improving Our Daily Lives begins with careful discovery of problematic situations in everyday experience. Over 13 weeks, teams observe ordinary scenarios, question existing habits, routines and behaviours, define a design problem with clarity, and propose how design could offer new ways of acting, interacting or living.
+FILM bb-film.mp4 | bb-film-poster.png
+CAP Beyond Boundaries · sound on
+H Are you familiar with these yellow boxes?
+P In Singapore, a painted yellow line is enough to tell people where something belongs. No walls, no barriers, just a box on the ground that everyone understands.
+W Bicycles | bb-yellow-bike.png | | It marks where shared bicycles are parked.
+W Taxis | bb-yellow-taxi.png | | It marks where taxis stop to drop off and pick up.
+W Smokers | bb-yellow-feet.png | | The same box marks where people may smoke.
+SHOTS bb-smokers-1.png bb-smokers-2.png bb-smokers-3.png
+P Inside it, smokers stand shoulder to shoulder within the lines, often in leftover corners at the edge of a building or a walkway. The yellow box marks where smoking happens, but offers little beyond demarcation. It treats people the same way it treats bicycles.
+H Singapore's approach to smoking
+P From policy to the people it affects: what we found before designing anything.
+W Three measures | bb-slide-4.png | | Singapore reduces tobacco use and protects public spaces through three measures: restrictions that limit where smoking is permitted, designated areas that provide permitted spaces in specified locations, and public health efforts that reduce smoking prevalence and exposure. The designated smoking area is where all three meet, and the place smokers actually experience.
+W The behavioural reality | bb-slide-5.png | | We spoke with Dr Luk Tzu Tsun, Kevin, Assistant Professor at the Alice Lee Centre for Nursing Studies, NUS. Awareness does not equal behaviour change: addiction, habit and delayed consequences make quitting difficult, so knowing the harm is rarely enough. A psychological approach encourages awareness and reflection beyond warnings and enforcement.
+W Leftover spaces | bb-corridor.png | | Today's designated areas offer none of that. They contain the smoker, not the consequence, and are often squeezed into spaces nobody else wants.
+W Beyond demarcations | bb-slide-6.png | | Smoking is a personal choice, but regulation decides where it can happen. We asked: how might we move beyond conventional smoking zone demarcations to create more considered spaces that subtly encourage reflection on the consequences of smoking?
+W Reflection, not enforcement | bb-slide-7.png | | Our stance was to encourage reflection, not enforce change. The design is guided by four values: nature integration, dignity, coexistence and consciousness.
+H Design intervention
+P Beyond Boundaries is an adaptable spatial system of four elements. Spatial planters define the edge of a space with greenery rather than a hard box. Modular seats give comfortable places for a brief stay. A sensor-integrated bin registers smoking activity while working as a familiar disposal point. A responsive panel translates that activity into an accumulating visual pattern. Without the bin and panel, the same planters and seats shape non-smoking spaces too.
+W The plaza | bb-plaza-render.png | | The system at a plaza: planters, seats, the bin and the panel together.
+W On the street | bb-render-street.png | | Along a walkway, the planters soften the edge of the smoking area instead of a painted box.
+W From above | bb-render-aerial.png | | Seen from above, the elements form a space rather than a line on the ground.
+W The Enclave | bb-render-enclave.png | | A semi-enclosed, communal arrangement for a brief stay.
+MP4 bb-elements.mp4
+H The user journey
+IMG bb-plate-journey.png
+P Smokers approach as the planters guide them into the new smoking area, and use the space normally for a smoke break. The bin and its smoke sensor register the activity, and the panel changes as it accumulates. Cigarettes are put out and discarded at the bin, and the visual stays on the glass, creating a subtle moment of reflection.
+H Four elements. One system. Multiple configurations.
+MP4 bb-configs.mp4
+SHOTS bb-plate-enclave.png bb-plate-nook.png bb-plate-trail.png
+P The same pieces form three layouts. The Enclave is a C-shaped, semi-enclosed and communal space. The Nook is an L-shape that is compact and fits corners. The Trail is a linear, open configuration that is directional and space-efficient for long, narrow urban spaces. Colour does the zoning quietly: the seats in the Enclave are yellow because it is the designated smoking area, a softer echo of the yellow box, while red and blue seats mark the non-smoking layouts.
+H Nature as a soft boundary
+IMG bb-plate-plants.png
+P The planters draw on Singapore's urban greenery. Aloe vera, philodendron, pothos, snake plant, Boston fern and peace lily soften the rigid demarcation and create a more considered spatial experience, so the edge of the smoking area is planted rather than painted.
+H The sensor-integrated bin
+MP4 bb-dispose.mp4
+IMG bb-plate-bin.png
+P The bin is a faceted, asymmetrical form with a smoke sensor inside that detects and measures the smoke concentration as each cigarette is put out. It turns a familiar disposal point into the input for the panel.
+H Beyond graphic warnings
+IMG bb-plate-packs.png
+P Since 1 July 2020, every tobacco product sold in Singapore comes in a standardised dark brown pack, with graphic health warnings covering at least 75% of its surfaces. The panel grew out of these images and the guilt-tripping tone of anti-smoking campaigns. Knowing the consequences does not always lead to change, and shock is easy to tune out.
+P So instead of another warning, the panel takes a metaphorical approach: abstract art that does not single anyone out, but lets smokers see their shared, accumulating impact and become a little more conscious of smoking's harmful effects.
+H The responsive panel
+MP4 bb-studio.mp4
+P The visual is inspired by contrails. Right behind a plane, a contrail is crisp and bright; further back it breaks apart, softens and drifts, and it is still there long after the plane has gone. Each trail on the panel behaves the same way: one cigarette, one trail, released from the centre of the glass and gradually fading, a trace of something that has already passed.
+FRAME beyond-boundaries/index.html | The responsive panel | bb-poster-plaza.jpg |  | FULLSCREEN | Try the panel
+P Press the bin button to put out a cigarette and watch the trace it leaves.
+LINK Open the panel | https://nikhoftime.github.io/Beyond-Boundaries/
+IMG bb-plate-system.png
+P It works in three steps. Detect: the smoke sensor in the bin registers each cigarette as it is discarded. Translate: the reading becomes one new trail, stronger when there is more smoke, and is sent to a thin, flexible screen. Visualise: the panel builds up over time, with new trails layering over older, fainter ones.
+PAIR bb-plaza.mp4 bb-daynight.mp4
+P Over a day the trails gather on the frosted glass, so the space quietly shows how much smoking has passed through it.
+H Colours, materials and finishes
+P The materials are chosen to sit in Singapore's streets and last outdoors.
+W Planters | bb-plate-cmf-planters.png | | Dark green high-density polyethylene liners with a rough finish, set in snow white sandblasted stone.
+W Seats | bb-plate-cmf-seats.png | | Red, blue and yellow HDPE cushions on the same sandblasted stone base.
+W Bin | bb-plate-cmf-bin.png | | Cool grey brushed aluminium set in stone.
+W Panel | bb-plate-cmf-panel.png | | Clear, frosted glass, where the trails gather.
+H At the showcase
+P At the showcase we presented a scale model of the system, with planters, seats, bins and panels arranged as the Enclave, the Nook and the Trail, figures for scale and the CMF laid out alongside. It sat beside an A1 poster, and the responsive panel ran live on a laptop next to it.
+W The scale model | bb-model-0861.jpg | | A scale model of the system, with planters, seats, bins and panels.
+W Detail | bb-model-0859.jpg | | Figures for scale show how people would use the space.
+W Detail | bb-model-0860.jpg | | Planters and seats form soft boundaries instead of a painted box.
+W Detail | bb-model-0865.jpg | | The bin and the panel sit within the planters.
+W With the CMF | bb-cover.jpg | | The model with the colours, materials and finishes laid out alongside.
+W The poster | bb-plate-poster.png | | The A1 poster that sat beside the model.
+W The panel, live | bb-laptop.jpg | | The responsive panel ran live on a laptop next to the model.
+
+H Encouraging reflection, not enforcing change
+P Beyond Boundaries does not try to stop people smoking. It gives smokers a space with dignity, lets them coexist with the people around them, and makes the consequences of smoking a little harder to overlook.

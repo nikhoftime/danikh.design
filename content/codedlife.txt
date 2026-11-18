@@ -1,0 +1,51 @@
+SLUG codedlife
+TITLE Coded Life
+COVER cl-pillar.jpg
+TAGS Exhibition, Interaction Design, Human-Computer Interaction, Visual Communication, Creative Coding
+CLIENT New Everyday Life, By Design (NELBD), presented by the DesignSingapore Council and produced by FARM
+TEAM Interactive Materials Lab, NUS Department of Design. Researchers: Clement Zheng, Yong Zhen Zhou, Vina Setiawaty. Student researchers: Stephanie Beh, Jan Juarez, Tan Ler Shan, Danikh Nizam, Myron Teo
+YEAR 2026
+MEDIUM Exhibition pillar, Q(art) codes, p5.js
+SUM The project | Coded Life is a QR code exhibition at Sengkang MRT station, one of 17 stops on New Everyday Life, By Design, a design trail along the North East Line from 14 November to 6 December 2026. It takes a fresh look at a graphic we scan every day and asks: can a simple scan become an experience?
+SUM My role | I designed and built the team’s tool for Qrossword, a QR code written in handwritten letters. Instead of lettering every square by hand on paper, the team could write letters into individual squares with an iPad or mouse, copy them across the code and check that it still scanned.
+SUMLINK About the Coded Life design platform | https://interactivematerials.info/2025-11-coded-life
+CREDIT Q(art) codes & digital twin | Interactive Materials Lab
+H From DECODE to the station
+P Coded Life began as a design platform run by Assistant Professor Clement Zheng, director of the Interactive Materials Lab and my professor. It is where Ler Shan and I first made DECODE. This year it grew into a public exhibition, out in an MRT station.
+LINK See where it began: DECODE | decode.html
+H At Sengkang MRT station
+P A three-sided pillar stands beside the trail’s stamp station. One side explains what makes a good QR code, from contrast to error correction. Another asks what else a QR code can be, through six Q(art) codes made by the team: Coded Nyonya, Qrossword, Distqrted, LentiQR, Qolorful and Be Qareful. The third connects the station to the rest of the trail.
+IMG cl-pillar.jpg
+IMG cl-face-qr-wide.jpg
+PAIR cl-panel-detail.jpg cl-credits.jpg
+H Qrossword
+P QR codes are made to be read by cameras, not by people. To us, the black and white squares mean nothing. Qrossword challenges that by replacing the squares with letters that people can read, so the same code now speaks to both: a camera still scans it, and a person can read it too.
+P On the pillar, it becomes a word search: you hunt for the 16 North East Line stations hidden among the letters. Even the three corner markers are lettered. Look closely and they spell out the name of the exhibition: COD, EDL, IFE, or “Coded Life”.
+PAIR cl-qrossword.jpg cl-danikh.jpg
+P Writing a whole code by hand meant hundreds of squares, and one weak letter could stop it from scanning. So I built a tool for the team. You write each letter into its square with an iPad or mouse, guided by a faint letter, and the tool keeps a live preview of the whole code. A built-in decoder checks after every stroke whether a phone could still read it, and ink weight and a grey backing help when it can’t. Letters already written can be copied across the rest of the code, so the team could test the full look before writing every square.
+H Write your own
+P I rebuilt that tool for this site. Type a link, write the letters into the squares, watch the code fill up and see whether your handwriting still scans.
+FRAME qrossword-write/index.html | Qrossword · write your own | cl-qx-poster.png | cl-qx-poster-m.png | FULLSCREEN | Start writing
+H The digital twin
+P The Interactive Materials Lab rebuilt the pillar online as a 3D digital twin at qrcoded.life, so the exhibition can be visited from anywhere. You can turn the pillar, zoom in and tap any QR code on it to open its story.
+MP4 cl-twin.mp4
+CAP Digital twin by the Interactive Materials Lab
+P Each side of the pillar is rebuilt panel for panel, and every QR code on it opens a pop-up. Use the arrows to walk around the pillar and through the pop-ups.
+W The introduction | cl-full-side-intro.jpg | | The first side asks "Can a simple scan become an experience?" and explains what makes a good QR code.
+W What else can a QR code be? | cl-full-side-qr.jpg | | The second side holds the six Q(art) codes. Tap any of them to open its story.
+W New Everyday Life, By Design | cl-full-side-nelbd.jpg | | The third side belongs to the NELBD design trail, with the trail map and partners.
+W The anatomy of a QR code | cl-full-anatomy.jpg | | The three position markers tell a scanner where the code is and which way up it sits, the timing pattern sets the size of each square, and the quiet zone keeps space around it.
+W QR codes and contrast | cl-full-contrast.jpg | | A code scans in any colours, as long as the dark and light parts stand apart.
+W Reliable QR codes | cl-full-reliable.jpg | | Error correction lets a code carry extra information, so it can still be read when part of it is damaged or covered.
+W Coded Nyonya | cl-full-tiles.jpg | | QR codes become Peranakan-style tiles, and you can arrange the tiles into your own pattern.
+W Qrossword | cl-full-qrossword.jpg | | Find the North East Line stations hidden in the handwritten code, whose corner markers spell "Coded Life".
+W Distqrted | cl-full-distqrted.jpg | | A code folded around a corner only scans from one spot. Sliders change the scan height and the fold.
+W LentiQR | cl-full-lentiqr.jpg | | Lenticular printing fits three codes into one, each read from a different angle, and you can pick the picture in its centre.
+W Qolorful | cl-full-qolorful.jpg | | A code hidden in a patchwork of colours. The slider shows how a scanner turns it into black and white before reading it.
+W Be Qareful | cl-full-scam.jpg | | A scam code hides in a busy shopfront, a reminder to check a link before you open it.
+LINK Visit qrcoded.life | https://qrcoded.life
+H The opening
+P We were invited to the opening of the design trail at the Innovation Hub, Nexus at Punggol Coast Mall.
+IMG cl-team.jpg
+IMG cl-opening.jpg
+LINK More about New Everyday Life, By Design | https://designsingapore.org/nelbd/

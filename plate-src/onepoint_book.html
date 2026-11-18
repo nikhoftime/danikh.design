@@ -1,0 +1,106 @@
+
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>One Point Perspective · Zine</title>
+<style>
+@font-face{font-family:S;src:url(../../../fonts/switzer-latin-500-normal.woff2) format("woff2");font-weight:500}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0F0E0E;color:#F2F1EE;font-family:S,system-ui,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none}
+.caps{text-transform:uppercase;letter-spacing:.02em;font-weight:500;font-size:11px}
+.mute{color:rgba(242,241,238,.55)}
+.app{position:absolute;inset:0;display:flex;flex-direction:column}
+.top,.bot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px clamp(14px,2.4vw,26px);flex:none}
+.stage{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;perspective:2600px;touch-action:pan-y}
+.book{position:relative;transition:transform .7s cubic-bezier(.3,.7,.2,1)}
+.leaf{position:absolute;left:50%;top:0;width:50%;height:100%;transform-origin:0 50%;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.35,.6,.2,1);cursor:pointer}
+.leaf.flipped{transform:rotateY(-180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:#151413 no-repeat;overflow:hidden}
+.face.back{transform:rotateY(180deg)}
+.face::after{content:"";position:absolute;inset:0;pointer-events:none}
+.face.front::after{background:linear-gradient(90deg,rgba(0,0,0,.35),rgba(0,0,0,0) 6%,rgba(255,255,255,0) 94%,rgba(255,255,255,.04))}
+.face.back::after{background:linear-gradient(270deg,rgba(0,0,0,.35),rgba(0,0,0,0) 6%)}
+.shadow{position:absolute;inset:-2% -1%;border-radius:4px;box-shadow:0 30px 60px rgba(0,0,0,.6);pointer-events:none;transition:left .7s,right .7s}
+.btns{display:flex;gap:8px}
+.btn{appearance:none;font:inherit;color:#F2F1EE;background:transparent;border:1px solid rgba(242,241,238,.18);border-radius:2px;padding:8px 12px;cursor:pointer;transition:border-color .2s,opacity .2s}
+.btn:hover{border-color:#F2F1EE}
+.btn[disabled]{opacity:.3;pointer-events:none}
+.hint{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);transition:opacity .5s;white-space:nowrap}
+.hint.off{opacity:0}
+@media (max-aspect-ratio:1/1){.top .r{display:none}}
+.btn{white-space:nowrap}@media (max-width:520px){#first{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="top"><span class="caps">One Point Perspective · A5 zine</span><span class="caps mute r">An interactive visual analysis of 2001: A Space Odyssey</span></div>
+ <div class="stage" id="stage"><div class="book" id="book"><div class="shadow" id="sh"></div></div><p class="hint caps mute" id="hint">Click a page or use the arrow keys to turn</p></div>
+ <div class="bot"><span class="caps mute" id="pg">Cover</span><div class="btns"><button class="btn caps" id="first" type="button">Close</button><button class="btn caps" id="prev" type="button">← Prev</button><button class="btn caps" id="next" type="button">Next →</button></div></div>
+</div>
+<script>
+(() => {
+  // leaf 0: cover / left of spread 2. leaf k: right of spread k+1 / left of spread k+2. last back: back cover.
+  // spreads 2–30 are packed 8 per image sheet: SP gives the sheet and the row
+  const SP = k => ({ src: 'z/sheet-' + Math.floor((k - 2) / 8) + '.webp', row: (k - 2) % 8 });
+  let swiped = false;
+  const N = 30, leaves = [], book = document.getElementById('book'), stage = document.getElementById('stage');
+  const face = (sp, half, cls) => typeof sp === 'string' ? { src: sp, row: -1, half, cls } : { src: sp.src, row: sp.row, half, cls };
+  const defs = [];
+  for (let k = 0; k < N; k++) {
+    const front = k === 0 ? face('z/c-01.webp', 'full', 'front') : face(SP(k + 1), 'right', 'front');
+    const back = k === N - 1 ? face('z/b-31.webp', 'full', 'back') : face(SP(k + 2), 'left', 'back');
+    defs.push([front, back]);
+  }
+  defs.forEach(([f, b], k) => {
+    const el = document.createElement('div'); el.className = 'leaf';
+    [f, b].forEach(d => {
+      const fc = document.createElement('div'); fc.className = 'face ' + d.cls;
+      fc.dataset.src = d.src;
+      fc.style.backgroundSize = d.half === 'full' ? '100% 100%' : '200% 800%';
+      fc.style.backgroundPosition = d.half === 'full' ? '0 0' : (d.half === 'right' ? '100% ' : '0 ') + (d.row / 7 * 100) + '%';
+      el.appendChild(fc);
+    });
+    el.addEventListener('click', e => { e.stopPropagation(); if (swiped) { swiped = false; return; } k < at ? go(at - 1) : go(at + 1); });
+    book.appendChild(el); leaves.push(el);
+  });
+  let at = 0; // number of flipped leaves (0 = closed on the cover, N = closed on the back)
+  function load() {
+    leaves.forEach((el, k) => { if (Math.abs(k - at) <= 3) el.querySelectorAll('.face').forEach(fc => { if (!fc.style.backgroundImage) fc.style.backgroundImage = 'url(' + fc.dataset.src + ')'; }); });
+  }
+  function fit() {
+    const W = stage.clientWidth - 32, H = stage.clientHeight - 40, r = 1800 / 635;
+    let w = Math.min(W, H * r); w = Math.max(200, w);
+    book.style.width = w + 'px'; book.style.height = (w / r) + 'px';
+  }
+  function paint() {
+    leaves.forEach((el, k) => {
+      el.classList.toggle('flipped', k < at);
+      // the leaf that is turning stays on top for the whole turn
+      el.style.zIndex = k < at ? k + 1 : N - k;
+    });
+    const shift = at === 0 ? -25 : at === N ? 25 : 0;
+    book.style.transform = 'translateX(' + shift + '%)';
+    const sh = document.getElementById('sh');
+    sh.style.left = at === 0 ? '49%' : '-1%'; sh.style.right = at === N ? '49%' : '-1%';
+    document.getElementById('pg').textContent = at === 0 ? 'Cover' : at === N ? 'Back cover' : 'Pages ' + (at * 2 - 1) + '–' + (at * 2) + ' / ' + (N * 2 - 2);
+    document.getElementById('prev').disabled = at === 0; document.getElementById('first').disabled = at === 0;
+    document.getElementById('next').disabled = at === N;
+    load();
+  }
+  function go(n) {
+    n = Math.max(0, Math.min(N, n)); if (n === at) return;
+    const turning = n > at ? at : n;
+    leaves[turning].style.zIndex = 100;
+    at = n; requestAnimationFrame(paint);
+    document.getElementById('hint').classList.add('off');
+  }
+  document.getElementById('next').onclick = () => go(at + 1);
+  document.getElementById('prev').onclick = () => go(at - 1);
+  document.getElementById('first').onclick = () => { at = 0; paint(); };
+  addEventListener('keydown', e => { if (e.key === 'ArrowRight') go(at + 1); if (e.key === 'ArrowLeft') go(at - 1); });
+  // swipe
+  let sx = null;
+  stage.addEventListener('pointerdown', e => { sx = e.clientX; });
+  stage.addEventListener('pointerup', e => { if (sx === null) return; const dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 40) { swiped = true; setTimeout(() => swiped = false, 300); go(at + (dx < 0 ? 1 : -1)); } });
+  new ResizeObserver(fit).observe(stage); fit(); paint();
+})();
+</script>
+</body></html>

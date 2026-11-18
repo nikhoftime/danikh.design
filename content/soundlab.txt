@@ -1,0 +1,70 @@
+SLUG soundlab
+TITLE SoundLab
+COVER bC7ac8Hr6s3EAI6YLrwjhbD4.jpg
+TAGS Interaction Design, UX/UI Design, Spatial Design
+CLIENT (Concept)
+TEAM Lee Kaien, Zane & Danikh Nizam
+YEAR 2026
+SUM The brief | Decode the emotional qualities of a consumer product and translate them into an immersive retail experience.
+SUM What we made | A retail space inspired by the beginner-friendly Squier Stratocaster, with three interactive stages (Wall of Strings, Tonal Exploration and Expression Zone) that take visitors from imitation to aspiration to confidence.
+SUM My role | The concept grew from my own experience of learning guitar. I built all the interactive artefacts, designed the city the concept is set in, and shared the 3D modelling equally with a teammate. The concept was developed together as a team; the three tone designs and most of the film were made by teammates.
+MEDIUM Figma, Twinmotion, Rhino, p5.js
+VIDEO file soundlab-film.mp4 bC7ac8Hr6s3EAI6YLrwjhbD4.jpg
+P SoundLab explores how spatial design can reduce the fear of starting something new.
+P Inspired by my own experience learning guitar, the project began with a simple observation: many people are inspired to play music, yet taking the first step often feels intimidating. While aspiring musicians are surrounded by opportunities to watch, listen, and admire, finding a comfortable way to begin remains a challenge.
+P Drawing from the beginner-friendly philosophy of the Squier Stratocaster, SoundLab deconstructs the guitar into three interactive experiences centred around touch, sound, and expression. Together, these experiences guide visitors from imitation to aspiration and ultimately confidence, transforming the journey from observer to performer into an intuitive and engaging experience.
+P Supervised by Tan Sixiu for the Spatializing Emotion in Retail design platform.
+H Design Brief
+P For this design platform, students were tasked with decoding the emotional qualities of a consumer product and translating them into an immersive retail experience. Moving beyond traditional product-centred retail, the project explored how sound, touch, smell, materiality, and atmosphere could be orchestrated to create spaces that embody the feeling of an object rather than simply display it.
+W Does this feel familiar? | Lhyqp26dX4dO2BxgcIXp9UYSV6g.png | | We've all wanted to learn something new. Taking that first step, however, can feel surprisingly difficult. Surrounded by people who seem more experienced, it's easy to question whether you're ready to begin.
+W Imitation | t3PCBlygEcPqsDK8ILum394LYk.png | | The first stage is imitation. Learning often starts not with understanding, but with the desire to copy. Before I knew how to play guitar, I watched my older brother and imagined myself doing the same, chasing the feeling behind every note long before I understood how to create it.
+W Aspiration | rAqtkP3FgCPN7pCMcHARtLUx4Q.png | | Imitation gradually becomes aspiration. What begins as a desire to copy evolves into a desire to learn, improve, and express something of your own. The more I watched musicians I admired, the more I wanted to step beyond observation and become a participant myself.
+W Squier Stratocaster | LP9esLbkIIY6ArsKRAw42EfcUE.png | | The challenge was no longer wanting to play, but finding a place to start. For me, that starting point was the Squier Stratocaster, a guitar built with beginners in mind.
+W Access to begin | TWMHfJRGpLrSctBHFHBu5BDkJ44.png | | My older brother inspired the desire to learn. The Squier Stratocaster provided the means to begin. As Fender's beginner-oriented line of instruments, Squier's focus on accessibility became the starting point for translating the experience of learning music into a spatial journey.
+W That's me | 8CDihut1QEwdkEwJOZJHUpA5io.png | | Standing on stage felt impossible when I first picked up a guitar. Looking back, the biggest challenge was never performing. It was finding the confidence to begin.
+W Three places to start | sl-brands-adjectives.png | | We began by visiting places where people first encounter music. From traditional music retail stores to lifestyle-focused experiences and public interactive installations, each environment revealed a different way of engaging with music. Across these visits, we identified three recurring modes of engagement: expression, discovery, and exploration, each offering valuable experiences, yet rarely existing together within a single journey.
+W Yamaha · Expression | W96cOn9Zeem8sXktNS5GZ4bP6s.png | | Traditional instrument retail: professional, skill-driven and structured.
+W Swee Lee · Discovery | XAOhLJyGYIMa9g8YFapQQvyxQfw.png | | Experiential retail and community: lifestyle, social and identity-driven.
+W Active Garden · Exploration | doOsjJFsHr4VEEn4LRScP36bg.png | | Playful, non-commercial music interaction: body-based, exploratory and informal.
+W The opportunity | Pqlmi1A2i98DZbbZZtDM7y68N38.png | | Rather than treating expression, discovery, and exploration as separate experiences, we saw an opportunity to bring them together into a single journey. By combining the strengths of each environment, we could create a space that supports beginners from their very first interaction with music through to a growing sense of confidence.
+H Introducing SoundLab
+MP4 gRudc21AITqEP0Hm4xG5WmEJDv0.mp4
+MP4 wuuOZgUn4S4QtTsv94rixN1uwI.mp4
+P Drawing from the qualities of expression, discovery, and exploration identified during our research, we designed SoundLab by deconstructing the guitar into three intuitive experiences. Through sound, touch, and interaction, visitors progress from curiosity to confidence, transforming the challenge of starting into an engaging and approachable journey.
+H Wall of Strings
+P Designed as the entry point to SoundLab, Wall of Strings allows visitors to create sound without any musical knowledge. Through touch-responsive strings that generate audio, light, and vibration, the installation lowers the barrier to participation and encourages playful exploration. Rather than teaching technique, the experience focuses on a simple goal: helping visitors feel comfortable enough to begin.
+W Walking up | kxkvEeDuIUojTzdMWnDaO4QV8Y.mp4 | | A tactile entry point where visitors create sound.
+W Touch to play | d62lk5CE7patE5GbuP2Bv6WL0j4.png | | No musical knowledge needed: touch the strings and the wall answers.
+W Sound, light and vibration | krOGAdEwltQ9pyx2i4n3MI8TlWg.png | | Each touch produces audio, light and vibration at once.
+H Tonal Exploration Space
+P The second stage focuses on discovery. Inspired by the tonal versatility of the Squier Stratocaster, visitors explore how different pickup positions produce distinct sounds and feelings. Through immersive audio and vibrations embedded within the space, visitors not only hear the music but physically feel it beneath their feet. By transforming sound into a multi-sensory experience, the installation reveals the expressive possibilities hidden within a single instrument and turns curiosity into aspiration.
+W Three pickups | scaHrBkoFBlYbePoaTHyXPDc.png | | Guitar booths let visitors switch between the pickup positions of the Stratocaster.
+W Inside a booth | X90oJGVj7XDqvX7z4Oi25RbAUJw.mp4 | | Visitors play and hear how each pickup changes the sound.
+W Low | LwgJMhL7qUkqRhpzlpbZngdkog.mp4 | | Live audio feedback shows each tone as it is played.
+W Moderate | GZfxX1PEd73ocsVXCA4fp7grmQ.mp4 | | A brighter pickup, a different shape and colour.
+W Max | z0dr5huPezBYjCXL9YYaXh2KBcc.mp4 | | At its sharpest, the sound is felt through the floor.
+H Expression Zone
+P The final stage focuses on confidence through expression. Before entering the space, visitors select a song or chord progression from a setlist, allowing them to tailor the experience to their interests and skill level. They then step onto an elevating platform inspired by the stage lifts commonly used in live concerts, gradually rising into the performance environment.
+W The stage | O91rDrfkx3HJS6Jw7Abi2odUETY.png | | At the top, visitors are immersed within a curved panoramic display inspired by contemporary concert stages and virtual production environments. Surrounded by responsive crowd visuals, dynamic lighting, and real-time feedback, the space transforms practice into performance. Designed with a degree of privacy to reduce the fear of judgement, the experience allows beginners to experiment, learn simple chords, and build confidence at their own pace. As they progress, the environment responds to their playing, creating the sensation of stepping onto a stage and performing before a crowd.
+W Playing along | 2HN9vlnHZBUEyRizeRtMixK2ZPY.mp4 | | Chord shapes appear on the panoramic display as the song plays.
+W Choosing a song | aYVMzbdIFMMG7eFSXG0mCyWFMww.mp4 | | Visitors pick a song or chord progression from the setlist.
+W Rising up | iLU9z8kaZvgUcgwWXtkmgwViDRw.mp4 | | An elevating platform lifts them into the performance space, like a concert stage lift.
+W Arriving on stage | BKulpEl2CaglFVphGAm4eze7Gw.mp4 | | The display opens up around them.
+H Floorplan & Brand Manifesto
+W Floorplan | HWfzgpunUdgvr8zlDMyzZVP4dn0.png | | The journey from entry to exploration to expression, with the sensory cues used in each stage.
+W Manifesto | Jl8QFQnGMNdvM99sZxPIeIyZ0.png | | It starts with curiosity. This is where playing starts.
+H Live Demo
+P To evaluate SoundLab beyond visualisations, we developed a series of functional prototypes that brought each stage of the journey into a tangible experience.
+CAP Wall of Strings
+IMG j19mDXHekrEhECkyFKO8wM1C0Yk.jpg
+FRAME soundlab-strings/index.html | Wall of Strings | d62lk5CE7patE5GbuP2Bv6WL0j4.png |  | FULLSCREEN | Play the wall
+CAP Tonal Exploration Space
+IMG FTd9xb4ddkWpsNIAw112WQlhYM.png
+IMG eviCxnNtbzysA3G8FKJvDBh32no.jpg
+FRAME soundlab-tone/index.html | Tonal Exploration | sl-tone-poster.png | sl-tone-poster-m.png |  | Try the tones
+P Switch between the three pickup tones of the Stratocaster. Each one changes both the sound and the live visual, the same pairing visitors felt through the speakers and the floor in the space.
+CAP Expression Zone
+MP4 C4oPOqSoAYea2qUhunuyisJK1qk.mp4
+FRAME soundlab-expression/index.html | Expression Zone | sl-expr-poster.png | sl-expr-poster-m.png |  | Play the chords
+P In the prototype, a sound model we trained with Teachable Machine listens to a real guitar and recognises the chord being played: G, D, A and Cadd9. Each recognised chord builds the crowd's energy, until the stage answers with cheers. Here the chord buttons stand in for the guitar, and the strums are synthesised in the browser rather than recorded, so press 1 to 4 or tap a chord to step on stage.
+IMG QfQpq4AO1pQigV25tL9BfqWTmrg.jpg

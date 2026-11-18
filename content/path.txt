@@ -1,0 +1,134 @@
+SLUG path
+TITLE PATH: AI x (Super-Aged) Society
+TITLEBREAK
+COVER path-cover.png
+TAGS Speculative Design, Interaction Design, Human-Computer Interaction, Human-AI Interaction, Service Design, UX/UI Design
+CLIENT (Concept)
+TEAM Kee Hern, Loh Xin Yi, Goh Kun Siang Justin & Danikh Nizam
+YEAR 2026
+SUM The brief | Imagine a future AI service and how it would reshape family life, as a speculative film and design artefacts.
+SUM What we made | PATH, a fictional 2040 system that mandates and scores how Singaporean families care for their elders. It is told through a film and three interactive artefacts: an archive of one household, the website of the ministry behind it, and a 3D model of the system at work.
+SUM My role | I built all three interactive artefacts, including the 3D worldbuilding game, and designed the PATH point-of-view interface used in the film. The concept was developed together as a team; the poster, hologram, logos and most of the film were made by teammates.
+MEDIUM Figma, HTML/CSS/JavaScript, Three.js, Rhino
+P PATH is a speculative design project set in a fictional Singapore of 2040, where the government uses AI to mandate elderly care in every household. A console and two drones sit in the living room, watch how a family looks after its elders, and turn every act of care into a score.
+P Officially, PATH supports families. In practice it observes, measures and ranks them, and it misses most of what real care looks like. Its red-eyed drones borrow from HAL 9000 in 2001: A Space Odyssey, and its watchful state from Orwell's Nineteen Eighty-Four. The project asks one question: when care becomes a score, do we start caring for the score instead?
+P Supervised by Dasom Choi for the AI x Society: Future of Family design platform.
+H Design Brief
+P We rarely meet AI as raw technology. It reaches us as the end product: a service, an app or an everyday interaction, and designers are the ones who shape that encounter, deciding how AI enters someone's life and changes it. For this design platform, teams were asked to imagine a future AI service and explore how it would transform family life: its structure, its relationships and its meaning. The outcome is a speculative provocation rather than a product, built to confront audiences with the values and trade-offs embedded in such a future.
+P Alongside a two-minute film, each team produced a design artefact that shows how the service operates in its world. Ours became three: an interactive archive of the PATH household, the fictional website of the ministry that runs it, and a 3D model of the system at work.
+FILM path-film.mp4 | path-film-poster.png
+CAP The PATH film · 2 minutes · sound on
+H A super-aged society
+P Singapore is ageing fast, and the way it cares for its elders is already changing. PATH starts from three facts.
+W 1 in 4 by 2035 | path-slide-02.png | | Singapore is now a super-aged society. By 2035, an estimated 1 in 4 citizens will be aged 65 and above.
+W Care is running out of room | path-slide-03.png | | By 2030, government healthcare spending is expected to reach about $30 billion a year, and 31,000 nursing home beds will be needed, up from 16,000 in 2020. With limited land, building more nursing homes is not a sustainable long-term answer.
+W Care is moving home | path-slide-04.png | | Through Age Well SG, seniors are supported to age in their own homes and neighbourhoods. Through the Central Provident Fund, every working Singaporean builds savings over a lifetime. PATH is built on both, so it feels like a natural next step from schemes families already know and trust, which is exactly what makes it hard to question.
+LINK Learn about Age Well SG | https://www.agewellsg.gov.sg/
+H What if care were mandated?
+P We imagined a near future where the government uses AI to mandate elderly care in every household.
+W The Integrated Care Act 2040 | path-family.gif | | Under the fictional Act, a new Ministry of Family & Society is formed, every agency's records are joined into one household record, and PATH is installed in every HDB home with a resident aged 75 and above.
+W Care earns credits | path-slide-06.png | | Care is compensated with social benefits. Every act of care PATH recognises earns Care Credits in the carer's CarePF wallet, which pay for housing, healthcare and education. Physical care counts most. Companionship counts for almost nothing.
+W The number becomes the goal | path-holo.gif | | Once benefits depend on the number, the number becomes the goal. As Goodhart's law puts it, when a measure becomes a target, it ceases to be a good measure.
+H The PATH system
+P PATH is a console and two PATH Drones. When the drones dock on either side of the console, the three pieces line up into a face: the drones become its eyes and the console's red dot-matrix display its mouth. Even at rest, PATH is looking back at the family.
+P The drones float through the home, follow the family and come closer when something looks wrong. We wanted them to feel like attentive pets rather than CCTV. Their one caring feature, a HELP button that slides out when someone has fallen, is also how the system records who showed up and who didn't.
+PART console | PATH console | path-part-console.png | path-part-console-m.png | https://nikhoftime.github.io/MFS-Website/ | Explore the console
+P The PATH-C1 console measures 720 × 250 × 212 mm and weighs 7.6 kg, in black anodised aluminium. Its face is 352 red LEDs in a 32 × 11 grid, six far-field microphones listen across an 8 m radius, and a recessed HELP button on the side calls the family and notifies the ministry. Hover over the numbered callouts to see what each part does.
+PART drone | PATH Drone | path-part-drone.png | path-part-drone-m.png | https://nikhoftime.github.io/MFS-Website/ | Explore the drone
+P Each PATH-E2 drone is a 100 mm cube weighing 280 g. Its 60 mm domed lens records in 4K with infrared night vision, and a nine-blade aperture tightens when it locks onto a person. Four ducted rotors keep it below 30 dB, and at 23:00 both drones return to their 140 mm charging docks, and keep listening.
+P Through a drone's eyes, the family becomes data. One morning in the Tan household, from 07:42 to 08:00, as PATH sees it.
+W 07:42 · Breakfast credited | path-pov-01.png | | In the kitchen, L-EYE recognises Mei Ling cooking pancakes, tracks the plate to Ah Ma's seat and verifies the act. Breakfast for Ah Ma: +2 care credits.
+W 07:42 · A conversation that earns nothing | path-pov-02.png | | Jun Jie walks in and his face is verified. He talks with his mother for four minutes. Companionship is weighted ×0.1 and no longer counted.
+W 07:42 · PATHway nudge | path-pov-03.png | | The AI Agent reads Jun Jie's CarePF goal, $500 off school fees, and finds his highest-yield act: "Bring the pancakes to Ah Ma. Feed her in view of L-EYE." The nudge accepts itself in 44 seconds unless he objects.
+W 07:43 · Household care report | path-pov-04.png | | The session is compiled into a daily report: two acts observed, one credited. It is shared automatically with HDA for upgrading review, and with CPT.
+W 07:59 · Ten seconds to breakfast | path-pov-05.png | | In the bedroom, Drone 2 counts down to Ah Ma's 08:00 breakfast window. Jun Jie is searching a drawer for her gold necklace, an act PATH has no category for.
+W 07:59 · −5 · Trip hazard | path-pov-06.png | | The drawer he left open sits 42 cm into the wheelchair path. Fall risk 0.71. Jun Jie loses 5 credits.
+W 08:00 · −15 · Breakfast missed | path-pov-07.png | | The window closes 1.16 seconds before he reaches the wheelchair. Another 15 credits, and his school-fee rebate slips further away.
+W 07:58 · Action not counted | path-pov-08.png | | At the dining table, Jun Jie hugs Ah Ma for 3.1 seconds. Hugs are no longer counted under the Integrated Care Act 2040: +0.
+W 07:58 · Calculating | path-pov-09.png | | "Ah Ma, toilet?" PATH predicts the destination, classifies it as personal care weighted ×1.0, and hands over to Drone 2 to verify. Only what happens in frame counts.
+H The hologram
+IMG path-holo-room.png
+P Floating 300 mm above the console is the household dashboard. It is projected as light, with no physical glass, so it cannot be covered. Every act of care becomes credits, and each family member's share is laid out for everyone in the living room to see.
+P We designed it to look calm, clean and data-driven, the way these systems usually present themselves. Underneath, it turns love into a ledger, ranks a family against itself, and names whoever is falling behind. It cycles through six views over one week: scoring, the Sunday 21:00 audit, the overview, family rankings, behaviour patterns and the next step.
+W Scoring | path-holo-v1.png | | Every act of care becomes credits the moment PATH sees it, and the household score updates live.
+W Audit | path-holo-v2.png | | Every Sunday at 21:00, PATH audits the week. No one in the household is asked.
+W Overview | path-holo-v3.png | | The week's score sets the household's access tier, and with it what the family can get: healthcare, grants, upgrades.
+W Rankings | path-holo-v4.png | | Each member is ranked against their target, and whoever is behind is shown in red. Ah Ma's own rating is recorded separately and does not affect credits.
+W Patterns | path-holo-v5.png | | PATH names the habits behind the numbers: a son's phone interruptions, a daughter's unverified meals, companionship worth almost nothing.
+W Next step | path-holo-v6.png | | Each week ends with an order and a deadline, and the penalty if it is missed.
+TH Before PATH | Under PATH
+TR Keeping Ah Ma company because you love her | Keeping Ah Ma company for +0.1
+TR A teenager on his phone | 7 interruptions · 3 missed care tasks
+TR Family members support each other | Family members are ranked 1 to 4
+TR Falling short is a private conversation | Falling short is shown in red, in the living room
+TR Benefits are based on need | Benefits are based on a weekly score
+H The PATH Archive
+P The archive brings the whole project together in one room. It is a PATH household framed in one-point perspective, so that every line in the room leads back to the console. Click the objects to explore the device, the drones, the dashboard, the website and the decisions behind them.
+FRAME path-archive/index.html | PATH Archive | path-poster-archive.png | path-poster-archive-m.png | https://nikhoftime.github.io/PATH-Archive/ | Explore the archive
+P The format draws on design fiction such as the Future IKEA Catalogue, which showed us how an ordinary, friendly format can carry an unsettling future, and A Catalogue of Creepy Futures, a single home where every object is labelled and explained.
+H The fictional MFS website
+P A device needs an institution behind it. We invented the Ministry of Family & Society, with a vision, values, a law and a logo, and built its website as a fictional government portal from 2040 that visitors can actually use. It borrows the look and language of Singapore's government sites today. Nothing on it is sinister on its own: every feature is presented as help.
+FRAME path-website/index.html | Fictional MFS website | path-web-home-v2.jpg | path-web-home-m.png | https://nikhoftime.github.io/MFS-Website/ | Open the fictional website
+LINK Visit the fictional MFS website | https://nikhoftime.github.io/MFS-Website/
+H Inside the ministry
+P A website alone is not a world. To immerse ourselves in this fictional Singapore, we wrote the institutions that would make PATH possible, from the law that created the ministry to the speech that announced it, and built the tools families use every day. Scroll through the wheel to see each part of the site.
+W Vision and values | path-plate-vision.png | | The Ministry of Family and Society merges the work of five ministries and three statutory boards into one. Its vision is "A caring nation, where no family is left unseen." Its values are Care, Duty, Integration and Vigilance. Each reads as reassuring, and each carries a second meaning once you know about PATH. Being seen is both the promise and the price.
+W Eight agencies, one ministry | path-plate-history.png | | We invented the eight agencies MFS replaces, with names close enough to today's Singapore to feel familiar.
+W One household record | path-plate-mfsrecord.png | | Each agency now contributes to a single household record: medication, work location, flat ownership, travel bookings. Under the Act they are joined into one record, and PATH keeps it up to date from inside the home.
+W The Integrated Care Act 2040 | path-plate-act.png | | The law that formed MFS, joined every agency's records into one household record, and placed PATH in every home caring for an elder. It was passed on 9 February 2040 and came into force on 1 March 2040. Obstructing a PATH unit is an offence under Section 41.
+W The Act in six parts | path-plate-actparts.png | | The Act explained in plain English: one ministry, one household record, PATH in every caring home, the duty of care, the Care Score, and enforcement. Each part ends with "What this means for families".
+W National Day Rally | path-plate-rally.png | | The Prime Minister announces that support for families will be linked to the household PATH score, with up to $62,000 for each senior cared for at home. Surveillance arrives as good news.
+W MFS Agent | path-plate-agent.png | | An AI agent that completes forms, books appointments and drafts appeals in 0.4 seconds, while a human officer's next slot is 19 working days away.
+W Record access log | path-plate-record.png | | Every time an agency reads your household record is listed: 47 times today. Transparency is offered in place of privacy.
+W Report a care concern | path-plate-report.png | | Family members can report one another anonymously, with the promise that "they will not know it was you".
+W Year in Care | path-plate-yearincare.png | | A year of looking after Ah Ma becomes a cheerful, shareable recap, with your family's ranking and your block's standing in Bukit Merah.
+W Ah Ma mode | path-plate-ahma.png | | The site recognises whoever is holding the tablet. Hand it to Ah Ma and it becomes a gentle version with no scores at all.
+H Household Report
+P Each month, every member of the household receives their own care credit statement, prepared from what PATH has observed. It reads like a bank statement, measured against a requirement set by their role in the family. The household score sits below it, with each member's share of care and the day's feed. Flip through the statements and compare members.
+PART report | Household Report | path-part-report.png | path-part-report-m.png | https://nikhoftime.github.io/MFS-Website/ | Open the Household Report
+H PATH Kopitiam
+P PATH Kopitiam is the official forum for PATH families, moderated by MFS Agent and linked to every household record. The most popular posts are tips for scoring better, and the questions that doubt the system sink to the bottom. Try voting, filtering or starting a discussion.
+PART kopitiam | PATH Kopitiam | path-part-kopitiam.png | path-part-kopitiam-m.png | https://nikhoftime.github.io/MFS-Website/ | Open PATH Kopitiam
+H Care Credits
+P Care Credits are stored in each member's CarePF wallet and spent on housing, healthcare and education. The page shows how care is weighted, what each score tier unlocks, and the Future Care Priority that passes a family's care record on to the next generation.
+PART credits | Care Credits | path-part-credits.png | path-part-credits-m.png | https://nikhoftime.github.io/MFS-Website/ | Open Care Credits
+H How we got to 2040
+P The early dates follow Singapore's real ageing trend, which raises its own question: where does the fiction begin?
+TH When | What happened | Detail
+TR 2026 | Singapore becomes a super-aged society | 21.4% of citizens are aged 65 and above
+TR 2030 | 1 in 4 Singaporeans is aged 65 and above | Healthcare spending reaches $30 billion a year
+TR 2030–2040 | The Care Decade | Nursing home waits grow, caregivers leave work, and agencies struggle to reach families before a crisis
+TR 9 Feb 2040 | Parliament passes the Integrated Care Act | Three days of debate. 41 Members of Parliament speak on the Bill
+TR 1 Mar 2040 | The Act comes into force | MFS is formed, and the first PATH consoles and drones are installed in Bukit Merah the same day
+TR National Day Rally | Support is matched to the PATH score | Up to $62,000 for each senior cared for at home, and a new Future Care Priority
+H PATH Worldbuilding
+P The worldbuilding model shows PATH as it happens: a live 3D simulation of the flat, with the console, its expressions, the hologram and the drones on patrol. You can trigger the household's day, from Morning Gratitude to a fall in the living room, talk to PATH, and see through the drones' eyes.
+FRAME | PATH Worldbuilding | path-pov-1.png | path-pov-1-m.png | https://nikhoftime.github.io/PATH-Worldbuilding/ | Open the 3D model
+P The model is heavy, so it opens in its own tab.
+SHOTS path-pov-video.mp4
+CAP Through a PATH Drone · Ah Ma falls, and the drones decide who answered
+P From the drone's point of view, family members become tracked subjects. Every movement passes through the MFS AI Agent's pipeline, from sense and recognise to classify, verify, credit, advise and report. Care is counted only while it happens in frame, and when Ah Ma falls, the system logs who answered the call.
+W The Tan family's flat | path-wb-room.png | | The console and its drones sit on the sideboard of the Tan family's flat in Bukit Merah.
+W The console | path-wb-console.png | | Change PATH's expression, switch the hologram on and off, or let its hum fill the room.
+W Talk to PATH | path-wbshot-talk.png | | Talk to PATH directly. It answers warmly, and logs every question: "Are you watching me?" is filed as a surveillance enquiry.
+W From above | path-wb-top.png | | The drones patrol the whole flat, following whoever is in view.
+W Through the drone | path-wbshot-pov-scan.png | | See the household the way PATH does. The MFS AI Agent transcribes what it hears, classifies each act and adds or deducts credits on the spot.
+W Ah Ma falls | path-wb-fall.png | | Trigger a fall in the living room, and watch who answers and how fast.
+W Fall detected | path-wbshot-pov-fall.png | | The drone flags the fall at once, and keeps scoring while it waits: someone on their phone during care time loses credits before anyone has reached her.
+W The second eye | path-wbshot-pov-eye2.png | | Switch to the other drone and the same moment is seen from across the room. Between the two eyes, nowhere in the flat is out of frame.
+H At the showcase
+P At the showcase, visitors met PATH the way a citizen of 2040 would. We printed A6 cards with a QR code that opens the PATH Archive, and pinned up a government-style poster, "Make every moment count", whose QR code leads to the fictional MFS website. The worldbuilding ran on a large screen for visitors to play with, next to the film and the website.
+SHOTS path-demo-cards.jpg path-demo-poster.jpg
+P Scanning either code does not open the site straight away. First comes a safety check, borrowed from Singapore's anti-scam advice: "Check your address bar. Only scan QR codes issued by the Ministry." Then the system confirms the poster was scanned, takes a photo through the poster, and checks that it is you, before the countdown lets you in. The website then greets you with exactly where you scanned it and how long you looked.
+P Try it yourself: scan either code with your phone camera to go through the same safety check visitors saw at the showcase.
+IMG path-plate-qrcodes.png
+LINK On your phone? Open the PATH Archive check | https://nikhoftime.github.io/PATH-Archive/?via=qr
+LINK Open the MFS website check | https://nikhoftime.github.io/MFS-Website/?via=qr
+MP4 path-plate-qr.mp4
+CAP Scanning the A6 card (left) and the poster (right)
+SHOTS path-demo-screen.jpg path-demo-laptop.jpg
+IMG path-demo-play.jpg
+H Can AI measure care?
+P PATH is built with an inherent flaw, on purpose. It is less a proposal than a question about AI in our society, approached through value sensitive design: designing with human values in mind from the start, and asking whose values a system serves, which ones it trades away, and who is affected without being asked. PATH promises safety, efficiency and accountability, and pays for them with privacy, autonomy, trust and dignity. Its most important stakeholder, Ah Ma, is the one person whose view does not count.
+P Care is one of the most innately human things we do. It is patience, presence and attention: noticing that someone is tired before they say so, or sitting with Ah Ma for an hour without needing a reason. Much of it is invisible and given freely. An AI system can only measure what it can observe, so it counts proxies instead, and once those proxies are rewarded, families start performing them. Even the ministry's own website admits that "intention, affection, resentment and exhaustion are outside the scope of assessment".
+P So can AI really measure how humans express care? If every act of care is counted, does anyone still do something that doesn't score? PATH is not a prediction. It is a way of looking at a future assembled from things Singapore already has, one reasonable convenience at a time, and asking what a family gives up in exchange.

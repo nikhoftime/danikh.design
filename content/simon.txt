@@ -1,0 +1,54 @@
+SLUG simon
+TITLE Simon: AI Companion for On-Call Doctors
+COVER YruWCy8SaEIN7Uvl7TOInvloKSY.png
+TAGS Spatial Computing, Human-Computer Interaction, AR/VR, 3D UX/UI, Human-AI Interaction
+CLIENT NUS Centre for Healthcare Simulation & NUH Department of Emergency Medicine
+TEAM Ang Sze Ern, Alex Ong Li Hong, Danikh Aqib bin Mohd Nizam, Ryka Nouvin binte Mohamad Azhar
+YEAR 2025
+SUM The brief | Build an Apple Vision Pro app in Swift and SwiftUI for a real healthcare pain point, with the NUS Centre for Healthcare Simulation and NUH Emergency Medicine.
+SUM What we made | An immersive on-call simulator for junior doctors. Digital twins of NUH wards and AI-generated scenarios let them practise prioritisation and decisions, with tailored feedback. It was demonstrated at the Apple Developer Centre.
+SUM My role | I built most of the back end and the home page UI, and integrated all the parts and functions my teammates built into one seamless app experience, with the home page as the starting point. I also worked out how to bring the hospital digital twins into the app. The concept was developed together as a team; the AI integration was built by a teammate.
+MEDIUM Figma, SwiftUI, Xcode, Spatial Media, Apple Foundation Model
+VIDEO file simon-film.mp4 simon-film-poster.jpg
+P Simon is an immersive on-call simulator that familiarises junior doctors with on-call environments and real-time procedural decision-making. It aims to ease the steep learning curve they face during their first on-call shifts, marked by minimal onboarding, prioritisation overload, inconsistent supervision, and emotional strain.
+P Through spatial simulation and interactive scenarios, Simon recreates the complexity of hospital settings, allowing doctors to practise prioritisation, procedural responses, and cognitive decision-making in a safe, repeatable environment. The system aims to strengthen confidence through exposure, improve cognitive decision-making skills, reduce cognitive overload, and support a smoother transition into real-world on-call duties.
+P Supervised by Assistant Professor Gabriel Lipkowitz for the Spatial Computing: Design & Development platform.
+H Design Brief
+P This project focuses on creating an Apple Vision Pro application built in Swift and SwiftUI, incorporating spatial media to demonstrate the potential of spatial computing in healthcare contexts. The aim is to support workflows for both patients and clinicians by leveraging immersive interaction and spatialised information. Each team is to develop a distinct solution informed by the pain points identified by the clinical collaborators and healthcare partners they will be working with.
+W The challenge | oQXnMSoDmfF7ljXKAR3geN5Ocoo.jpeg | | On-call shifts are a major challenge for junior doctors.
+W Minimal onboarding | NWPg7xTxf9jG430onJ6GRcOP6lY.jpeg | | Junior doctors are "dropped in" with little guidance, often after only one or two shifts shadowing a senior, so they rely on trial and error.
+W Task overload | CEtTIokZFeyEOm2bHidj1ETvvU8.jpeg | | Everything feels urgent and there is no clear framework for balancing routine checks, urgent issues and true emergencies, which leads to delays, stress and a risk of medical errors.
+W Insufficient support | bvgf6WHn136aiPcgZNVnfKs7juo.jpeg | | Senior availability is limited, so junior doctors are often forced to decide the initial level of urgency themselves, unsure when to escalate.
+W Mental and emotional toll | 1ReXvIFQIUvT2s49yCaDjADs3XA.jpeg | | Pre-call anxiety is common, high stress and traumatic experiences on call have a lasting impact, and burnout leads some doctors to avoid on-call roles altogether.
+W Insights | qtHdbZGr9K12GlbylXnfBuiydI.jpeg | | Confidence and mental readiness matter, on-call learning is largely experiential, and cognitive load drives stress and slows learning.
+W How might we | 0wI9QZMvT04fYN4aDlmTsETEqqE.jpeg | | How might we provide a realistic, approachable way for junior doctors to practise decision-making skills and learn from on-call scenarios before their first real shift?
+H Design principles
+W Immersive | 0pFJmitUWo9jJlQsskiSVOjHYmI.jpeg | | Recreate the real cognitive and sensory atmosphere of on-call, with a digital twin, spatial audio and realistic scenarios from the foundation model.
+W Human-centred | 9yfQ0GrYxRdXNQb4hZD1FZS1ZQ.jpeg | | Designed around the cognitive and emotional needs of junior doctors, with intuitive interactions and feedback from a professionally trained foundation model.
+H From Figma to SwiftUI
+P The designs were first done in Figma before we started building them in Xcode and SwiftUI.
+W Designed in Figma | XwNWKxFUwJZsb4YQosd3832V0.png | | Every screen and flow was laid out in Figma first.
+W Built in Xcode | u3ePqVVpOWKlLG7OSbNIEQF6O7M.png | | Then rebuilt in SwiftUI for Apple Vision Pro.
+H The experience
+W Onboarding | 1jIGZzKctfhrSMCUshlNEIbNW0.gif | | A clear introduction to Simon and how it works.
+W Setting the context | BsQn3oygJv0ECpQ4ExC6QC4W1UY.gif | | Each simulation opens by placing you in the role: a postgraduate year one doctor on an evening shift.
+W Choosing a scenario | TDhG1rT5y8aRiHDYiTyrtjY5dWc.gif | | Choose from a range of immersive scenarios across different wards.
+W Digital twin and spatial audio | aiYWIJHvl59pOdfMPZbKwyatU.gif | | A realistic digital twin of the ward, with spatial audio, recreates the atmosphere of an on-call shift.
+W Active participation | xThNUNIa34Fa6NAFfWz6HUDGjb4.gif | | Simple interactions keep the focus on the decisions, not the headset.
+H Key feature 1 · Scene-based questions
+IMG 8hDLDsWeIM46y0HSKdvUKRlVnvY.gif
+P Pre-filmed scenarios are paired with pre-crafted questions that pause the video at key moments, prompting you to respond by typing or voice. As you answer, the system analyses your reasoning, resumes the scene, and delivers instant, tailored guidance on your clinical decision-making.
+H Key feature 2 · Generated scenarios in NUH wards
+IMG vI2VOeJ0ti3mmLIoQorTIyWFyU.gif
+P Digital twins of NUH wards familiarise junior doctors with different layouts and environments, while the Apple Foundation Model generates adaptive scenarios and questions based on the ward they are in, analyses their responses, and provides tailored feedback with follow-up prompts.
+H After each shift
+W Assessment review | tDRgahBTEXDlZTUkWNxauE0HCnM.gif | | An archive of past performances to learn from.
+W Saved to your phone | rVhygBqT1UhAf5uClaUgYJvYWuY.gif | | Results are easy to save and revisit later.
+H Simon in Apple Vision Pro
+IMG SqJ8Zxz1STDU9C8UpJbJsaROY4.png
+IMG odbGSetxLA4lTzNXKHSAF2XrFOg.png
+H Live Demo & Expert Feedback
+PAIR 4lqXRCScwA8QEl86oRbBMX8TT0.jpg q18Nr89iFEaFbZnmnMFVMqrKxw.jpg
+PAIR RSOomqvN6H9MTE8PXEBzCNyiVg.png 48OepTHyUnGwjaZWUWNxfW3e20.jpg
+P We presented Simon at both the Apple Developer Centre and the NUS Division of Industrial Design, engaging members of the Apple team, doctors, healthcare professionals, HCI researchers, and academics working in emerging technologies such as Spatial Computing, AR, VR, and XR. Through live demonstrations and discussions, participants experienced the simulation firsthand and provided feedback on its relevance to clinical training and decision-making.
+P A recurring point of praise was Simon's use of a digital twin of the hospital environment within Apple Vision Pro. By generating context-aware scenarios and questions based on the user's location, the system supports cognitive decision-making in a realistic setting. Clinicians noted its potential as both a training tool for junior doctors and a refresher for more experienced practitioners, enabling users to rehearse critical thinking and clinical reasoning within a familiar spatial context.

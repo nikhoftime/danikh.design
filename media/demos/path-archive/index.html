@@ -1,0 +1,1488 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PATH Singapore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the room fills the whole screen (cover); where the screen is a different shape, drag/scroll to look around. Hotspots are % of the image; dark card on click, bottom sheet on phones */
+:root {
+  --ground: #121214;
+  --card: #1e1f22;
+  --ink: #f2f0ec;
+  --ink-dim: #a9a7a2;
+  --ink-faint: #6e6c68;
+  --signal: #ff4a2e;
+  --signal-soft: rgba(255, 74, 46, 0.35);
+  --paper: #26272b;
+  --line: rgba(242,240,236,.7);
+  --scrim: rgba(10, 10, 12, 0.62);
+  --font-sans: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+[hidden] { display: none !important; }
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  background: var(--ground); color: var(--ink);
+  font-family: var(--font-sans); overflow: hidden;
+}
+/* desktop / tablet: the room always fills the window. Any small crop is taken mostly from the
+   left (window and plant) and the top (wall), so the logos, book and devices stay in view. */
+.stage { position: fixed; inset: 0; overflow: hidden; }
+.scene {
+  --W: calc(1.05 * max(100vw, calc(100vh * 3344 / 1882)));
+  --H: calc(1.05 * max(100vh, calc(100vw * 1882 / 3344)));
+  position: absolute; width: var(--W); height: var(--H);
+  left: calc((100vw - var(--W)) * .5); top: calc((100vh - var(--H)) * .9);
+}
+.scene > img { display: block; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+/* tall screens (phones held upright, portrait tablets): a separate portrait render of the room
+   (scene-portrait.jpg, 2048x3072) fills the screen. Hotspots move to their portrait positions in JS. */
+@media (max-aspect-ratio: 3/4) {
+  .stage { position: fixed; inset: 0; overflow: hidden; background: #2a2018; }
+  .scene { --vh: 100vh; --W: max(100vw, calc(var(--vh) * 940 / 1672)); --H: max(var(--vh), calc(100vw * 1672 / 940));
+    width: var(--W); height: var(--H); left: calc((100vw - var(--W)) / 2); top: calc((var(--vh) - var(--H)) / 2); }
+  @supports (height: 100dvh) { .scene { --vh: 100dvh; } }
+  /* cameras are small on a phone, so they travel further to read as floating */
+}
+@keyframes hoverLp { 0%,100% { transform: translate(0,2px) rotate(2deg); } 50% { transform: translate(2px,-16px) rotate(-6deg); } }
+@keyframes hoverRp { 0%,100% { transform: translate(0,2px) rotate(-2deg); } 50% { transform: translate(-2px,-15px) rotate(5deg); } }
+.stage.dragging .hot { pointer-events: none; }
+
+/* chrome */
+.brand {
+  position: fixed; z-index: 5;
+  top: calc(16px + env(safe-area-inset-top,0px)); left: max(16px, env(safe-area-inset-left,0px));
+  color: var(--ink); text-shadow: 0 1px 8px rgba(0,0,0,.5);
+  display: grid; gap: 6px; justify-items: start;
+  padding: 10px 14px; border-radius: 14px;
+  background: rgba(18,18,20,.42); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.12);
+}
+.brand .lockup { display: flex; align-items: center; gap: 10px; }
+.brand .lockup img { height: 20px; width: auto; display: block; filter: drop-shadow(0 1px 6px rgba(0,0,0,.4)); }
+.brand .lockup span {
+  font-family: var(--font-mono); font-weight: 500; font-size: 12px; letter-spacing: 0.24em; text-transform: uppercase;
+  color: var(--ink); padding-left: 10px; border-left: 1px solid rgba(255,255,255,.3); line-height: 16px;
+}
+.brand small { font-size: 12px; color: rgba(242,240,236,.82); letter-spacing: .01em; }
+.brand small.brand__world { margin-top: -2px; color: rgba(242,240,236,.6); font-style: italic; }
+@media (max-width: 640px) {
+  .brand { padding: 8px 11px; gap: 4px; border-radius: 12px; top: calc(12px + env(safe-area-inset-top,0px)); left: max(12px, env(safe-area-inset-left,0px)); }
+  .brand .lockup { gap: 8px; } .brand .lockup img { height: 15px; }
+  .brand .lockup span { font-size: 10px; padding-left: 8px; line-height: 13px; }
+  .brand small { font-size: 10.5px; }
+  .help { width: 38px; height: 38px; top: calc(12px + env(safe-area-inset-top,0px)); right: max(12px, env(safe-area-inset-right,0px)); }
+}
+.help {
+  position: fixed; z-index: 5;
+  top: calc(14px + env(safe-area-inset-top,0px)); right: max(16px, env(safe-area-inset-right,0px));
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.25); background: rgba(18,18,20,.55);
+  color: var(--ink); font: 500 16px var(--font-sans); cursor: pointer;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.help[aria-pressed="true"] { background: var(--ink); color: var(--ground); border-color: var(--ink); }
+.hint {
+  position: fixed; z-index: 5; left: 50%; transform: translateX(-50%);
+  bottom: calc(18px + env(safe-area-inset-bottom,0px));
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink); background: rgba(18,18,20,.6); backdrop-filter: blur(6px);
+  padding: 8px 14px; border-radius: 999px; white-space: nowrap;
+  transition: opacity .4s; display: flex; align-items: center; gap: 8px; pointer-events: none;
+}
+.hint .pan { display: none; }
+.can-pan .hint .pan { display: inline; }
+.hint .touch { display: none; }
+@media (pointer: coarse) { .hint .touch { display: inline; } .hint .mouse { display: none; } }
+.hint.gone { opacity: 0; pointer-events: none; }
+
+/* hotspots */
+.hot {
+  position: absolute; border: 0; padding: 0; margin: 0;
+  background: transparent; cursor: pointer; outline: none;
+  pointer-events: none;            /* the traced outline below is the hit area */
+}
+.hot .badge { pointer-events: auto; cursor: pointer; }
+/* traced outlines of each object */
+.outlines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; z-index: 1; }
+.outlines path {
+  fill: rgba(255,255,255,0); stroke: rgba(255,255,255,0); stroke-width: 1.5px; vector-effect: non-scaling-stroke;
+  stroke-linejoin: round; cursor: pointer; pointer-events: all; rx: 0;
+  transition: fill .25s, stroke .25s, filter .25s;
+}
+.outlines path.on, .show-all .outlines path {
+  fill: rgba(253,110,61,.08); stroke: #fd6e3d; stroke-width: 2px;
+  filter: drop-shadow(0 0 8px rgba(253,110,61,.6));
+}
+.outlines path.focus { stroke: #fff; stroke-width: 2px; }
+.hot { z-index: 2; }
+.hot .badge {
+  position: absolute; top: -13px; right: -13px;
+  width: 27px; height: 27px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: rgba(253, 110, 61, 0.82); color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(8px) saturate(140%); -webkit-backdrop-filter: blur(8px) saturate(140%);
+  box-shadow: 0 0 0 3px rgba(253,110,61,.18), 0 0 14px rgba(253,110,61,.45), 0 2px 8px rgba(0,0,0,.2);
+  transition: transform .2s, background-color .2s, border-color .2s;
+}
+/* thin orbit ring that slowly expands and fades, like a sensor ping */
+.hot .badge::after {
+  content: ""; position: absolute; inset: -4px; border-radius: 50%;
+  border: 1px solid rgba(253,110,61,.7);
+  animation: orbit 3.2s ease-out infinite; pointer-events: none;
+}
+.hot.badge-left .badge { right: auto; left: -13px; }
+.hot .badge svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 1px rgba(0,0,0,.3)); }
+.hot:focus-visible .badge, .hot.on .badge { transform: scale(1.35); background: #fd6e3d; border-color: #fff; box-shadow: 0 0 0 5px rgba(253,110,61,.28), 0 0 22px rgba(253,110,61,.8), 0 2px 8px rgba(0,0,0,.25); }
+@media (hover: hover) { .hot:hover .badge { transform: scale(1.35); background: #fd6e3d; border-color: #fff; box-shadow: 0 0 0 5px rgba(253,110,61,.28), 0 0 22px rgba(253,110,61,.8), 0 2px 8px rgba(0,0,0,.25); } }
+@keyframes orbit {
+  0% { transform: scale(.85); opacity: 0; }
+  25% { opacity: .9; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+.hot .tag {
+  position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translate(-50%, 4px);
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
+  color: #fff; background: rgba(16,16,18,.92); padding: 6px 10px; border-radius: 6px; border-left: 3px solid #fd6e3d;
+  white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+}
+.hot.below .tag { bottom: auto; top: calc(100% + 8px); }
+.hot.on .tag, .hot:focus-visible .tag, .show-all .hot .tag { opacity: 1; transform: translate(-50%, 0); }
+
+/* catalogue tags: every object labelled, like a product on a page */
+:root { --tag: #fd6e3d; }
+
+.leaders { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; overflow: visible; }
+.leaders line { stroke: var(--tag); stroke-width: 1.25px; vector-effect: non-scaling-stroke; opacity: .9; }
+.leaders circle { fill: var(--tag); stroke: #fff; stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+.leaders .ping { fill: none; stroke: var(--tag); stroke-width: 1.5px; animation: lping 2.6s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes lping { 0% { transform: scale(.6); opacity: .9; } 100% { transform: scale(2.6); opacity: 0; } }
+.ctag {
+  position: absolute; z-index: 3; display: flex; align-items: stretch; gap: 0;
+  border: 0; padding: 0; margin: 0; cursor: pointer; text-align: left; color: #fff;
+  background: rgba(16, 16, 18, .8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0,0,0,.22); white-space: nowrap;
+  transition: transform .2s, background-color .2s, opacity .4s;
+}
+.ctag.l { transform: translate(0, -50%); }
+.ctag.r { transform: translate(-100%, -50%); }
+.ctag.c { transform: translate(-50%, -100%); }
+.ctag::before { content: ""; width: 5px; flex: none; background: var(--tag); }
+.ctag__in { display: grid; gap: 1px; padding: 6px 10px 7px 9px; }
+.ctag__code { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--tag); }
+.ctag__name { font-size: 13px; font-weight: 700; line-height: 1.2; }
+.ctag__hook { font-size: 11px; color: rgba(255,255,255,.72); line-height: 1.25; }
+.ctag:hover, .ctag:focus-visible, .ctag.on { background: rgba(16,16,18,.94); }
+.ctag:focus-visible { outline: 2px solid var(--tag); outline-offset: 2px; }
+.ctag.on .ctag__name { color: var(--tag); }
+.leaders g.on line { stroke-width: 2px; opacity: 1; }
+/* first load: labels arrive one by one */
+.intro-run .ctag { opacity: 0; }
+.intro-run .ctag.in { opacity: 1; }
+.intro-run .leaders g { opacity: 0; transition: opacity .4s; }
+.intro-run .leaders g.in { opacity: 1; }
+@media (max-width: 640px) {
+  .ctag__in { padding: 5px 8px 6px 7px; }
+  .ctag__name { font-size: 12px; } .ctag__hook { font-size: 10px; } .ctag__code { font-size: 8.5px; }
+}
+@media (prefers-reduced-motion: reduce) { .leaders .ping { animation: none; opacity: 0; } .intro-run .ctag, .intro-run .leaders g { opacity: 1; } }
+
+/* logos: always fully on screen, bottom right */
+.brandbar {
+  position: fixed; z-index: 6;
+  right: max(18px, env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 18px;
+  padding: 12px 8px;
+}
+.hot.corner img { filter: none; }
+.brandbar__div { width: 1.5px; align-self: stretch; margin: 6px 4px; background: rgba(255,255,255,.6) !important; flex: none; }
+.hot.corner {
+  position: relative; pointer-events: auto; display: flex; align-items: center; justify-content: center;
+  height: 74px; padding: 0 4px; border-radius: 10px; outline: 1.5px solid transparent; outline-offset: 6px;
+  transition: outline-color .2s;
+}
+.hot.corner img { display: block; width: auto; }
+.corner--mfs img { height: 74px; }
+.corner--pathlogo img { height: 24px; }
+.hot.corner .badge { top: -13px; left: -13px; }
+.hot.corner.on, .hot.corner:focus-visible, .brandbar.show-all .hot.corner { outline-color: rgba(30,58,110,.55); }
+.brandbar.show-all .hot.corner .tag { opacity: 1; transform: translate(-50%, 0); }
+.hot.corner .tag { bottom: calc(100% + 14px); }
+@media (max-width: 640px) {
+  .brandbar { gap: 12px; padding: 8px 6px; right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+  .hot.corner { height: 52px; }
+  .corner--mfs img { height: 52px; }
+  .corner--pathlogo img { height: 17px; }
+  .hot.corner img { filter: none; }
+  .hint { bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important; }
+}
+
+/* living scene: subtle motion layered over the photo */
+.scene > img { position: relative; z-index: 0; }
+.fx { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+.outlines { z-index: 2 !important; }
+.fx > * { position: absolute; display: block; }
+.fx__cam img { display: block; width: 100%; height: auto; }
+.fx__lens { position: absolute; width: 16%; aspect-ratio: 1; transform: translate(-50%,-50%); border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255,70,40,.95), rgba(255,60,30,.45) 45%, rgba(255,40,20,0)); mix-blend-mode: screen; animation: rec 1.6s ease-in-out infinite; }
+.fx__cam--r .fx__lens { animation-delay: -.8s; }
+@keyframes rec { 0%,100% { opacity: .15; transform: translate(-50%,-50%) scale(.8); } 50% { opacity: 1; transform: translate(-50%,-50%) scale(1.15); } }
+.fx__face { position: absolute; border-radius: 3px; }
+body.tall .fx__face { filter: none; }
+.fx__cam { height: auto; filter: drop-shadow(0 10px 14px rgba(0,0,0,.28)); will-change: transform; }
+.fx__cam--l { }
+.fx__cam--r { }
+@keyframes hoverL { 0%,100% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(0,-5%) rotate(-1.2deg); } }
+@keyframes hoverR { 0%,100% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(0,-4.5%) rotate(1deg); } }
+.fx__ring { border-radius: 50%; background: radial-gradient(closest-side, rgba(255,120,60,.55), rgba(255,90,40,0)); mix-blend-mode: screen; animation: ring 5.2s ease-in-out infinite; }
+.fx__ring--r { animation-duration: 6.1s; animation-delay: -1.7s; }
+@keyframes ring { 0%,100% { opacity: .9; transform: scale(1); } 50% { opacity: .45; transform: scale(.85); } }
+.fx__holo { overflow: visible; }
+/* the hologram, drawn like the product render: a clear pane with a glowing edge that tapers into the
+   projection slot, the dashboard light floating on it, and a soft cone of light rising from the console */
+.holo__glass { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.holo__glass path { fill: rgba(40,20,10,.22); stroke: rgba(255,196,140,.85); stroke-width: 1.4px; vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 3px rgba(255,150,70,.9)) drop-shadow(0 0 10px rgba(255,120,40,.45)); }
+.holo__screen { position: absolute; left: 2.6%; right: 2.6%; top: 2.6%; height: 76.6%; border-radius: 4.5% / 6%; overflow: hidden; }
+.holo__screen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; opacity: 0; transition: opacity 1.1s ease;
+  filter: brightness(1.05) saturate(1.05) contrast(1.05); }
+.holo__screen img.on { opacity: 1; }
+.holo__screen img { filter: drop-shadow(0 0 2px rgba(255,220,190,.35)); }
+.holo__cone { position: absolute; left: 22%; right: 22%; top: 40%; bottom: 0; pointer-events: none;
+  background: radial-gradient(50% 100% at 50% 100%, rgba(255,170,90,.55), rgba(255,140,60,.18) 45%, rgba(255,120,40,0) 75%);
+  clip-path: polygon(14% 0, 86% 0, 62% 100%, 38% 100%); filter: blur(6px); animation: cone 3.8s ease-in-out infinite; }
+@keyframes cone { 0%,100% { opacity: .85; } 50% { opacity: 1; } }
+.fx__holo .fx__scan { left: 3%; right: 3%; top: 3%; height: 14%; opacity: .55; }
+.fx__holo { animation: holoIn 1.4s ease-out both; }
+@keyframes holoIn { 0% { opacity: 0; } 30% { opacity: .6; } 36% { opacity: .2; } 100% { opacity: 1; } }
+.fx__scan { position: absolute; left: 0; right: 0; height: 18%; top: -20%;
+  background: linear-gradient(to bottom, rgba(255,150,70,0), rgba(255,150,70,.16) 70%, rgba(255,190,120,.35) 96%, rgba(255,150,70,0));
+  animation: scan 4.8s linear infinite; }
+@keyframes scan { 0% { top: -20%; } 70%, 100% { top: 105%; } }
+.fx__holo .fx__scan { animation-name: scanHolo; }
+@keyframes scanHolo { 0% { top: 0%; opacity: 0; } 8% { opacity: .55; } 62% { top: 66%; opacity: .55; } 70%, 100% { top: 70%; opacity: 0; } }
+.fx__flick { position: absolute; inset: 0; background: rgba(255,150,70,.09); animation: flick 7s steps(1) infinite; }
+@keyframes flick { 0%, 100% { opacity: 0; } 41% { opacity: 1; } 42% { opacity: 0; } 43% { opacity: .7; } 44% { opacity: 0; } 78% { opacity: .5; } 79% { opacity: 0; } }
+.fx__beam { background: radial-gradient(50% 60% at 50% 100%, rgba(255,160,80,.45), rgba(255,160,80,0)); mix-blend-mode: screen; animation: beam 3.6s ease-in-out infinite; }
+@keyframes beam { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+.fx__smile { border-radius: 50%; background: radial-gradient(closest-side, rgba(255,60,40,.5), rgba(255,40,20,0)); mix-blend-mode: screen; animation: smile 3.2s ease-in-out infinite; }
+@keyframes smile { 0%,100% { opacity: .25; } 50% { opacity: .9; } }
+.fx__lap { clip-path: polygon(2.5% 0, 98.3% 0, 100% 100%, 0 100%); overflow: hidden; }
+.fx__glare { position: absolute; top: -10%; bottom: -10%; width: 22%; left: -30%; transform: skewX(-18deg);
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.13), rgba(255,255,255,0)); animation: glare 9s ease-in-out infinite; }
+@keyframes glare { 0%, 55% { left: -30%; } 85%, 100% { left: 115%; } }
+/* live indicator: the archive is watching the visitor */
+.live { position: fixed; z-index: 6; left: max(16px, env(safe-area-inset-left,0px)); bottom: calc(18px + env(safe-area-inset-bottom,0px));
+  display: flex; align-items: center; gap: 9px; padding: 8px 13px 8px 11px; border-radius: 999px;
+  background: rgba(14,14,16,.72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.12);
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: rgba(242,240,236,.88); }
+.live b { color: #ff4a3d; font-weight: 500; }
+.live__dot { width: 9px; height: 9px; border-radius: 50%; background: #ff3b2f; box-shadow: 0 0 0 0 rgba(255,59,47,.6); animation: livedot 1.6s ease-out infinite; flex: none; }
+@keyframes livedot { 0% { box-shadow: 0 0 0 0 rgba(255,59,47,.65); } 70%, 100% { box-shadow: 0 0 0 9px rgba(255,59,47,0); } }
+.live__t { font-variant-numeric: tabular-nums; color: #fff; }
+@media (max-width: 640px) { .live { font-size: 9.5px; padding: 6px 10px 6px 9px; gap: 7px; bottom: calc(14px + env(safe-area-inset-bottom,0px)); } .live__who { display: none; } }
+@media (prefers-reduced-motion: reduce) { .live__dot { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .fx * { animation: none !important; } .fx__scan, .fx__glare, .fx__flick { display: none; } }
+
+/* image viewer */
+.card img:not(.tlogo) { cursor: zoom-in; }
+.lb { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; align-content: center; gap: 12px;
+  padding: calc(56px + env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px));
+  background: rgba(8,8,10,.92); backdrop-filter: blur(4px); opacity: 0; transition: opacity .18s; cursor: zoom-out; }
+.lb.open { opacity: 1; }
+.lb__img { max-width: min(1400px, 100%); max-height: calc(100vh - 140px); width: auto; height: auto; border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,.5); cursor: default; background: transparent; }
+.lb__cap { margin: 0; max-width: 70ch; text-align: center; font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; color: rgba(242,240,236,.7); }
+.lb__x { position: absolute; top: calc(14px + env(safe-area-inset-top,0px)); right: max(16px, env(safe-area-inset-right,0px)); width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.08); color: #fff; font-size: 24px; line-height: 1; cursor: pointer; }
+.lb__x:hover, .lb__x:focus-visible { background: rgba(255,255,255,.2); }
+
+/* modal */
+.scrim {
+  position: fixed; inset: 0; z-index: 20;
+  background: var(--scrim); backdrop-filter: blur(3px);
+  display: grid; place-items: center;
+  padding: calc(24px + env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px));
+  opacity: 0; transition: opacity .25s;
+}
+.scrim.open { opacity: 1; }
+.card {
+  position: relative; width: min(624px, 100%); max-height: 100%;
+  overflow-y: auto; background: var(--card); border-radius: 20px;
+  padding: 32px 32px 28px; box-shadow: 0 30px 80px rgba(0,0,0,.5);
+  transform: translateY(12px) scale(.98); transition: transform .3s cubic-bezier(.2,.8,.2,1);
+}
+.scrim.open .card { transform: none; }
+.close {
+  position: absolute; top: 18px; right: 18px; width: 36px; height: 36px;
+  border: 0; border-radius: 50%; background: transparent; color: var(--ink-dim);
+  font-size: 24px; line-height: 1; cursor: pointer;
+}
+.close:hover, .close:focus-visible { background: rgba(255,255,255,.08); color: var(--ink); }
+.eyebrow {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--ink-dim); display: flex; gap: 10px; align-items: center;
+}
+.eyebrow svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.card h2 { font-size: clamp(24px, 4vw, 30px); font-weight: 700; margin: 10px 0 14px; text-wrap: balance; line-height: 1.15; padding-right: 32px; }
+.card p { color: var(--ink-dim); font-size: 16px; line-height: 1.6; margin: 0 0 14px; max-width: 62ch; }
+.facts { list-style: none; margin: 22px 0 0; padding: 0; border-top: 1px solid rgba(255,255,255,.08); }
+.facts li {
+  display: grid; grid-template-columns: 120px 1fr; gap: 14px;
+  padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.08); font-size: 14px;
+}
+.facts span:first-child { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); padding-top: 2px; }
+.facts span:last-child { color: var(--ink); min-width: 0; }
+.sec { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-faint); margin: 26px 0 12px; }
+.sketch { display: block; width: 100%; max-width: 100%; height: 150px; border-radius: 12px; background: var(--paper); margin-bottom: 10px; }
+.sketch .obj { fill: rgba(255,255,255,.03); stroke: var(--line); stroke-width: 1.4; }
+.sketch .obj2 { fill: none; stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 3; }
+.sketch .core { fill: var(--signal); opacity: .8; }
+.sketch .core-ring { fill: none; stroke: var(--signal); stroke-width: 1.2; opacity: .7; }
+.sketch .dim { stroke: var(--ink-faint); stroke-width: 1; fill: none; }
+.sketch .dlab { fill: var(--ink); font: 500 11px var(--font-mono); text-anchor: middle; }
+.sketch .dtag { fill: var(--ink-faint); font: 400 8.5px var(--font-mono); letter-spacing: .14em; }
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.tile { display: grid; gap: 4px; align-content: start; padding: 12px; border-radius: 12px; background: var(--paper); min-width: 0; }
+.tile .k { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); }
+.tile .v { font-size: 17px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; line-height: 1.2; }
+.tile .u { font-size: 12px; color: var(--ink-dim); }
+#m-does ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; counter-reset: d; }
+#m-does li { position: relative; padding-left: 22px; color: var(--ink-dim); font-size: 15px; line-height: 1.55; }
+#m-does li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 8px; height: 1.5px; background: var(--ink-faint); }
+.cta { margin: 4px 0 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 16px 18px; border-radius: 14px; background: var(--ink); color: var(--ground);
+  font-weight: 700; font-size: 15px; text-decoration: none; transition: transform .2s; }
+.cta:hover, .cta:focus-visible { transform: translateY(-1px); }
+.cta.is-soon { cursor: default; }
+.cta .soon { font-family: var(--font-mono); font-weight: 400; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; opacity: .55; }
+.cta .tlogo { height: .8em; top: .06em; margin-left: .12em; }
+.tlogo { height: .74em; width: auto; vertical-align: baseline; margin: 0 .04em; position: relative; top: .02em; }
+#m-cta { display: grid; gap: 8px; margin: 4px 0 20px; }
+#m-cta .cta { margin: 0; }
+#m-cta .cta + .cta { background: transparent; color: var(--ink); border: 1px solid rgba(255,255,255,.22); }
+#m-pov { margin-bottom: 6px; }
+.pov-shot { display: block; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,.1); background: transparent; }
+.pov-note { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); margin: 8px 0 0 !important; }
+.pov-shot img { display: block; width: 100%; height: auto; }
+.card.wide { width: min(760px, 100%); }
+#m-extra { display: grid; gap: 4px; }
+.hl { margin: 18px 0 6px; padding: 20px; border-radius: 16px; background: var(--paper); border: 1px solid rgba(255,107,53,.35); }
+.hl__eyebrow { font-family: var(--font-mono); font-size: 10.5px !important; letter-spacing: .18em; text-transform: uppercase; color: #ff8a5c !important; margin: 0 0 6px !important; }
+.hl h3 { margin: 0 0 8px; font-size: 20px; }
+.hl p { font-size: 15px; }
+.hl__posts { list-style: none; margin: 14px 0; padding: 0; display: grid; gap: 6px; }
+.hl__posts li { display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: start; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,.04); font-size: 14px; color: var(--ink); }
+.hl__votes { font-family: var(--font-mono); font-size: 12px; color: #7fd69a; font-variant-numeric: tabular-nums; padding-top: 1px; }
+.hl__posts li.is-down { opacity: .6; }
+.hl__posts li.is-down .hl__votes { color: #ff7a6b; }
+.hl__t em { display: block; font-style: normal; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: #ff7a6b; margin-top: 4px; }
+.hl__note { margin: 0 !important; color: var(--ink) !important; }
+.shotlink { display: block; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,.1); background: #fff; margin-bottom: 10px; }
+.shotlink img { display: block; width: 100%; height: auto; transition: transform .3s; }
+/* screenshot rows: picture left at its natural shape, words right */
+.world, .feat { grid-template-columns: 1fr !important; }
+.world li, .feat li { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); grid-template-rows: auto auto auto 1fr; column-gap: 18px; row-gap: 6px; align-items: start; padding: 14px; }
+.world li:not(:has(.shotlink)), .feat li:not(:has(.shotlink)) { grid-template-columns: 1fr; }
+.world li > .shotlink, .feat li > .shotlink { grid-row: 1 / -1; margin: 0; }
+.world li b, .feat li b { margin: 0 !important; }
+.world .shotlink, .feat .shotlink { display: flex; justify-content: center; background: #eef1f5; }
+.world .shotlink img, .feat .shotlink img { width: auto; max-width: 100%; height: auto; max-height: 340px; }
+.feat li:last-child:nth-child(odd) { grid-column: auto; }
+@media (max-width: 640px) { .world li, .feat li { grid-template-columns: 1fr; } .world li > .shotlink, .feat li > .shotlink { grid-row: auto; } }
+.shotlink { background: #eef1f5; }
+.shotlink:hover img { transform: scale(1.02); }
+.wshot { margin: 18px 0 4px; }
+.ctx { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.ctx__f { margin: 0; min-width: 0; }
+.ctx__f--wide { grid-column: 1 / -1; }
+.ctx__f img { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid rgba(255,255,255,.08); }
+.ctx__f figcaption { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .06em; line-height: 1.5; color: var(--ink-faint); margin-top: 6px; }
+@media (max-width: 640px) { .ctx { grid-template-columns: 1fr; } }
+.cutout { margin: 22px 0 6px; }
+.cutout img { display: block; width: 100%; height: auto; filter: drop-shadow(0 14px 18px rgba(0,0,0,.45)); }
+.cutout figcaption { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .08em; color: var(--ink-faint); margin-top: 12px; }
+.wshot figcaption { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .08em; color: var(--ink-faint); margin-top: -2px; }
+.wvideo { margin: 4px 0 6px; }
+.wvideo video { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; background: #0e1a2b; object-fit: cover; }
+.wvideo figcaption { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .08em; color: var(--ink-faint); margin-top: 8px; }
+.tline { list-style: none; margin: 0; padding: 0 0 0 4px; border-left: 1px solid rgba(255,255,255,.14); display: grid; gap: 14px; }
+.tline li { position: relative; display: grid; grid-template-columns: 118px 1fr; gap: 14px; padding-left: 16px; }
+.tline li::before { content: ""; position: absolute; left: -9px; top: 4px; width: 9px; height: 9px; border-radius: 50%; background: var(--card); border: 1.5px solid #6fa0e8; }
+.tline__d { font-family: var(--font-mono); font-size: 11.5px; color: #8fb4ee; padding-top: 2px; font-variant-numeric: tabular-nums; }
+.tline b { display: block; font-size: 15px; } .tline p { margin: 2px 0 0 !important; font-size: 14px !important; }
+@media (max-width: 640px) { .tline li { grid-template-columns: 1fr; gap: 2px; } }
+.world { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.world li { padding: 12px; border-radius: 12px; background: var(--paper); min-width: 0; }
+.world b { display: block; font-size: 15px; margin-bottom: 6px; }
+.world p { font-size: 13.5px !important; line-height: 1.5 !important; margin: 0 !important; }
+.hl .shotlink { margin: 4px 0 12px; }
+.feat { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.feat li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.feat li { padding: 14px; border-radius: 12px; background: var(--paper); min-width: 0; }
+.feat b { display: block; font-size: 15px; margin-bottom: 6px; }
+.feat p { font-size: 13.5px !important; line-height: 1.5 !important; margin: 0 0 8px !important; }
+.feat .feat__q { margin: 0 !important; color: var(--ink) !important; font-style: italic; }
+.shift { border-top: 1px solid rgba(255,255,255,.08); }
+.shift__h, .shift__r { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.08); }
+.shift__h span { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); }
+.shift__r span:first-child { color: var(--ink-dim); font-size: 14px; }
+.shift__r span:last-child { color: var(--ink); font-size: 14px; }
+.asks { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--ink); font-size: 15px; line-height: 1.5; }
+@media (max-width: 640px) { .feat, .world { grid-template-columns: 1fr; } .shift__h, .shift__r { gap: 10px; } }
+.inspo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.inspo__i { padding: 16px; border-radius: 12px; background: var(--paper); min-width: 0; }
+.inspo__credit { margin: 12px 0 0 !important; font-family: var(--font-mono); font-size: 10.5px !important; line-height: 1.5 !important; color: var(--ink-faint) !important; }
+.inspo__img { aspect-ratio: 3 / 4; padding: 10px; border-radius: 8px; overflow: hidden; background: #0d0d0f; margin-bottom: 14px; display: grid; place-items: center; }
+.inspo__img img { max-width: 100%; max-height: 100%; width: auto; height: 100%; object-fit: contain; display: block; }
+.inspo__img img.cover { width: 100%; height: 100%; object-fit: cover; }
+.inspo__k { font-family: var(--font-mono); font-size: 10.5px !important; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint) !important; margin: 0 0 6px !important; }
+.inspo h3 { margin: 0; font-size: 18px; }
+.inspo__by { margin: 2px 0 10px !important; font-size: 13px !important; }
+.inspo p { font-size: 14px; }
+.inspo__took { color: var(--ink) !important; margin: 0 !important; }
+@media (max-width: 640px) { .inspo { grid-template-columns: 1fr; } }
+.refs { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.refs li { padding: 14px; border-radius: 12px; background: var(--paper); }
+.refs a { display: grid; gap: 3px; color: var(--ink); text-decoration: none; }
+.refs a b { font-size: 15px; text-decoration: underline; text-decoration-color: rgba(255,255,255,.3); text-underline-offset: 3px; }
+.refs a:hover b { text-decoration-color: var(--ink); }
+.refs a span { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; color: var(--ink-faint); }
+.refs p { margin: 8px 0 0 !important; font-size: 14px !important; }
+.intro-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.intro-actions button { border: 1px solid rgba(255,255,255,.18); background: transparent; color: var(--ink); font: 500 14px var(--font-sans); padding: 11px 16px; border-radius: 999px; cursor: pointer; }
+.intro-actions button.primary { background: var(--ink); color: var(--ground); border-color: var(--ink); font-weight: 700; }
+.intro-actions button:hover, .intro-actions button:focus-visible { border-color: var(--ink); }
+.pager { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; gap: 12px; }
+.pager button {
+  border: 1px solid rgba(255,255,255,.14); background: transparent; color: var(--ink);
+  font: 500 13px var(--font-sans); padding: 9px 14px; border-radius: 999px; cursor: pointer;
+}
+.pager button:hover, .pager button:focus-visible { border-color: var(--ink); }
+.pager .count { font-family: var(--font-mono); font-size: 11px; color: var(--ink-faint); letter-spacing: .12em; font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) {
+  .scrim { place-items: end center; padding: calc(40px + env(safe-area-inset-top,0px)) 0 0; }
+  .card { width: 100%; max-height: 100%; border-radius: 20px 20px 0 0; transform: translateY(40px);
+    padding: 26px max(20px, env(safe-area-inset-right,0px)) calc(22px + env(safe-area-inset-bottom,0px)) max(20px, env(safe-area-inset-left,0px)); }
+  .card::before { content: ""; position: absolute; top: 8px; left: 50%; width: 36px; height: 4px; margin-left: -18px; border-radius: 4px; background: rgba(255,255,255,.18); }
+  .close { top: 14px; right: 12px; width: 40px; height: 40px; }
+  .card h2 { font-size: 24px; }
+  .card p { font-size: 15px; }
+  .pager button { padding: 11px 16px; }
+  .hint { font-size: 10px; letter-spacing: .1em; bottom: calc(14px + env(safe-area-inset-bottom,0px)); }
+}
+@media (max-width: 480px) {
+  .facts li { grid-template-columns: 1fr; gap: 4px; }
+  .hot .badge { width: 22px; height: 22px; top: -11px; right: -11px; box-shadow: 0 0 0 2px rgba(253,110,61,.18), 0 0 8px rgba(253,110,61,.4); }
+  .hot.badge-left .badge { left: -11px; }
+  .tiles { grid-template-columns: 1fr 1fr; }
+  .hot .badge svg { width: 12px; height: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hot .badge::after { animation: none; opacity: 0; }
+  .scrim, .card, .hint { transition: none; }
+}
+/* tall screens: the plain colour logos, no box and no halo, just smaller */
+body.tall .brandbar { gap: 12px; padding: 6px 4px; right: max(12px, env(safe-area-inset-right,0px)); bottom: calc(12px + env(safe-area-inset-bottom,0px)); }
+body.tall .brandbar .hot.corner { height: 46px; padding: 0 2px; }
+body.tall .brandbar .hot.corner img, body.tall .brandbar .hot.corner.corner--mfs img { filter: none; }
+body.tall .brandbar .hot.corner.corner--mfs img { height: 46px; }
+body.tall .brandbar .hot.corner.corner--pathlogo img { height: 15px; }
+body.tall .brandbar .hot.corner .badge { top: -13px; left: -13px; }
+body.tall .fx__glare { display: none; }
+body.tall .hot[data-id^="cam"] .badge { top: -30px; right: -6px; }
+body.tall .live { left: max(10px, env(safe-area-inset-left,0px)); bottom: calc(12px + env(safe-area-inset-bottom,0px)); }
+.fx__glare { display: none !important; }
+.brandbar .hot.corner.corner--pathlogo img { filter: none !important; }
+/* ---- icons: frosted dark glass with a white glyph (replaces the orange discs) ---- */
+.hot .badge { background: rgba(255,248,240,.2); color: #fff; border: 1px solid rgba(255,255,255,.8);
+  backdrop-filter: blur(6px) saturate(160%); -webkit-backdrop-filter: blur(6px) saturate(160%);
+  box-shadow: 0 0 0 3px rgba(255,255,255,.1), 0 0 12px rgba(255,240,225,.35); }
+.hot .badge svg { filter: drop-shadow(0 1px 2px rgba(0,0,0,.45)) !important; }
+.hot .badge::after { border-color: rgba(255,255,255,.55); }
+.hot:focus-visible .badge, .hot.on .badge { background: #fff; color: #141416; border-color: #fff;
+  box-shadow: 0 0 0 5px rgba(255,255,255,.18), 0 0 18px rgba(255,255,255,.45), 0 2px 8px rgba(0,0,0,.3); }
+@media (hover: hover) { .hot:hover .badge { background: #fff; color: #141416; border-color: #fff;
+  box-shadow: 0 0 0 5px rgba(255,255,255,.18), 0 0 18px rgba(255,255,255,.45), 0 2px 8px rgba(0,0,0,.3); } }
+.hot .badge svg { filter: none; }
+.outlines path.on, .show-all .outlines path { fill: rgba(255,255,255,.06); stroke: rgba(255,255,255,.9); filter: drop-shadow(0 0 8px rgba(255,255,255,.35)); }
+.hot .tag { border-left-color: #fff; }
+@media (max-width: 480px) { .hot .badge { box-shadow: 0 0 0 2px rgba(255,255,255,.08), 0 2px 8px rgba(0,0,0,.35); } }
+/* labels always sit under the object's box (except the corner logos) */
+.hot:not(.corner) .tag { bottom: auto; top: calc(100% + 10px); transform: translate(-50%, -4px); }
+.hot:not(.corner).on .tag, .hot:not(.corner):focus-visible .tag { transform: translate(-50%, 0); }
+/* tall screens: each icon sits in clear space beside its object, not on top of it */
+body.tall .hot:not(.corner) .badge { left: var(--bx, 100%); top: var(--by, 0%); right: auto; width: 22px; height: 22px; margin: -11px 0 0 -11px; }
+body.tall .hot:not(.corner) .badge svg { width: 12px; height: 12px; }
+body.tall .hot:not(.corner) .badge::after { inset: -3px; }
+/* ? button morphs into a pill that reads "Tap the icons to explore", then back into the ? */
+.help { display: flex; align-items: center; justify-content: center; width: auto; min-width: 40px; padding: 0; border-radius: 999px;
+  transition: background .4s, border-color .4s, box-shadow .4s; }
+.help__q { display: block; width: 38px; text-align: center; transition: width .5s cubic-bezier(.4,0,.2,1), opacity .25s; overflow: hidden; }
+.help__t { display: block; max-width: 0; opacity: 0; overflow: hidden; white-space: nowrap;
+  font: 500 11px var(--font-mono); letter-spacing: .14em; text-transform: uppercase;
+  transition: max-width .55s cubic-bezier(.4,0,.2,1), opacity .3s .15s, padding .55s cubic-bezier(.4,0,.2,1); }
+.help.tell { border-color: rgba(255,255,255,.55); box-shadow: 0 0 0 4px rgba(255,255,255,.08); }
+.help.tell .help__q { width: 0; opacity: 0; }
+.help.tell .help__t { max-width: 280px; opacity: 1; padding: 0 18px; }
+@media (max-width: 640px) {
+  .help { min-width: 38px; }
+  .help__q { width: 36px; }
+  .help__t { font-size: 10px; letter-spacing: .1em; }
+  .help.tell .help__t { padding: 0 14px; }
+  /* on a narrow screen the header steps aside while the pill is out */
+  .brand { transition: opacity .35s; }
+  body.telling .brand { opacity: 0; pointer-events: none; }
+}
+@media (prefers-reduced-motion: reduce) { .help__q, .help__t, .brand { transition: none; } }
+</style>
+
+<div class="brand"><div class="lockup"><img src="path-logo-v2.png" alt="PATH"><span>Archive</span></div><small>A Speculative Design project by Team C</small><small class="brand__world">Set in a fictional Singapore, 2040</small></div>
+<button class="help" id="help" aria-label="About this archive" title="About this archive"><span class="help__q">?</span><span class="help__t" aria-hidden="true">Tap the icons to explore</span></button>
+
+<main class="stage">
+  <div class="scene" id="scene">
+<div class="fx" aria-hidden="true">
+      <div class="fx__holo" style="left:41.178%;top:21.838%;width:16.208%;height:26.302%">
+        <i class="holo__cone"></i>
+        <svg class="holo__glass" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M5.5 0.8H94.5Q99.2 0.8 99.2 6V77Q99.2 80.6 96.4 82.6L74.5 98Q72.6 99.4 70 99.4H30Q27.4 99.4 25.5 98L3.6 82.6Q0.8 80.6 0.8 77V6Q0.8 0.8 5.5 0.8Z"/></svg>
+        <div class="holo__screen"><img src="web/holo3-1.webp" alt="" class="on"><img src="web/holo3-2.webp" alt=""><img src="web/holo3-3.webp" alt=""><img src="web/holo3-4.webp" alt=""><img src="web/holo3-5.webp" alt=""><img src="web/holo3-6.webp" alt=""></div>
+        <i class="fx__scan"></i>
+      </div>
+      <i class="fx__beam" style="left:47.189%;top:46.546%;width:4.187%;height:2.444%"></i>
+      <i class="fx__smile" style="left:45.066%;top:48.884%;width:8.074%;height:5.313%"></i>
+      <i class="fx__ring" style="left:33.254%;top:51.116%;width:3.828%;height:3.294%"></i>
+      <i class="fx__ring fx__ring--r" style="left:61.334%;top:51.116%;width:3.828%;height:3.294%"></i>
+      <div class="fx__cam fx__cam--l" style="left:33.014%;top:28.374%;width:5.622%"><img src="web/camL12.png" alt=""></div>
+      <div class="fx__cam fx__cam--r" style="left:59.629%;top:28.055%;width:5.742%"><img src="web/camR12.png" alt=""></div>
+      <canvas class="fx__face" style="left:43.600%;top:48.247%;width:14.474%;height:5.420%" width="1000" height="211"></canvas>
+      <div class="fx__lap" style="left:41.208%;top:58.236%;width:17.105%;height:16.684%;clip-path:polygon(2.6% 0,97.4% 0,100% 100%,0 100%)"><i class="fx__glare"></i></div>
+    </div>
+    <img src="scene-v29.jpg" alt="A Singapore living room with the PATH console smiling on the sideboard, a holographic household dashboard above it, two floating PATH Drones, a laptop showing the MFS website, a poster of 2001: A Space Odyssey, and the MFS and PATH logos in the corner." draggable="false">
+  </div>
+</main>
+<div class="live" role="status" aria-label="Live: this page is observed by PATH"><i class="live__dot"></i><span><b>Live</b> · <span class="live__t" id="live-t">00:00</span></span></div>
+<div class="hint" id="hint" hidden>Tap the icons to explore</div>
+
+<div class="scrim" id="scrim" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="m-title">
+    <button class="close" id="close" aria-label="Close">×</button>
+    <div class="eyebrow" id="m-eyebrow"></div>
+    <h2 id="m-title"></h2>
+    <div id="m-cta" hidden></div>
+    <div id="m-body"></div>
+    <section id="m-pov" hidden></section>
+    <div id="m-extra" hidden></div>
+    <section id="m-specs" hidden></section>
+    <section id="m-does" hidden></section>
+    <ul class="facts" id="m-facts"></ul>
+    <div class="intro-actions" id="m-intro" hidden>
+      <button class="primary" id="intro-start">Start exploring</button>
+      <button id="intro-show">Show everything I can click</button>
+    </div>
+    <div class="pager" id="m-pager">
+      <button id="prev">← Previous</button>
+      <span class="count" id="m-count"></span>
+      <button id="next">Next →</button>
+    </div>
+  </div>
+</div>
+
+<script id="no-parent-scroll">if(window!==window.top){(function(){var f=HTMLElement.prototype.focus;HTMLElement.prototype.focus=function(o){return f.call(this,Object.assign({},o||{},{preventScroll:true}))};Element.prototype.scrollIntoView=function(){};var st=document.createElement("style");st.textContent="::-webkit-scrollbar{width:12px;height:12px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(128,128,128,.45);border-radius:12px;border:3px solid transparent;background-clip:content-box}::-webkit-scrollbar-thumb:hover{background-color:rgba(128,128,128,.7)}::-webkit-scrollbar-corner{background:transparent}html{scrollbar-width:thin;scrollbar-color:rgba(128,128,128,.5) transparent}";(document.head||document.documentElement).appendChild(st);})()}</script><script>
+/* ===== EDIT YOUR CONTENT HERE =====
+   WORLD_URL: paste the PATH worldbuilding site link here. Until then the console's button shows "Link coming soon".
+   Each hotspot: box = [left%, top%, width%, height%] of the image; icon = a key in ICONS.
+   specs = [label, value, unit] tiles; drawing = small dimensioned sketch; does = what it does; facts = [label, value] rows; cta = button. */
+const WORLD_URL = "https://nikhoftime.github.io/PATH-Worldbuilding/";
+// The PATH / MFS website (your published artifact). Swap for your hosted link later.
+const SITE_URL = "https://nikhoftime.github.io/MFS-Website/";
+
+const ICONS = {
+  hub:    '<rect x="3" y="7" width="18" height="10" rx="2"/><path d="M7 12h6"/><circle cx="17" cy="12" r="0.6"/>',
+  gauge:  '<path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-5"/>',
+  eye:    '<path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.6"/>',
+  dock:   '<ellipse cx="12" cy="15" rx="8" ry="3"/><path d="M4 15v1.5c0 1.7 3.6 3 8 3s8-1.3 8-3V15"/><path d="M12 5v6"/><path d="M9.5 8.5L12 11l2.5-2.5"/>',
+  laptop: '<rect x="5" y="5" width="14" height="10" rx="1.5"/><path d="M3 19h18"/>',
+  gov:    '<path d="M3 10l9-5 9 5"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 20h18"/>',
+  brand:  '<path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="8.5" r="1.4"/>',
+  film:   '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5v14M17 5v14M3 9h4M3 15h4M17 9h4M17 15h4"/>',
+  book:   '<path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H19v14H5.5A1.5 1.5 0 0 0 4 19.5z"/><path d="M4 19.5A1.5 1.5 0 0 0 5.5 21H19v-3"/><path d="M8 8h7"/>',
+  frame:  '<rect x="4" y="4" width="16" height="16" rx="1.5"/><path d="M4 16l5-5 4 4 2-2 5 5"/>'
+};
+
+const CAMERA = {
+  eyebrow: "Observe · PATH Drone PATH-E2",
+  sections: [{ type: "cutout", src: "web/path-smile.png", caption: "Docked on either side of the console, the two PATH Drones become PATH's eyes, and the display below smiles back at the family." }],
+  specs: [["Size", "100", "mm cube"], ["Weight", "280", "g"], ["Hover range", "0.3–2.4", "m"]],
+  drawing: { kind: "cube", w: "100", h: "100" },
+  does: [
+    "Patrols the home on ducted rotors, hovering between 0.3 and 2.4 m off the floor.",
+    "Watches through a domed lens with a red core that glows while it records.",
+    "If someone falls or calls out, it flies to them and slides out a concealed HELP button at hand height.",
+    "Returns to its charging dock beside the console when the patrol ends."
+  ],
+  facts: [["Per household", "2 units"], ["Inspired by", "HAL 9000 in 2001: A Space Odyssey (Stanley Kubrick, 1968)"], ["Also from", "Smart home cameras, home drones, 1984's telescreens"]]
+};
+
+const SPOTS = [
+  {
+    id: "hub", tag: "PATH console", icon: "hub", box: [37.2, 38, 25.4, 10.3],
+    eyebrow: "The device · PATH-C1", title: "The PATH console", wide: true,
+    body: [
+      "PATH is the centre of our fictional world: a device the Ministry places in every household, set on the sideboard like a router or a TV box. We gave it the language of public service, so it feels helpful long before it feels watchful.",
+      "We split PATH into a console and two flying PATH Drones so that more eyes can check in on every corner of the home. When the drones dock on either side, the three pieces line up into a face: the drones become its eyes and the console its mouth. Even at rest, PATH is looking back at the family."
+    ],
+    sections: [
+      { type: "context", title: "PATH at home", text: "We placed PATH in an ordinary Singapore flat, on the sideboard between the dining table and the living room, where a family would pass it many times a day. It is meant to disappear into the furniture until it wakes.",
+        video: { src: "path-console-v2.mp4", poster: "web/console-poster-v2.jpg", caption: "PATH waking up. The display stirs, the face appears, the drones light, and the household dashboard rises above the console. 10 seconds, with sound." },
+        shots: [
+          { src: "web/ctx-room.jpg", caption: "The whole flat. PATH sits by the dining table, in view of the sofa and the children's play corner." },
+          { src: "web/ctx-off.jpg", caption: "At rest. Switched off, it could pass for a speaker system." },
+          { src: "web/ctx-on.jpg", caption: "Awake. The face smiles and the household dashboard projects above it." }
+        ] },
+      { type: "cutout", src: "web/path-smile.png", caption: "PATH smiling. With both PATH Drones docked, the red lenses become its eyes and the dot-matrix display its mouth." }],
+    specs: [["Body", "720 × 250 × 212", "mm, W × D × H"], ["Overall", "720 × 253 × 223", "mm, incl. feet & trim"], ["Corner radius", "22", "mm"]],
+    drawing: { kind: "box", w: "720", h: "212", oh: "223" },
+    does: [
+      "Projects the household dashboard 300 mm above the unit.",
+      "Listens through a far-field microphone array and shows its state on a dot-matrix face.",
+      "Has one physical control, a recessed HELP button. There is no off switch.",
+      "Reports to the Ministry of Family & Society, sealed with a tamper seal."
+    ],
+    facts: [["Feet", "8 mm, four corners"], ["Display glass & logo", "Stand 2–3 mm proud of the face"], ["Finish", "Black anodised aluminium"]],
+    ctas: [{ label: "Explore the world we built for PATH", url: "WORLD" }]
+  },
+  {
+    id: "dashboard", tag: "Household dashboard", icon: "gauge", box: [39.3, 9.6, 21.2, 27.1],
+    eyebrow: "Analyse · Household dashboard", title: "Turning a family into a score", wide: true,
+    body: [
+      "Floating 300 mm above the console is the household dashboard. Every act of care at home becomes credits, and each family member's share is laid out for everyone in the living room to see.",
+      "We designed it to look calm, clean and data-driven, the way these systems usually present themselves. Underneath, it turns love into a ledger, ranks a family against itself, and names whoever is falling behind."
+    ],
+    sections: [
+      { type: "video", src: "path-scoring-v2.mp4", poster: "web/dash2-poster.jpg", controls: true, label: "PATH scoring sequence", caption: "One week in Household #12-408, the Tan family of Bukit Merah, from the live care log to the Sunday 21:00 audit. 1 minute." },
+      { type: "features", title: "The six views, one week", items: [
+        ["01 · Scoring", "A live care log. Each act pops up as PATH records it, with a time, a name and a value: Wei Ming buys Ah Ma's medication for +2, Mei Ling brings her to the toilet for +2, a shower and dressing for +4. Hui Min sits with Ah Ma for 40 minutes, but companionship counts ×0.1. Jun Jie's dining table assist runs on a timer, and when it isn't finished in time it becomes a Care Alert, −2. The household score climbs from 61 to 64.", "Who decided that bringing Ah Ma to the toilet is worth 20 times more than keeping her company?", "web/dash2-scoring.jpg"],
+        ["02 · Audit", "Every Sunday at 21:00 the week is verified. A countdown checks 412 observations, the behaviour patterns of four members and the household's benefits. No one in the household is asked anything.", "What does it mean to be audited by your own living room?", "web/dash2-audit.jpg"],
+        ["03 · Overview", "The verdict. A household score of 64, up 3 from last week, which keeps the Tans in Standard Access: standard healthcare co-coverage, routine grants and quarterly household audits. Priority Access, with expedited BTO upgrading, is 11 points away. These are the same four tiers families see on the MFS website.", "Care is rewarded with housing and subsidies. What does that make care?", "web/dash2-overview.jpg"],
+        ["04 · Rankings", "The family is ranked against itself. Mei Ling first with 24 credits, Wei Ming 15, Hui Min 11.1, just short of her target. Jun Jie is outlined in red: \"Current 6 / target 12 · improvement needed\". Ah Ma's five-star rating of her own care is shown underneath, recorded separately and not counted.", "A leaderboard inside a family. Who wants to be last, and why doesn't Ah Ma's opinion count?", "web/dash2-rankings.jpg"],
+        ["05 · Patterns", "PATH reads patterns. Jun Jie had 7 phone interruptions and 3 missed care tasks, mostly from Friday to Sunday. Hui Min's 14 companionship sessions and 7-day streak are worth just 1.4 credits. Wei Ming's three home-cooked meals are logged as unverified, because the kitchen is out of the PATH Drones' view.", "When a teenager's phone habits become household data, what is still private?", "web/dash2-analysis.jpg"],
+        ["06 · Next step", "A personal target for Jun Jie: reach 12 weekly credits by next Sunday at 21:00. If low performance repeats, the whole household drops from 64 to 49 and falls to Restricted Access. Upgrading is paused, subsidies are reduced and acoustic audits increase.", "One person's shortfall becomes everyone's penalty. What does that do to a family?", "web/dash2-next.jpg"]
+      ] },
+      { type: "shift", title: "What the dashboard changes", rows: [
+        ["Keeping Ah Ma company because you love her", "Keeping Ah Ma company for +0.1"],
+        ["A teenager on his phone", "\"7 interruptions · 3 missed care tasks\""],
+        ["Family members support each other", "Family members are ranked 1 to 4"],
+        ["Falling short is a private conversation", "Falling short is shown in red, in the living room"],
+        ["Benefits are based on need", "Benefits are based on a weekly score"]
+      ] },
+      { type: "asks", title: "Questions the dashboard raises", items: [
+        "If every act of care is counted, does anyone still do something that doesn't score?",
+        "Is it fair that the whole household is penalised for one member?",
+        "Would you want your family's week on display in your living room?"
+      ] }
+    ]
+  },
+  Object.assign({ id: "cam-left", tag: "PATH Drone", icon: "eye", box: [28.9, 10.6, 6.5, 10.6],
+    title: "The drones that come to you",
+    body: [
+      "We wanted the PATH Drones to feel like attentive pets rather than CCTV. They float through the home, follow the family, and come closer when something looks wrong.",
+      "Their one caring feature, the HELP button, is also how the system records who showed up and who didn't.",
+      "We took inspiration from HAL 9000 in Stanley Kubrick's 2001: A Space Odyssey. HAL is a single, glowing red eye that speaks calmly and politely while quietly making its own decisions. We gave each drone the same red core, so it reads less like a lens and more like an eye with intentions.",
+      "When both drones return to their docks, they become the eyes of PATH's face, with the console below as its mouth."
+    ],
+    pov: { src: "pov-left.png", cam: "L-EYE · Living room unit", alt: "PATH camera interface tracking a family member's face, with a case summary listing low-volume speech, a concealed conversation and a filial index of 63." } }, CAMERA),
+  Object.assign({ id: "cam-right", tag: "PATH Drone", icon: "eye", box: [63.5, 10.8, 7.2, 11.1],
+    title: "Two of them, always",
+    body: [
+      "Every household gets a pair, so one can go to a person while the other keeps the room in view. More drones means more of the home can be checked in on at once.",
+      "Like HAL 9000 in 2001: A Space Odyssey, they never blink and never raise their voice. The red eye simply stays on.",
+      "We left it unclear where the footage goes and how long it is kept, because that uncertainty is what we want visitors to feel."
+    ],
+    pov: { src: "pov-right.png", cam: "Ceiling node · Hallway", alt: "PATH camera interface tracking a mother and her grandson as skeletons in the hallway, transcribing her whispers as below threshold, with a filial index of 66." } }, CAMERA),
+  {
+    id: "dock", tag: "Charging dock", icon: "dock", box: [29.5, 44.4, 4.7, 2.9],
+    eyebrow: "Rest · Charging dock", title: "Where the drones rest",
+    body: [
+      "Each PATH Drone returns to a low disc on either side of the console. We placed the docks so that when both drones are home, they sit like two eyes above the console's mouth, and the whole set reads as a face watching the room."
+    ],
+    specs: [["Diameter", "140", "mm"], ["Per household", "2", "docks"], ["Light ring", "Glows", "when charging"]],
+    drawing: { kind: "disc", w: "Ø 140" },
+    does: [
+      "Charges a PATH Drone between patrols.",
+      "Lights its ring when a drone is home, so the family can see when they are not being followed.",
+      "Sits either side of the console, so docked drones complete PATH's face."
+    ]
+  },
+  { id: "dock-r", tag: "Charging dock", icon: "dock", box: [65.4, 44.3, 4.7, 3.0], hiddenFromPager: true, alias: "dock" },
+  {
+    id: "laptop", tag: "Government website", icon: "laptop", box: [35, 51.2, 31.8, 37],
+    eyebrow: "Support · The Ministry's website", title: "A familiar website, imagined forward", wide: true,
+    body: [
+      "We built the Ministry of Family & Society's website as a diegetic prototype: an ordinary object from 2040 that visitors can actually use. It borrows the look and language of Singapore's government sites today, then follows one idea to its end. What if care at home were counted, scored and rewarded?",
+      "Nothing on the site is sinister on its own. Every feature is presented as help. We wanted visitors to notice, one convenience at a time, what a family gives up in exchange."
+    ],
+    ctas: [{ label: "Visit the MFS website", url: "SITE" }],
+    sections: [
+      { type: "shot", src: "web/home-v2.jpg", caption: "The MFS homepage in 2040. Its promise: \"Families at the heart of a caring nation.\"" },
+      { type: "world", title: "Building the society around it",
+        text: "A website alone is not a world. To really immerse ourselves in this fictional Singaporean society, we wrote the institutions that would make PATH possible: a new ministry, the law that created it, and the speech that announced it to the nation. Each one has its own page on the site, written the way the government writes today.",
+        items: [
+          { name: "The new ministry", src: "web/mfs-vision.jpg", text: "The Ministry of Family and Society merges the work of five ministries and three statutory boards into one. Its vision: \"A caring nation, where no family is left unseen.\" Its values are Care, Duty, Integration and Vigilance." },
+          { name: "The Integrated Care Act 2040", src: "web/act.jpg", text: "The law that formed MFS, joined every agency's records into one household record, and placed PATH in every home caring for an elder. Passed on 9 February 2040, in force from 1 March 2040." },
+          { name: "Six parts, in plain English", src: "web/act-parts.jpg", text: "The Act is explained part by part: one ministry, one household record, PATH in every caring home, the duty of care, the Care Score, and enforcement. Each part ends with \"What this means for families\"." },
+          { name: "The National Day Rally", src: "web/rally.jpg", text: "The Prime Minister announces that support for families will be linked to the household PATH score, with up to $62,000 for each senior cared for at home. Surveillance arrives as good news." }
+        ] },
+      { type: "highlight", eyebrow: "Highlight · PATH Kopitiam", title: "The community board", src: "web/kopitiam-feed.jpg", src2: "web/kopitiam-v2.jpg",
+        text: "PATH Kopitiam is the official forum for PATH families, named after the neighbourhood coffee shop where Singaporeans have always swapped news and complaints. In 2040 it is verified, moderated by MFS Agent around the clock, and every post and vote is linked to your household record.",
+        posts: [
+          { votes: "+4,812", title: "Moved our dinner table into L-EYE's view. Score went up 6 points in a week" },
+          { votes: "+3,960", title: "Teach your kids to greet the console every morning" },
+          { votes: "+2,210", title: "Year in Care is out! We're top 9% in Bukit Merah 🎉" },
+          { votes: "−38", title: "Score dropped 22 points after Mum moved to a nursing home. Is this normal?", flag: "Needs context · comments locked" },
+          { votes: "−112", title: "Is there a way to turn off R-EYE in the bedroom at night?", flag: "Removed for inaccurate information" }
+        ],
+        note: "The kopitiam was once where people grumbled about the government. Here, families perform care for each other instead. The most popular posts are tips for scoring better, the questions that doubt the system sink to the bottom, and one rule reads \"No discussion of switching off or covering PATH units\". The top reply to the bedroom question is simply \"If you have nothing to hide 🤷\"." },
+      { type: "highlight", eyebrow: "Highlight · Household report", title: "Every family member gets a score", src: "web/report-v2.jpg", src2: "web/household-v2.jpg",
+        text: "Each month, MFS sends every member of the household their own care credit statement, prepared from what PATH has observed. It looks like a bank statement: care is broken into practical, emotional, financial and daily support, each with a weekly trend and a total, measured against a requirement set by your family role.",
+        posts: [
+          { votes: "52 / 50", title: "Father · Tan Wei Ming: requirement met. Kitchen-only meals count as unverified presence" },
+          { votes: "28 / 35", title: "Daughter · Tan Hui Min, 17: below requirement. Formal shortfall notice issued", flag: "Grocery discounts and queue priority suspended unless evidence is submitted by 14 April" },
+          { votes: "★★★★★", title: "Ah Ma's rating: \"Meaningful companionship.\" Recorded separately, does not affect credits" }
+        ],
+        note: "We wanted the most private thing a family has, the way its members look after one another, to arrive in the most bureaucratic form we could think of. The household score sits on top, with each member's share of care shown as a bar. A seventeen-year-old receives a shortfall notice. Ah Ma's opinion of her own care is collected, then set aside." },
+      { type: "features", title: "What the website does", items: [
+        ["My household", "A live view of the family: the household score, each member's share of care this month, and today's feed, from Morning Gratitude to a fall in the living room and who answered the call.", "What does a family look like when every member is a line on a chart?", "web/household-v2.jpg"],
+        ["Care Credits and CarePF", "Every act of care PATH recognises earns Care Credits, down to bringing Ah Ma to the toilet at 07:25 for +2. Credits are stored in each member's CarePF wallet and spent on housing, healthcare and education, from a waived polyclinic bill to priority in the upgrading queue. Companionship is worth almost nothing.", "What happens to love when it has an exchange rate?", "web/carepf.jpg"],
+        ["MFS Agent", "An AI agent completes forms, books appointments and drafts appeals for you in 0.4 seconds, and keeps working while you sleep. A human officer's next slot is 19 working days away.", "When the machine is this convenient, who still asks for a person?", "web/agent.jpg"],
+        ["Record access log", "Every time an agency reads your household record, it appears in a live list: 47 times today. Transparency is offered in place of privacy.", "Does seeing who watches you make it acceptable?", "web/record.jpg"],
+        ["Future Care Priority", "The care you give today sets your own priority for care in old age, and your children inherit a starting score. Descendants without a care record start at 0.", "Should a family's debt of care be passed down like property?", "web/future.jpg"],
+        ["Report a care concern", "Family members can report one another anonymously. MFS Agent identifies who is eligible and withholds your identity: \"They will not know it was you.\"", "What does a family become when it audits itself?", "web/report.jpg"],
+        ["Year in Care", "A cheerful yearly recap of every hour of care, your family's ranking and your block's standing in Bukit Merah, ready to share.", "Care becomes content, and neighbours become a leaderboard.", "web/yearincare.jpg"],
+        ["Hand the tablet to…", "PATH recognises whoever is holding the device and changes the site for them. Ah Ma sees a gentle version with no scores at all.", "Who gets to see the whole truth in this household?", "web/ahma.jpg"]
+      ] },
+      { type: "shift", title: "How society has changed", rows: [
+        ["Filial piety is a value families hold", "Filial piety is a number families earn"],
+        ["Caring for Ah Ma is private", "Caring for Ah Ma is logged, verified and ranked"],
+        ["Neighbours chat at the kopitiam", "Blocks compete on a Bukit Merah leaderboard"],
+        ["Help comes from people", "Help comes from MFS Agent, instantly"],
+        ["Families argue at the dinner table", "Families file anonymous reports"],
+        ["You prove who you are with a password", "\"You are recognised by presence wherever you are\""],
+        ["Feelings matter", "\"Intention, affection, resentment and exhaustion are outside the scope of assessment\""]
+      ] },
+    ]
+  }
+
+];
+SPOTS.push(
+  {
+    id: "mfs", tag: "MFS logo", icon: "gov", badgeLeft: true, corner: "mfs-logo-v3.png", box: [78.8, 87.7, 7.4, 9.9],
+    eyebrow: "Our world · MFS", title: "Our Fictional Ministry", wide: true,
+    body: [
+      "The Ministry of Family & Society does not exist. It is the government behind PATH in our speculative world: familiar, caring and trusted by the families it serves.",
+      "We created it to fully immerse ourselves in this fictional Singaporean society. A device needs an institution behind it, and an institution needs a history, a law, a logo and a voice. Designing all of these made the world feel real to us, and let us imagine how ordinary families would actually meet PATH: through letters, campaigns and a government portal they already trust."
+    ],
+    sections: [
+      { type: "video", src: "mfs-logo-v3.mp4", caption: "The MFS logo animation. We took inspiration from the logos of existing ministries: a simple, friendly mark set above the ministry's full name, in the calm blue that government uses to signal trust." },
+      { type: "world", title: "Who the ministry is", text: "We wrote MFS the way a real ministry introduces itself, with a vision, a mission and values. Each one reads as reassuring, and each one carries a second meaning once you know about PATH.",
+        items: [
+          { name: "Vision and mission", src: "web/mfs-vision.jpg", text: "\"A caring nation, where no family is left unseen.\" Being seen is both the promise and the price." },
+          { name: "Values", src: "web/mfs-values.jpg", text: "Care, Duty, Integration and Vigilance. \"We put families first, and we measure what matters.\" \"Nothing about your family is kept apart.\"" }
+        ] },
+      { type: "world", title: "How it came together", text: "MFS replaces eight separate agencies with one. We invented each of them, with names and acronyms close enough to today's Singapore to feel familiar, and showed what each one now contributes to a single household record.",
+        items: [
+          { name: "Eight agencies, one record", src: "web/mfs-history.jpg", text: "Five ministries, from Health and Longevity to Workforce, plus housing, savings and border authorities. Each now feeds the record: medication, WorkLink location, flat ownership, travel bookings." },
+          { name: "One household record", src: "web/mfs-record.jpg", text: "Agencies once kept their own files about your family. Under the Act they are joined into one record, and PATH keeps it up to date from inside the home." }
+        ] },
+      { type: "timeline", title: "A history we wrote for it", rows: [
+        ["2026", "Singapore becomes a super-aged society", "21.4% of citizens are aged 65 and above."],
+        ["2030", "1 in 4 Singaporeans is aged 65 and above", "Healthcare spending reaches $30 billion a year."],
+        ["2030–2040", "The Care Decade", "Nursing home waits grow, caregivers leave work, and agencies struggle to reach families before a crisis."],
+        ["9 Feb 2040", "Parliament passes the Integrated Care Act", "Three days of debate. 41 Members of Parliament speak on the Bill."],
+        ["1 Mar 2040", "The Act comes into force", "MFS is formed, and the first PATH consoles and PATH Drones are installed in Bukit Merah the same day."],
+        ["National Day Rally", "Support is matched to the PATH score", "Up to $62,000 for each senior cared for at home, and a new Future Care Priority."]
+      ] },
+      { type: "shot", src: "web/act-parts.jpg", caption: "The Integrated Care Act 2040, explained in six parts on the MFS website. Part 1 forms the ministry." },
+      { type: "asks", title: "Questions the ministry raises", items: [
+        "The early dates follow Singapore's real ageing trend. Where does the fiction begin?",
+        "What would it take for many agencies to agree to share one record about your family?",
+        "If the state is responsible for every family, is any part of family life still private?"
+      ] }
+    ],
+    ctas: [{ label: "Visit the MFS website", url: "SITE" }]
+  },
+  {
+    id: "pathlogo", tag: "PATH logo", icon: "brand", badgeLeft: true, corner: "path-logo-v2.png", box: [89.5, 87.7, 9.5, 5.6],
+    eyebrow: "Our world · PATH", title: "Branding the programme", wide: true,
+    body: [
+      "We gave PATH its own bright orange wordmark, separate from the ministry's blue. It is meant to feel like a consumer product launch rather than a government scheme, the way smart home devices are sold to families today.",
+      "Placed side by side with the MFS logo, it shows how a friendly brand can carry the authority of the state into the living room."
+    ],
+    sections: [
+      { type: "world", title: "Inspired by today's Singapore",
+        text: "PATH is built on two things Singapore already has. We wanted it to feel like a natural next step from schemes families already know and trust, which is exactly what makes it hard to question.",
+        items: [
+          { name: "Age Well SG", src: "web/agewell.jpg", text: "The national programme, led by MOH, MND and MOT, that helps seniors age well in their own homes and communities, through Active Ageing Centres, care support for seniors and caregivers, and senior-friendly homes. PATH takes the same goal, ageing at home and supported by family, and brings it into the living room." },
+          { name: "CPF, reimagined as Care Credits", src: "web/cpf.jpg", text: "Through the Central Provident Fund, every working Singaporean builds up savings in their own account over a lifetime. On our MFS website this becomes Care Credits: every act of care is paid into the household's account, each member has their own balance, and support from the state is drawn against it." }
+        ] }
+    ],
+    facts: [["Colour", "PATH orange, against the ministry's blue"], ["Seen on", "The console, the website, public transport ads"], ["Inspired by", "Age Well SG and CPF, reimagined as Care Credits"]],
+    ctas: [{ label: "Explore the world we built for PATH", url: "WORLD" }, { label: "Learn about Age Well SG", url: "https://www.agewellsg.gov.sg/" }]
+  }
+);
+SPOTS.push({
+  id: "poster", tag: "2001: A Space Odyssey", icon: "film", box: [71.3, 30.3, 6.4, 13.8],
+  eyebrow: "Inspiration · 2001 and Nineteen Eighty-Four", title: "Our Inspiration", wide: true,
+  body: [
+    "PATH grew out of two classic visions of being watched: one film and one novel. The poster hangs in the room the way it might in any home, a quiet nod to where PATH came from."
+  ],
+  sections: [
+    { type: "inspo", items: [
+      { kind: "Film · 1968", name: "2001: A Space Odyssey", by: "Stanley Kubrick", img: "web/inspo-2001.jpg", alt: "2001: A Space Odyssey theatrical poster", credit: "Poster: original 1968 theatrical release, artwork by Robert McCall. © Metro-Goldwyn-Mayer.",
+        text: "The ship's computer, HAL 9000, is a single glowing red eye with a calm, gentle voice. HAL is helpful, polite and always listening, and it slowly begins making decisions on the crew's behalf.",
+        took: "We gave the PATH Drones the same red eye, and wrote PATH's voice to stay just as soft and patient." },
+      { kind: "Novel · 1949", name: "Nineteen Eighty-Four", by: "George Orwell", img: "web/inspo-1984.jpg", alt: "Nineteen Eighty-Four book cover", credit: "Cover: Penguin Modern Classics edition, design by Shepard Fairey. © Penguin Books.",
+        text: "Every home has a telescreen that watches and speaks back, the state's ministries have gentle names that hide what they really do, and a face on every poster reminds people they are being watched.",
+        took: "The console and drones are our telescreen, the Ministry of Family & Society carries the comforting name, and when the drones dock, PATH itself becomes the face." }
+    ] },
+    { type: "note", title: "What we changed", items: [
+      "Orwell imagined surveillance enforced through fear. Kubrick imagined a machine that turns on the people it serves. We imagined something quieter: surveillance offered as care, welcomed into the living room because it promises to help."
+    ] }
+  ],
+  facts: [["Where you see HAL", "The two PATH Drones and PATH's calm voice"], ["Where you see Orwell", "The console, the ministry and PATH's face"]]
+});
+/* ===== END CONTENT ===== */
+
+const scene = document.getElementById("scene");
+const pages = SPOTS.filter(s => !s.hiddenFromPager);
+let current = -1, lastFocus = null;
+const svg = name => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ICONS.eye}</svg>`;
+
+const SHAPES = {"hub":[[1332,900],[1952,900],[1952,1018],[1332,1018]],"dashboard":[[1385,416],[1911,416],[1911,810],[1385,810]],"cam-left":[[1110,540],[1284,540],[1284,684],[1110,684]],"cam-right":[[2000,546],[2180,546],[2180,684],[2000,684]],"dock":[[1114,968],[1236,968],[1236,1014],[1114,1014]],"dock-r":[[2054,968],[2176,968],[2176,1014],[2054,1014]],"laptop":[[1356,1084],[1990,1084],[1990,1500],[1356,1500]],"mfs":[[2633,1641],[2887,1641],[2887,1840],[2633,1840]],"pathlogo":[[2990,1680],[3313,1680],[3313,1761],[2990,1761]],"book":[[342,1404],[904,1404],[904,1672],[342,1672]],"poster":[[714,610],[1000,610],[1000,974],[714,974]]};
+const outl = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+outl.setAttribute("class", "outlines"); outl.setAttribute("viewBox", "0 0 3344 1882"); outl.setAttribute("preserveAspectRatio", "none");
+outl.setAttribute("aria-hidden", "true");
+scene.appendChild(outl);
+/* catalogue tags: code, name, hook; anchors on the object; tag point (x,y) and alignment */
+const tEsc = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const TAGS_OFF = {
+  "dashboard": { code: "HH 12-408", name: "Household Dashboard", hook: "Your family, as a weekly score", at: [[1300, 560]], tag: [1175, 620, "r"] },
+  "cam-left":  { code: "L-EYE", name: "PATH Drone", hook: "Never blinks", at: [[1010, 300]], tag: [820, 300, "r"] },
+  "cam-right": { code: "R-EYE", name: "PATH Drone", hook: "Follows whoever needs watching", at: [[2330, 300]], tag: [2440, 300, "l"] },
+  "poster":    { code: "Inspiration 02", name: "2001: A Space Odyssey", hook: "A caring red eye", at: [[2490, 570]], tag: [2440, 480, "l"] },
+  "hub":       { code: "PATH-C1", name: "PATH Console", hook: "Watches, scores, never switches off", at: [[2085, 830]], tag: [2380, 1010, "l"] },
+  "dock":      { code: "PATH-D2", name: "Charging Dock", hook: "Where the eyes rest", at: [[1064, 866]], tag: [900, 985, "r"] },
+  "dock-r":    { code: "PATH-D2", name: "Charging Dock", hook: "Where the eyes rest", at: [[2265, 862]], tag: [2380, 1170, "l"] },
+  "laptop":    { code: "MFS Portal", name: "Government Website", hook: "Support, delivered by surveillance", at: [[1150, 1170]], tag: [900, 1170, "r"] },
+  "book":      { code: "Inspiration 01", name: "Nineteen Eighty-Four", hook: "The telescreen comes home", at: [[520, 1440]], tag: [470, 1300, "r"] }
+};
+const TAGS = {};
+const leaders = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+leaders.setAttribute("class", "leaders"); leaders.setAttribute("viewBox", "0 0 3344 1882"); leaders.setAttribute("preserveAspectRatio", "none"); leaders.setAttribute("aria-hidden", "true");
+const tagEls = [];
+const brandbar = document.createElement("div");
+brandbar.className = "brandbar";
+document.body.appendChild(brandbar);
+SPOTS.forEach(s => {
+  if (s.corner) {
+    const b = document.createElement("button");
+    b.className = "hot corner badge-left corner--" + s.id;
+    b.setAttribute("aria-label", s.tag);
+    b.innerHTML = `<span class="badge">${svg(s.icon)}</span><img src="${s.corner}" alt=""><span class="tag">${s.tag}</span>`;
+    b.addEventListener("click", () => open(s.alias || s.id, b));
+    b.dataset.id = s.id;
+    b.addEventListener("pointerenter", () => b.classList.add("on"));
+    b.addEventListener("pointerleave", () => b.classList.remove("on"));
+    if (brandbar.children.length) { const d = document.createElement("span"); d.className = "brandbar__div"; brandbar.appendChild(d); }
+    brandbar.appendChild(b);
+    return;
+  }
+  const b = document.createElement("button");
+  b.className = "hot" + (s.box[1] < 14 || s.id === "hub" ? " below" : "") + (s.badgeLeft ? " badge-left" : "");
+  let [l, t, w, h] = s.box;
+  const sp = SHAPES[s.id];
+  if (sp) { const xs = sp.map(p => p[0]), ys = sp.map(p => p[1]);
+    l = Math.min(...xs) / 33.44; t = Math.min(...ys) / 18.82; w = (Math.max(...xs) - Math.min(...xs)) / 33.44; h = (Math.max(...ys) - Math.min(...ys)) / 18.82; }
+  Object.assign(b.style, { left: l + "%", top: t + "%", width: w + "%", height: h + "%" });
+  b.setAttribute("aria-label", s.tag);
+  b.innerHTML = `<span class="badge">${svg(s.icon)}</span><span class="tag">${s.tag}</span>`;
+  b.addEventListener("click", () => open(s.alias || s.id, b));
+  b.dataset.id = s.id;
+  scene.appendChild(b);
+  const pts = SHAPES[s.id];
+  let path = null;
+  if (pts) {
+    path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M" + pts.map(p => p.join(" ")).join("L") + "Z");
+    path.dataset.id = s.id;
+    outl.appendChild(path);
+    path.addEventListener("click", () => open(s.alias || s.id, b));
+  }
+  const on = v => { b.classList.toggle("on", v); path && path.classList.toggle("on", v); };
+  [b, path].forEach(el => el && el.addEventListener("pointerenter", () => on(true)));
+  [b, path].forEach(el => el && el.addEventListener("pointerleave", () => on(false)));
+  b.addEventListener("focus", () => { on(true); path && path.classList.add("focus"); });
+  b.addEventListener("blur", () => { on(false); path && path.classList.remove("focus"); });
+  const T = TAGS[s.id];
+  if (T) {
+    const NS = "http://www.w3.org/2000/svg", g = document.createElementNS(NS, "g");
+    const [tx, ty] = T.tag;
+    T.at.forEach(([ax, ay]) => {
+      const ln = document.createElementNS(NS, "line");
+      ln.setAttribute("x1", ax); ln.setAttribute("y1", ay); ln.setAttribute("x2", tx); ln.setAttribute("y2", ty); g.appendChild(ln);
+      const ping = document.createElementNS(NS, "circle"); ping.setAttribute("cx", ax); ping.setAttribute("cy", ay); ping.setAttribute("r", 7); ping.setAttribute("class", "ping"); g.appendChild(ping);
+      const dot = document.createElementNS(NS, "circle"); dot.setAttribute("cx", ax); dot.setAttribute("cy", ay); dot.setAttribute("r", 7); g.appendChild(dot);
+    });
+    leaders.appendChild(g);
+    const t = document.createElement("button");
+    t.className = "ctag " + T.tag[2];
+    t.style.left = (tx / 33.44) + "%"; t.style.top = (ty / 18.82) + "%";
+    t.setAttribute("aria-label", `${T.name}: ${T.hook}`);
+    t.innerHTML = `<span class="ctag__in"><span class="ctag__code">${tEsc(T.code)}</span><span class="ctag__name">${tEsc(T.name)}</span><span class="ctag__hook">${tEsc(T.hook)}</span></span>`;
+    t.addEventListener("click", () => open(s.alias || s.id, t));
+    const lit = v => { on(v); t.classList.toggle("on", v); g.classList.toggle("on", v); };
+    t.addEventListener("pointerenter", () => lit(true)); t.addEventListener("pointerleave", () => lit(false));
+    t.addEventListener("focus", () => lit(true)); t.addEventListener("blur", () => lit(false));
+    [b, path].forEach(el => el && el.addEventListener("pointerenter", () => { t.classList.add("on"); g.classList.add("on"); }));
+    [b, path].forEach(el => el && el.addEventListener("pointerleave", () => { t.classList.remove("on"); g.classList.remove("on"); }));
+    scene.appendChild(t); tagEls.push([t, g]);
+  }
+});
+scene.appendChild(leaders);
+/* first load: labels arrive one by one, then stay */
+if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  scene.classList.add("intro-run");
+  tagEls.forEach(([t, g], i) => setTimeout(() => { t.classList.add("in"); g.classList.add("in"); }, 350 + i * 160));
+  setTimeout(() => scene.classList.remove("intro-run"), 350 + tagEls.length * 160 + 600);
+}
+
+const scrim = document.getElementById("scrim");
+const $ = id => document.getElementById(id);
+
+function drawing(d) {
+  if (!d) return "";
+  const dim = 'class="dim"', lab = 'class="dlab"';
+  let shape = "";
+  if (d.kind === "box") shape = `
+    <rect x="50" y="46" width="200" height="59" rx="6" class="obj"/>
+    <rect x="110" y="55" width="120" height="40" rx="2.5" class="obj2"/>
+    <rect x="62" y="105" width="8" height="3" class="obj"/><rect x="230" y="105" width="8" height="3" class="obj"/>
+    <path d="M50 120v10M250 120v10M50 125h200" ${dim}/><text x="150" y="144" ${lab}>${d.w}</text>
+    <path d="M34 46h8M34 105h8M38 46v59" ${dim}/><text x="30" y="79" ${lab} text-anchor="end">${d.h}</text>
+    <path d="M258 43h8M258 108h8M262 43v65" ${dim}/><text x="270" y="72" class="dtag" text-anchor="start">OVERALL</text><text x="270" y="85" ${lab} text-anchor="start">${d.oh || ""}</text>`;
+  if (d.kind === "cube") shape = `
+    <rect x="102" y="30" width="80" height="80" rx="14" class="obj"/>
+    <circle cx="142" cy="70" r="22" class="obj2"/><circle cx="142" cy="70" r="7" class="core"/>
+    <path d="M102 126v10M182 126v10M102 131h80" ${dim}/><text x="142" y="146" ${lab}>${d.w}</text>
+    <path d="M198 30h10M198 110h10M203 30v80" ${dim}/><text x="216" y="74" ${lab} text-anchor="start">${d.h}</text>`;
+  if (d.kind === "disc") shape = `
+    <ellipse cx="142" cy="84" rx="80" ry="22" class="obj"/>
+    <ellipse cx="142" cy="78" rx="80" ry="22" class="obj"/>
+    <ellipse cx="142" cy="78" rx="52" ry="13" class="core-ring"/>
+    <path d="M62 126v10M222 126v10M62 131h160" ${dim}/><text x="142" y="146" ${lab}>${d.w}</text>`;
+  return `<svg class="sketch" viewBox="0 0 320 156" role="img" aria-label="Dimensioned sketch, millimetres">${shape}<text x="10" y="18" class="dtag">ALL DIMENSIONS IN MM</text></svg>`;
+}
+
+const esc = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const LOGO = '<img class="tlogo" src="path-logo-v2.png" alt="PATH">';
+const withLogo = t => esc(t).replace(/\bPATH\b/g, LOGO);
+function setTitle(t) { $("m-title").innerHTML = withLogo(t); }
+function ctaHtml(c) {
+  const url = c.url === "WORLD" ? WORLD_URL : c.url === "SITE" ? SITE_URL : c.url;
+  return url
+    ? `<a class="cta" href="${url}" target="_blank" rel="noopener"><span>${withLogo(c.label)}</span><span aria-hidden="true">↗</span></a>`
+    : `<span class="cta is-soon" aria-disabled="true"><span>${withLogo(c.label)}</span><span class="soon">Link coming soon</span></span>`;
+}
+const IMG_W = 3344, IMG_H = 1882;
+let povTimer;
+function renderPov(v) {
+  const el = $("m-pov");
+  el.hidden = !v;
+  if (!v) return;
+  el.innerHTML = `<h3 class="sec">Camera view · ${esc(v.cam)}</h3>
+    <a class="pov-shot" href="${v.src}" target="_blank" rel="noopener"><img src="${v.src}" alt="${esc(v.alt)}" loading="lazy"></a>
+    <p class="pov-note">Click to enlarge</p>`;
+}
+const shotImg = (src, alt) => `<a class="shotlink" href="${src}" target="_blank" rel="noopener" title="Open full size"><img src="${src}" alt="${esc(alt)}" loading="lazy"></a>`;
+function renderSections(list) {
+  const el = $("m-extra");
+  el.hidden = !list;
+  if (!list) { el.innerHTML = ""; return; }
+  el.innerHTML = list.map(sec => {
+    if (sec.type === "video") return `<figure class="wvideo"><video src="${sec.src}" ${sec.poster ? `poster="${sec.poster}"` : ""} ${sec.controls ? "controls" : "autoplay"} muted loop playsinline preload="${sec.controls ? "metadata" : "auto"}" aria-label="${esc(sec.label || "MFS logo animation")}"></video><figcaption>${esc(sec.caption)}</figcaption></figure>`;
+    if (sec.type === "timeline") return `<section><h3 class="sec">${esc(sec.title)}</h3><ol class="tline">${sec.rows.map(([d, t, x]) => `<li><span class="tline__d">${esc(d)}</span><div><b>${esc(t)}</b><p>${esc(x)}</p></div></li>`).join("")}</ol></section>`;
+    if (sec.type === "context") return `<section><h3 class="sec">${esc(sec.title)}</h3><p>${esc(sec.text)}</p>
+      <figure class="wvideo"><video src="${sec.video.src}" poster="${sec.video.poster}" controls muted loop playsinline preload="metadata" aria-label="PATH waking up in a home"></video><figcaption>${esc(sec.video.caption)}</figcaption></figure>
+      <div class="ctx">${sec.shots.map((sh, i) => `<figure class="ctx__f${i === 0 ? " ctx__f--wide" : ""}"><img src="${sh.src}" alt="${esc(sh.caption)}" loading="lazy"><figcaption>${esc(sh.caption)}</figcaption></figure>`).join("")}</div></section>`;
+    if (sec.type === "cutout") return `<figure class="cutout"><img src="${sec.src}" alt="${esc(sec.caption)}" loading="lazy"><figcaption>${esc(sec.caption)}</figcaption></figure>`;
+    if (sec.type === "shot") return `<figure class="wshot">${shotImg(sec.src, sec.caption)}<figcaption>${esc(sec.caption)}</figcaption></figure>`;
+    if (sec.type === "world") return `<section><h3 class="sec">${esc(sec.title)}</h3><p>${esc(sec.text)}</p><ul class="world">${sec.items.map(it => `<li>${shotImg(it.src, it.name)}<b>${esc(it.name)}</b><p>${esc(it.text)}</p></li>`).join("")}</ul></section>`;
+    if (sec.type === "highlight") return `<section class="hl">
+      <p class="hl__eyebrow">${withLogo(sec.eyebrow)}</p>
+      <h3>${esc(sec.title)}</h3>
+      ${sec.src ? shotImg(sec.src, sec.title) : ""}${sec.src2 ? shotImg(sec.src2, sec.title) : ""}
+      <p>${esc(sec.text)}</p>
+      ${sec.posts ? `<ul class="hl__posts">${sec.posts.map(p => `<li class="${p.flag ? "is-down" : ""}"><span class="hl__votes">${esc(p.votes)}</span><span class="hl__t">${esc(p.title)}${p.flag ? `<em>${esc(p.flag)}</em>` : ""}</span></li>`).join("")}</ul>` : ""}
+      <p class="hl__note">${esc(sec.note)}</p>
+    </section>`;
+    if (sec.type === "features") return `<section><h3 class="sec">${esc(sec.title)}</h3><ul class="feat">${sec.items.map(([n, d, q, img]) => `<li>${img ? shotImg(img, n) : ""}<b>${withLogo(n)}</b><p>${esc(d)}</p><p class="feat__q">${esc(q)}</p></li>`).join("")}</ul></section>`;
+    if (sec.type === "shift") return `<section><h3 class="sec">${esc(sec.title)}</h3><div class="shift"><div class="shift__h"><span>Before</span><span>In 2040</span></div>${sec.rows.map(([a, b]) => `<div class="shift__r"><span>${esc(a)}</span><span>${esc(b)}</span></div>`).join("")}</div></section>`;
+    if (sec.type === "refs") return `<section><h3 class="sec">${esc(sec.title)}</h3><p>${esc(sec.text)}</p><ul class="refs">${REFS.map(r => `<li><a href="${r.url}" target="_blank" rel="noopener"><b>${esc(r.title)}</b><span>${esc([r.by, r.venue].filter(Boolean).join(" · "))}</span></a><p>${esc(r.note)}</p></li>`).join("")}</ul></section>`;
+    if (sec.type === "note") return `<section><h3 class="sec">${esc(sec.title)}</h3>${sec.items.map(t => `<p style="color:var(--ink)">${esc(t)}</p>`).join("")}</section>`;
+    if (sec.type === "inspo") return `<div class="inspo">${sec.items.map(it => `<section class="inspo__i">${it.img ? `<div class="inspo__img"><img class="${it.cover ? "cover" : ""}" src="${it.img}" alt="${esc(it.alt || it.name)}" loading="lazy"></div>` : ""}<p class="inspo__k">${esc(it.kind)}</p><h3>${esc(it.name)}</h3><p class="inspo__by">${esc(it.by)}</p><p>${esc(it.text)}</p><p class="inspo__took"><b>What we took:</b> ${esc(it.took)}</p>${it.credit ? `<p class="inspo__credit">${esc(it.credit)}</p>` : ""}</section>`).join("")}</div>`;
+    if (sec.type === "asks") return `<section><h3 class="sec">${esc(sec.title)}</h3><ol class="asks">${sec.items.map(q => `<li>${esc(q)}</li>`).join("")}</ol></section>`;
+    return "";
+  }).join("");
+}
+function render(i) {
+  current = i;
+  const s = pages[i];
+  $("m-eyebrow").innerHTML = svg(s.icon) + "<span></span>"; $("m-eyebrow").lastChild.textContent = s.eyebrow;
+  setTitle(s.title);
+  renderPov(s.pov);
+  renderSections(s.sections);
+  document.querySelector(".card").classList.toggle("wide", !!s.wide);
+  $("m-body").innerHTML = s.body.map(p => `<p>${p}</p>`).join("");
+
+  const sp = $("m-specs");
+  sp.hidden = !s.specs;
+  if (s.specs) sp.innerHTML = `<h3 class="sec">Specifications</h3>${drawing(s.drawing)}<div class="tiles">` +
+    s.specs.map(([k, v, u]) => `<div class="tile"><span class="k">${k}</span><span class="v">${v}</span><span class="u">${u}</span></div>`).join("") + `</div>`;
+
+  const d = $("m-does");
+  d.hidden = !s.does;
+  if (s.does) d.innerHTML = `<h3 class="sec">What it does</h3><ul>` + s.does.map(x => `<li>${x}</li>`).join("") + `</ul>`;
+
+  const f = $("m-facts");
+  f.innerHTML = (s.facts || []).map(([k, v]) => `<li><span>${k}</span><span>${v}</span></li>`).join("");
+  f.hidden = !(s.facts && s.facts.length);
+
+  const c = $("m-cta");
+  c.hidden = !s.ctas;
+  if (s.ctas) c.innerHTML = s.ctas.map(ctaHtml).join("");
+  $("m-pager").hidden = false; $("m-intro").hidden = true;
+  $("m-count").textContent = String(i + 1).padStart(2, "0") + " / " + String(pages.length).padStart(2, "0");
+}
+const REFS = [
+  { title: "The IKEA Catalogue: Design Fiction in Academic and Industrial Collaborations", by: "Barry Brown, Julian Bleecker, Mikael Ydholm and colleagues", venue: "GROUP '16, ACM, 2016", note: "A speculative IKEA catalogue from the near future, where drones deliver furniture and your bookshelf comes with a subscription. It showed us how an ordinary, friendly format can carry an unsettling future.", url: "https://doi.org/10.1145/2957276.2957298" },
+  { title: "A Catalogue of Creepy Futures", by: "", venue: "DIS '26, ACM, June 2026", note: "A single domestic scene where each everyday object is labelled and explained, from a teddy bear that watches to drones that track your tasks. It shaped how this archive works: one room, many things to click.", url: "https://doi.org/10.1145/3800645.3812814" }
+];
+const INTRO = {
+  eyebrow: "About this archive",
+  title: "Welcome to the PATH Archive",
+  body: [
+    "This page is the archive for PATH, a speculative design project by Team C. It brings together everything we made for our fictional world in one place.",
+    "PATH is a household device issued by an imagined Ministry of Family & Society in a future Singapore. It promises to support families, and it does so by watching them. We designed it to ask what happens when care and surveillance become the same thing.",
+    "The room in front of you is a PATH household. Click the small icons, or the objects themselves, to learn about each part of the world: the console and its PATH Drones, the household dashboard, the ministry's website, our fictional ministry and the film and novel that inspired it all."
+  ],
+  sections: [
+    { type: "world", title: "Framing the room in one-point perspective",
+      text: "The framing is inspired by Stanley Kubrick's iconic one-point perspective shots, from the corridors of 2001: A Space Odyssey to the hedge maze in The Shining. Kubrick faces the camera dead-on and lets every line in the set run back to a single vanishing point, so the frame feels calm, orderly and quietly uneasy. We framed the PATH household the same way: the walls, sideboard, rug and table all lead back to one point behind the console, and the dashboard, console and laptop sit on one centre line. Wherever you look in the room, you end up looking at PATH.",
+      items: [
+        { name: "Desktop", src: "web/grid-desktop-v4.jpg", text: "The one-point grid over the desktop room. The diagonals, horizon and centre line all meet at the vanishing point, just behind PATH's face." },
+        { name: "Phone", src: "web/grid-phone-v4.jpg", text: "The phone version is reframed as a portrait, but keeps the same vanishing point behind the console, so the room still leads straight to PATH." }
+      ] },
+    { type: "refs", title: "References for this archive", text: "The format of this page, a single home where every object tells part of a speculative story, draws on two works of design fiction:" }]
+};
+function showModal(trigger) {
+  lastFocus = trigger || document.activeElement;
+  scrim.hidden = false;
+  requestAnimationFrame(() => scrim.classList.add("open"));
+  $("close").focus();
+  $("hint").classList.add("gone");
+}
+function open(id, trigger) {
+  render(pages.findIndex(p => p.id === id));
+  showModal(trigger);
+}
+function openIntro(trigger) {
+  current = -1;
+  $("m-eyebrow").innerHTML = svg("hub") + "<span></span>"; $("m-eyebrow").lastChild.textContent = INTRO.eyebrow;
+  setTitle(INTRO.title);
+  $("m-body").innerHTML = INTRO.body.map(p => `<p>${p}</p>`).join("");
+  ["m-specs", "m-does", "m-facts", "m-cta", "m-pager", "m-pov"].forEach(id => $(id).hidden = true);
+  renderSections(INTRO.sections);
+  $("m-intro").hidden = false;
+  showModal(trigger);
+}
+/* remember whether the visitor is using keyboard or pointer/touch */
+let lastInput = "pointer";
+addEventListener("pointerdown", () => { lastInput = "pointer"; }, true);
+addEventListener("keydown", () => { lastInput = "key"; }, true);
+function close() {
+  scrim.classList.remove("open");
+  setTimeout(() => { scrim.hidden = true; }, 220);
+  /* clear any hover box and label left over from the tap that opened the card */
+  document.querySelectorAll(".scene .on, .scene .focus, .brandbar .on").forEach(el => el.classList.remove("on", "focus"));
+  if (lastFocus && lastInput === "key") lastFocus.focus();
+  else if (document.activeElement) document.activeElement.blur();
+}
+$("close").onclick = close;
+scrim.addEventListener("click", e => { if (e.target === scrim) close(); });
+$("prev").onclick = () => render((current - 1 + pages.length) % pages.length);
+$("next").onclick = () => render((current + 1) % pages.length);
+document.addEventListener("keydown", e => {
+  if (scrim.hidden) return;
+  if (e.key === "Escape") close();
+  if (current < 0) return;
+  if (e.key === "ArrowRight") $("next").click();
+  if (e.key === "ArrowLeft") $("prev").click();
+});
+$("help").onclick = () => openIntro($("help"));
+const syncShowAll = () => brandbar.classList.toggle("show-all", scene.classList.contains("show-all"));
+new MutationObserver(syncShowAll).observe(scene, { attributes: true, attributeFilter: ["class"] });
+$("intro-start").onclick = close;
+let showTimer;
+$("intro-show").onclick = () => {
+  close();
+  scene.classList.add("show-all");
+  clearTimeout(showTimer);
+  showTimer = setTimeout(() => scene.classList.remove("show-all"), 4000);
+};
+/* ---- full-screen panning ---- */
+const stage = document.querySelector(".stage");
+function centerView(fx = 0.5, fy = 0.42) {
+  if (true) { stage.scrollLeft = 0; stage.scrollTop = 0; document.body.classList.remove("can-pan"); return; }
+  stage.scrollLeft = (stage.scrollWidth - stage.clientWidth) * fx;
+  stage.scrollTop = (stage.scrollHeight - stage.clientHeight) * fy;
+  document.body.classList.toggle("can-pan", stage.scrollWidth - stage.clientWidth > 40 || stage.scrollHeight - stage.clientHeight > 40);
+}
+const sceneImg = scene.querySelector(":scope > img");
+/* portrait layout: positions in the 940x1672 portrait render */
+const PORT = { hub: [357, 837, 583, 890], dashboard: [364, 640, 577, 800], "cam-left": [272, 686, 343, 752], "cam-right": [598, 688, 670, 752],
+  dock: [287, 865, 333, 890], "dock-r": [600, 865, 645, 890], laptop: [335, 945, 610, 1150], poster: [127, 700, 262, 872] };
+/* motion layer positions in the portrait render; the cameras swap to sprites cut from it */
+const PORT_FX = { ".fx__holo": [362, 637, 579, 839], ".fx__beam": [420, 818, 520, 840], ".fx__smile": [404, 850, 534, 898],
+  ".fx__ring:not(.fx__ring--r)": [282, 860, 338, 894], ".fx__ring--r": [595, 860, 651, 894], ".fx__lap": [340, 948.75, 602, 1103],
+  ".fx__cam--l": [268, 683, 345, 755], ".fx__cam--r": [596, 685, 671, 752] };
+const fxLand = {};
+for (const sel in PORT_FX) { const el = document.querySelector(sel); if (el) fxLand[sel] = el.getAttribute("style"); }
+const PORT_BADGE = { /* each icon sits on a corner of its object's box, corners chosen so none collide */
+  dashboard: [577, 640], "cam-left": [272, 686], "cam-right": [670, 688], poster: [150, 700],
+  hub: [357, 837], dock: [287, 890], "dock-r": [645, 890], laptop: [610, 1150] };
+const PORT_FACE = [394, 841, 579, 886];
+const tallMQ = matchMedia("(max-aspect-ratio: 3/4)");
+const landSrc = sceneImg.getAttribute("src"), faceCv = document.querySelector(".fx__face"), faceLand = faceCv.getAttribute("style");
+function applyLayout() {
+  const tall = tallMQ.matches;
+  document.body.classList.toggle("tall", tall);
+  if (sceneImg.getAttribute("src") !== (tall ? "scene-portrait-v20.jpg" : landSrc)) sceneImg.src = tall ? "scene-portrait-v20.jpg" : landSrc;
+  outl.setAttribute("viewBox", tall ? "0 0 940 1672" : "0 0 3344 1882");
+  scene.querySelectorAll(".hot[data-id]").forEach(b => {
+    const id = b.dataset.id, path = outl.querySelector(`path[data-id="${id}"]`);
+    let x0, y0, x1, y1, W, H;
+    if (tall && PORT[id]) { [x0, y0, x1, y1] = PORT[id]; W = 940; H = 1672; }
+    else if (SHAPES[id]) { const sp = SHAPES[id], xs = sp.map(p => p[0]), ys = sp.map(p => p[1]); x0 = Math.min(...xs); x1 = Math.max(...xs); y0 = Math.min(...ys); y1 = Math.max(...ys); W = 3344; H = 1882; }
+    else return;
+    Object.assign(b.style, { left: x0 / W * 100 + "%", top: y0 / H * 100 + "%", width: (x1 - x0) / W * 100 + "%", height: (y1 - y0) / H * 100 + "%" });
+    if (path) path.setAttribute("d", `M${x0} ${y0}L${x1} ${y0}L${x1} ${y1}L${x0} ${y1}Z`);
+    const pb = tall && PORT_BADGE[id];
+    if (pb) { b.style.setProperty("--bx", (pb[0] - x0) / (x1 - x0) * 100 + "%"); b.style.setProperty("--by", (pb[1] - y0) / (y1 - y0) * 100 + "%"); }
+    else { b.style.removeProperty("--bx"); b.style.removeProperty("--by"); }
+  });
+  fitTall(tall);
+  for (const sel in PORT_FX) {
+    const el = document.querySelector(sel); if (!el) continue;
+    if (tall) { const [a, b, c, d] = PORT_FX[sel], cam = el.classList.contains("fx__cam");
+      el.setAttribute("style", `left:${a / 9.4}%;top:${b / 16.72}%;width:${(c - a) / 9.4}%` + (cam ? "" : `;height:${(d - b) / 16.72}%`)); }
+    else el.setAttribute("style", fxLand[sel]);
+  }
+  const ci = { ".fx__cam--l img": ["web/pcamL12.png", "web/camL12.png"], ".fx__cam--r img": ["web/pcamR12.png", "web/camR12.png"] };
+  for (const sel in ci) { const im = document.querySelector(sel); const want = ci[sel][tall ? 0 : 1]; if (im && im.getAttribute("src") !== want) im.setAttribute("src", want); }
+  if (tall) { const [a, b, c, d] = PORT_FACE; faceCv.setAttribute("style", `left:${a / 9.4}%;top:${b / 16.72}%;width:${(c - a) / 9.4}%;height:${(d - b) / 16.72}%`); }
+  else faceCv.setAttribute("style", faceLand);
+  requestAnimationFrame(() => { if (window.fitFace) fitFace(); });
+}
+/* tall screens: the portrait render covers the screen, centred */
+function fitTall(tall) {
+  if (!tall) { scene.style.cssText = ""; return; }
+  const vw = innerWidth, vh = innerHeight, s = Math.max(vw / 940, vh / 1672);
+  Object.assign(scene.style, { width: 940 * s + "px", height: 1672 * s + "px", left: Math.min(0, Math.max(vw - 940 * s, vw / 2 - 470 * s)) + "px", top: (vh - 1672 * s) / 2 + "px" });
+}
+addEventListener("resize", () => fitTall(tallMQ.matches));
+/* tall screens: if an icon's corner falls off the edge of the screen, slide it back just inside */
+function clampBadges() {
+  document.querySelectorAll(".scene .hot .badge").forEach(bd => {
+    bd.style.translate = "";
+    if (!document.body.classList.contains("tall")) return;
+    const r = bd.getBoundingClientRect(), pad = 10;
+    const dx = Math.max(0, pad - r.left) - Math.max(0, r.right - (innerWidth - pad));
+    if (dx) bd.style.translate = dx + "px 0";
+  });
+}
+addEventListener("resize", () => requestAnimationFrame(clampBadges));
+addEventListener("load", clampBadges); setTimeout(clampBadges, 300);
+applyLayout();
+tallMQ.addEventListener ? tallMQ.addEventListener("change", applyLayout) : tallMQ.addListener(applyLayout);
+if (sceneImg.complete) centerView(); else sceneImg.addEventListener("load", () => centerView());
+requestAnimationFrame(() => centerView());
+addEventListener("load", () => centerView());
+if (window.ResizeObserver) { let first = true; new ResizeObserver(() => { if (first || stage.scrollLeft === 0) centerView(); first = false; }).observe(scene); }
+addEventListener("resize", () => centerView());
+setTimeout(() => $("hint").classList.add("gone"), 7000);
+/* the ? button opens out into a short instruction on arrival, then folds back */
+{ const h = $("help"); let hov = false;
+  const tell = () => { if (hov || !scrim.hidden) return; h.classList.add("tell"); document.body.classList.add("telling"); setTimeout(() => { if (!hov) h.classList.remove("tell"); document.body.classList.remove("telling"); }, 5000); };
+  tell(); setInterval(tell, 20000);
+  if (matchMedia("(hover: hover)").matches) { h.addEventListener("pointerenter", () => { hov = true; h.classList.add("tell"); }); h.addEventListener("pointerleave", () => { hov = false; h.classList.remove("tell"); }); } }
+
+/* lightbox: every image inside a card opens large, in the page */
+const lb = document.createElement("div");
+lb.className = "lb"; lb.hidden = true;
+lb.setAttribute("role", "dialog"); lb.setAttribute("aria-modal", "true"); lb.setAttribute("aria-label", "Image viewer");
+lb.innerHTML = '<button class="lb__x" aria-label="Close image">×</button><img class="lb__img" alt=""><p class="lb__cap"></p>';
+document.body.appendChild(lb);
+let lbReturn = null;
+function openLb(img) {
+  lbReturn = document.activeElement;
+  const fig = img.closest("figure");
+  const cap = fig && fig.querySelector("figcaption");
+  lb.querySelector(".lb__img").src = img.currentSrc || img.src;
+  lb.querySelector(".lb__img").alt = img.alt || "";
+  lb.querySelector(".lb__cap").textContent = cap ? cap.textContent : (img.alt || "");
+  lb.hidden = false; requestAnimationFrame(() => lb.classList.add("open"));
+  lb.querySelector(".lb__x").focus();
+}
+function closeLb() { lb.classList.remove("open"); setTimeout(() => { lb.hidden = true; }, 180); if (lbReturn) lbReturn.focus(); }
+document.querySelector(".card").addEventListener("click", e => {
+  const img = e.target.closest("img");
+  if (!img || img.classList.contains("tlogo")) return;
+  e.preventDefault(); e.stopPropagation(); openLb(img);
+}, true);
+lb.addEventListener("click", e => { if (e.target !== lb.querySelector(".lb__img")) closeLb(); });
+document.addEventListener("keydown", e => { if (!lb.hidden && e.key === "Escape") { e.stopImmediatePropagation(); closeLb(); } }, true);
+
+/* ---- camera hover, driven from script so it runs the same on every browser ---- */
+(() => {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cams = [...document.querySelectorAll(".fx__cam")];
+  const P = [{ per: 5200, off: 0, rot: -1 }, { per: 6100, off: 1700, rot: 1 }];
+  (function loop(t) {
+    const tall = document.body.classList.contains("tall");
+    cams.forEach((el, i) => {
+      const p = P[i] || P[0], per = tall ? p.per * .75 : p.per;
+      const k = .5 - .5 * Math.cos((t + p.off) / per * 2 * Math.PI);       // 0..1..0
+      const lift = tall ? 8 : el.offsetHeight * .17;
+      const rot = (tall ? 2.5 : 3.2) * p.rot * k;
+      const sway = tall ? p.rot * -k : p.rot * -3 * Math.sin((t + p.off) / (per * 1.6) * 2 * Math.PI);
+      el.style.transform = `translate(${sway.toFixed(2)}px, ${(-lift * k + (tall ? 1 : 0)).toFixed(2)}px) rotate(${rot.toFixed(2)}deg)`;
+    });
+    requestAnimationFrame(loop);
+  })(0);
+})();
+
+/* ---- the hologram cycles through PATH's live care feed ---- */
+(() => { const ims = [...document.querySelectorAll(".holo__screen img")]; if (ims.length < 2) return; let i = 0;
+  setInterval(() => { ims[i].classList.remove("on"); i = (i + 1) % ims.length; ims[i].classList.add("on"); }, 5200); })();
+
+/* ---- live timer ---- */
+const liveStart = Date.now(), liveEl = $("live-t");
+setInterval(() => { const t = Math.floor((Date.now() - liveStart) / 1000); liveEl.textContent = String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0"); }, 1000);
+
+/* ---- PATH's face: a dot matrix redrawn over the console display ---- */
+(() => {
+  const cv = document.querySelector(".fx__face"); if (!cv) return;
+  const ctx = cv.getContext("2d");
+  /* the console front, drawn like the product sheet: an inset display window with a thin bezel,
+     the dot grid filling the window, and the OBSERVE / MEASURE / SUPPORT / TOGETHER column beside it */
+  /* a chunky 32 × 11 LED grid, as on the product sheet; faces are drawn on a 52 × 12 design grid and sampled onto it */
+  let COLS = 32, ROWS = 11, PX = 14, R = 2.8, OFF = 0, WIN = { x: 0, y: 0, w: 0, h: 0 }, GX = 0, GY = 0;
+  window.fitFace = () => {
+    const r = cv.getBoundingClientRect(); if (!r.width) return;
+    cv.width = 1000; cv.height = Math.round(1000 * r.height / r.width);
+    const H = cv.height;
+    WIN = { x: 6, y: H * .13, w: 655, h: H * .74 };
+    const pad = Math.max(8, WIN.h * .07);
+    ROWS = 11; PX = (WIN.h - pad * 2) / ROWS; COLS = Math.floor((WIN.w - pad * 2) / PX); R = PX * .16; OFF = 0;
+    GX = WIN.x + (WIN.w - COLS * PX) / 2; GY = WIN.y + (WIN.h - ROWS * PX) / 2;
+  };
+  fitFace(); addEventListener("resize", () => requestAnimationFrame(fitFace));
+  const rr = (x, y, w, h, r) => { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); };
+  function chrome() {
+    const H = cv.height;
+    { const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "rgb(19,10,7)"); g.addColorStop(1, "rgb(10,5,3)");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, cv.width, H); }                // console face, sampled from the photo
+    rr(WIN.x, WIN.y, WIN.w, WIN.h, 9); ctx.fillStyle = "rgb(6,3,2)"; ctx.fill();
+    ctx.lineWidth = 2.5; ctx.strokeStyle = "rgba(70,66,64,.42)"; ctx.stroke();   // bezel, faint
+    rr(WIN.x + 3, WIN.y + 3, WIN.w - 6, WIN.h - 6, 7); ctx.lineWidth = 1; ctx.strokeStyle = "rgba(0,0,0,.6)"; ctx.stroke();
+    const tx = WIN.x + WIN.w + 26, lh = WIN.h / 4.1;
+    ctx.fillStyle = "rgba(255,122,46,.8)"; ctx.shadowColor = "rgba(255,120,40,.7)"; ctx.shadowBlur = 7;
+    ctx.fillRect(tx, WIN.y - lh * .32, 34, 5); ctx.shadowBlur = 0;            // status light
+    ctx.fillStyle = "rgba(222,214,206,.42)"; ctx.textBaseline = "middle";
+    ctx.font = `500 ${Math.round(lh * .74)}px "IBM Plex Mono", ui-monospace, Menlo, monospace`;
+    if ("letterSpacing" in ctx) ctx.letterSpacing = `${Math.round(lh * .1)}px`;
+    ["OBSERVE", "MEASURE", "SUPPORT", "TOGETHER"].forEach((w, k) => ctx.fillText(w, tx, WIN.y + lh * (k + .75)));
+    if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
+  }
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const faces = {
+    smile: (c, r) => { const x = (c - 25.5) / 16; if (Math.abs(x) > 1) return 0; const y = 9.2 - 5.6 * x * x, w = .5 + 1.9 * (1 - x * x); return (r <= y + .5 && r >= y - w) ? 1 : 0; },
+    blink: (c, r) => (r === 6 && c > 10 && c < 41) ? 1 : 0,
+    neutral: (c, r) => ((r === 6 || r === 7) && c > 11 && c < 40) ? 1 : 0,
+    watch: (c, r, t) => { const cx = 25.5 + Math.sin(t / 900) * 16; return (r >= 5 && r <= 7 && Math.abs(c - cx) < 3.2) ? 1 : 0; },
+    think: (c, r, t) => { const k = Math.floor(t / 280) % 4; return (r >= 5 && r <= 7 && [16, 25, 34].some((cx, i) => i < k && Math.abs(c - cx) < 1.6)) ? 1 : 0; }
+  };
+  let mood = "smile", loopMood = "smile", override = null, blinkUntil = 0;
+  function draw(t) {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    chrome();
+    const face = faces[(t < blinkUntil && mood === "smile") ? "blink" : mood];
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      const x = GX + c * PX, y = GY + r * PX, g = PX * .14, sz = PX - g * 2;
+      const on = face(Math.round((c + .5) * 52 / COLS - .5), Math.round((r + .5) * 12 / ROWS - .5), t);
+      if (on) { ctx.shadowColor = "rgba(255,50,20,.9)"; ctx.shadowBlur = PX * .9; ctx.fillStyle = "#ff4a2a"; }
+      else { ctx.shadowBlur = 0; ctx.fillStyle = "rgba(120,104,98,.2)"; }
+      rr(x + g, y + g, sz, sz, R); ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+    /* glass over the display: a soft sheen from the top and a little falloff at the edges */
+    ctx.save(); rr(WIN.x, WIN.y, WIN.w, WIN.h, 9); ctx.clip();
+    let g = ctx.createLinearGradient(0, WIN.y, 0, WIN.y + WIN.h); g.addColorStop(0, "rgba(255,235,220,.07)"); g.addColorStop(.35, "rgba(255,235,220,0)"); g.addColorStop(1, "rgba(0,0,0,.18)");
+    ctx.fillStyle = g; ctx.fillRect(WIN.x, WIN.y, WIN.w, WIN.h);
+    g = ctx.createLinearGradient(WIN.x, 0, WIN.x + WIN.w, 0); g.addColorStop(0, "rgba(0,0,0,.22)"); g.addColorStop(.12, "rgba(0,0,0,0)"); g.addColorStop(.88, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.22)");
+    ctx.fillStyle = g; ctx.fillRect(WIN.x, WIN.y, WIN.w, WIN.h); ctx.restore();
+  }
+  const setMood = () => { mood = override || loopMood; };
+  // B: a slow loop of moods
+  const LOOP = [["smile", 9000], ["think", 2400], ["neutral", 2200], ["smile", 7000]];
+  let li = 0;
+  (function step() { loopMood = LOOP[li][0]; setMood(); const d = LOOP[li][1]; li = (li + 1) % LOOP.length; setTimeout(step, d); })();
+  setInterval(() => { if (Math.random() < .7) blinkUntil = performance.now() + 170; }, 4200);
+  // C: reacts to the visitor
+  let idleT, idle = false;
+  const wake = () => { if (idle) { idle = false; override = null; setMood(); } clearTimeout(idleT); idleT = setTimeout(() => { idle = true; override = "watch"; setMood(); }, 20000); };
+  ["pointermove", "keydown", "pointerdown", "wheel", "touchstart"].forEach(ev => addEventListener(ev, wake, { passive: true }));
+  wake();
+  /* hovering any object changes PATH's expression: it watches you look at its drones, smiles when you look at it,
+     and goes flat for everything else */
+  const moodFor = id => !id ? null : id.startsWith("cam") ? "watch" : id === "hub" ? null : "neutral";
+  [scene, document.querySelector(".brandbar")].forEach(host => { if (!host) return;
+    host.addEventListener("pointerover", e => { const el = e.target.closest && e.target.closest("[data-id]"); if (idle) wake(); override = moodFor(el && el.dataset.id); setMood(); });
+    host.addEventListener("pointerleave", () => { override = null; setMood(); });
+    host.addEventListener("focusin", e => { const el = e.target.closest && e.target.closest("[data-id]"); override = moodFor(el && el.dataset.id); setMood(); });
+    host.addEventListener("focusout", () => { override = null; setMood(); }); });
+  const _open = open; open = function (id, t) { override = null; loopMood = "smile"; setMood(); return _open(id, t); };
+  if (reduce) { draw(0); return; }
+  (function frame(t) { draw(t); requestAnimationFrame(frame); })(0);
+})();
+</script>
+
+<!-- ---- QR safety check: shown only to visitors who arrive by scanning the PATH Archive QR code (?via=qr) ---- -->
+<style>
+.qrgate { --po: #fd6e3e; --po2: #e2582b; --pdeep: #b9431c; --ink: #2a1a12; --body: #6a5246; --muted: #8b7366; --line: #ead9cf; --ok: #e2582b;
+  position: fixed; inset: 0; z-index: 3000; display: flex; flex-direction: column; overflow-y: auto; background: #fbf5f1; color: var(--ink);
+  font-family: "DM Sans", system-ui, sans-serif; animation: qrgIn .35s both; }
+.qrgate.is-leaving { animation: qrgOut .45s forwards; }
+.qrgate__mast { display: flex; align-items: center; gap: 8px; padding: 7px 16px; font-size: 13px; background: #f4e8e0; color: var(--body); }
+.qrgate__shield { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--po); color: #fff; }
+.qrgate__band { position: relative; padding: 44px 20px 0; text-align: center; color: #fff; background: linear-gradient(165deg, #ff7d47 0%, #f0602e 45%, #cf4a1f 100%); }
+.qrgate__band::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(60% 80% at 85% 0, rgba(255,214,170,.35), transparent 70%), radial-gradient(50% 70% at 10% 100%, rgba(80,20,0,.25), transparent 70%); }
+.qrgate__inner { position: relative; max-width: 520px; margin: 0 auto; }
+.qrgate__band h1 { margin: 0 0 18px; font-size: clamp(24px, 6vw, 32px); font-weight: 700; letter-spacing: -.01em; }
+.qrgate__band p { margin: 0 0 10px; font-size: 16px; line-height: 1.55; color: #fff3ea; }
+.qrgate__band p strong { color: #fff; font-weight: 700; }
+.qrgate__count { display: inline-flex !important; align-items: center; gap: 8px; margin-top: 26px !important; font-size: 13.5px !important; color: #ffe6d6 !important; }
+.qrgate__spin { width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; animation: qrgSpin .8s linear infinite; }
+.qrgate__art { position: relative; display: flex; justify-content: center; margin-top: 18px; margin-bottom: -17px; }
+.qrgate__art svg { max-width: 100%; height: auto; overflow: visible; }
+.qrgate__person { transform-origin: 180px 110px; animation: qrgPeek 2.4s ease-in-out infinite alternate; }
+.qrgate__scan path { stroke: #fff; opacity: 0; transition: opacity .4s, stroke .4s; }
+.qrgate__scan.is-on path { opacity: 1; }
+.qrgate__scan.is-ok path { stroke: #ffe14d; }
+.qrgate__beam { fill: #fff; opacity: 0; }
+.qrgate__scan.is-on .qrgate__beam { opacity: .9; animation: qrgBeam 1.6s ease-in-out infinite alternate; }
+.qrgate__scan.is-ok .qrgate__beam { opacity: 0; animation: none; }
+.qrgate__body { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 44px 20px 32px; text-align: center; }
+.qrgate__steps { display: grid; gap: 8px; margin: 0 0 14px; padding: 0; list-style: none; text-align: left; font-size: 14px; color: var(--muted); }
+.qrgate__steps li { display: flex; align-items: center; gap: 10px; transition: color .3s; }
+.qrgate__steps li span { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--line); color: #fff; font-size: 11px; transition: all .3s; }
+.qrgate__steps li.is-now, .qrgate__steps li.is-done { color: var(--ink); }
+.qrgate__steps li.is-now span { border-color: var(--po); border-top-color: transparent; animation: qrgSpin .8s linear infinite; }
+.qrgate__steps li.is-done span { background: var(--ok); border-color: var(--ok); }
+.qrgate__status { min-height: 1.4em; margin: 0 0 26px; font: 12px "JetBrains Mono", ui-monospace, Menlo, monospace; color: var(--muted); }
+.qrgate__skip { padding: 6px; border: 0; background: none; font: inherit; font-size: 14.5px; color: var(--pdeep); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.qrgate__skip:hover { color: var(--ink); }
+.qrgate__built { display: flex; align-items: center; gap: 12px; margin-top: auto; padding-top: 40px; font-size: 12.5px; color: var(--muted); }
+.qrgate__built img { height: 34px; width: auto; }
+.qrgate__org { text-align: left; font-size: 10px; font-weight: 700; line-height: 1.15; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
+@keyframes qrgIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes qrgOut { to { opacity: 0; transform: translateY(-8px); } }
+@keyframes qrgSpin { to { transform: rotate(360deg); } }
+@keyframes qrgPeek { from { transform: translateY(2px); } to { transform: translateY(-2px); } }
+@keyframes qrgBeam { from { transform: translateY(0); } to { transform: translateY(46px); } }
+@media (prefers-reduced-motion: reduce) { .qrgate, .qrgate__person, .qrgate__spin, .qrgate__beam, .qrgate__steps li span { animation: none !important; } }
+</style>
+<script>
+(() => {
+  let via = null;
+  try { const q = new URLSearchParams(location.search), h = new URLSearchParams(location.hash.replace(/^#/, "")); via = q.get("via") || h.get("via"); } catch (e) {}
+  if (via !== "qr") return;
+  /* drop ?via=qr so a refresh or a shared link opens the archive directly */
+  try { const u = new URL(location.href); u.searchParams.delete("via"); history.replaceState(null, "", u.pathname + u.search + u.hash); } catch (e) {}
+  const STEPS = ["Poster scanned at SDE 4 ID Studio", "Photo taken by the poster", "It's you"];
+  const STATUS = ["Starting your safety check", "The poster has taken a photo to confirm it's you", "Checking your face against MFS Verification records", "Verified. Taking you to the Ministry"];
+  const g = document.createElement("div");
+  g.className = "qrgate"; g.setAttribute("role", "dialog"); g.setAttribute("aria-modal", "true"); g.setAttribute("aria-label", "Safety check");
+  g.innerHTML = `
+    <div class="qrgate__mast"><span class="qrgate__shield" aria-hidden="true"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.4-7 10-4-1.6-7-5.5-7-10V6z"/></svg></span>A Singapore Government Agency Website</div>
+    <div class="qrgate__band">
+      <div class="qrgate__inner">
+        <h1>Check your address bar</h1>
+        <p>Beware of scams!<br>Only scan QR codes issued by <strong>the Ministry</strong>.</p>
+        <p class="qrgate__count" aria-live="polite"><span class="qrgate__n">You will be redirected in 8 seconds</span> <span class="qrgate__spin" aria-hidden="true"></span></p>
+      </div>
+      <div class="qrgate__art" aria-hidden="true">
+        <svg viewBox="0 0 360 150" width="360" height="150">
+          <circle cx="180" cy="50" r="48" fill="#fff" opacity=".1"/><circle cx="180" cy="50" r="32" fill="#fff" opacity=".1"/>
+          <g class="qrgate__person">
+            <path d="M132 104 C134 88 148 77 167 75 L193 75 C212 77 226 88 228 104 Z" fill="#2a1d17"/>
+            <path d="M169 75 L180 87 L191 75 Z" fill="#4a352b"/>
+            <rect x="172.5" y="62" width="15" height="14" rx="6" fill="#c98a62"/>
+            <circle cx="162.5" cy="48" r="3.8" fill="#d6966c"/><circle cx="197.5" cy="48" r="3.8" fill="#d6966c"/>
+            <ellipse cx="180" cy="46" rx="17" ry="19" fill="#e3a77c"/>
+            <circle cx="174" cy="48" r="1.5" fill="#2a1d17" opacity=".75"/><circle cx="186" cy="48" r="1.5" fill="#2a1d17" opacity=".75"/>
+            <path d="M175.5 55.5 q4.5 3 9 0" fill="none" stroke="#a8613f" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M162.4 47 C160 30 169 22.5 181 22.5 C193 22.5 200.5 30 197.6 46 C196 39 193.5 35 189 33 C182 37.5 172 38 166 36 C164 39 163 43 162.4 47 Z" fill="#2a1d17"/>
+          </g>
+          <g class="qrgate__scan">
+            <path d="M152 30 v-10 a4 4 0 0 1 4 -4 h8 M208 30 v-10 a4 4 0 0 0 -4 -4 h-8 M152 64 v10 a4 4 0 0 0 4 4 h8 M208 64 v10 a4 4 0 0 1 -4 4 h-8" fill="none" stroke-width="2.5" stroke-linecap="round"/>
+            <rect class="qrgate__beam" x="157" y="24" width="46" height="2" rx="1"/>
+          </g>
+          <rect x="30" y="100" width="300" height="34" rx="6" fill="#fff" stroke="#ead9cf"/>
+          <circle cx="48" cy="117" r="4" fill="#ead9cf"/><circle cx="62" cy="117" r="4" fill="#ead9cf"/>
+          <path d="M82 114 v-3 a4 4 0 0 1 8 0 v3" fill="none" stroke="#6a5246" stroke-width="1.6"/><rect x="80" y="114" width="12" height="9" rx="2" fill="#6a5246"/>
+          <text x="100" y="121.5" font-size="12" fill="#2a1a12" font-family="DM Sans, system-ui, sans-serif">Ministry of Family and Society</text>
+          <rect x="146" y="95" width="19" height="10" rx="5" fill="#e3a77c"/><rect x="195" y="95" width="19" height="10" rx="5" fill="#e3a77c"/>
+        </svg>
+      </div>
+    </div>
+    <div class="qrgate__body">
+      <ol class="qrgate__steps">${STEPS.map(s => `<li><span aria-hidden="true"></span>${s}</li>`).join("")}</ol>
+      <p class="qrgate__status"></p>
+      <button class="qrgate__skip">I've checked the link. Skip ahead <span aria-hidden="true">→</span></button>
+      <div class="qrgate__built"><span>Built by</span><img src="web/mfs-logo-dark.png" alt="Ministry of Family and Society"><span class="qrgate__org">MFS<br>Digital<br>Services</span></div>
+    </div>`;
+  document.body.appendChild(g);
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let n = 8, step = 0, gone = false;
+  const lis = [...g.querySelectorAll(".qrgate__steps li")], scan = g.querySelector(".qrgate__scan");
+  const paint = () => {
+    g.querySelector(".qrgate__n").textContent = `You will be redirected in ${n} second${n === 1 ? "" : "s"}`;
+    lis.forEach((li, i) => { li.className = step > i ? "is-done" : step === i ? "is-now" : ""; li.firstChild.textContent = step > i ? "✓" : ""; });
+    g.querySelector(".qrgate__status").textContent = STATUS[step] + "…";
+    scan.classList.toggle("is-on", step >= 1); scan.classList.toggle("is-ok", step >= 3);
+  };
+  const timers = [setTimeout(() => { step = 1; paint(); }, 1400), setTimeout(() => { step = 2; paint(); }, 3600), setTimeout(() => { step = 3; paint(); }, 5800)];
+  const tick = setInterval(() => { n = Math.max(0, n - 1); paint(); if (n <= 0) leave(); }, 1000);
+  function leave() {
+    if (gone) return; gone = true; clearInterval(tick); timers.forEach(clearTimeout);
+    g.classList.add("is-leaving"); setTimeout(() => g.remove(), reduce ? 0 : 450);
+  }
+  g.querySelector(".qrgate__skip").onclick = leave;
+  paint();
+})();
+</script>

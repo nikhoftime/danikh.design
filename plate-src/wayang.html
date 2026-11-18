@@ -1,0 +1,146 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#0f0e0e}canvas{display:block}</style></head><body>
+<canvas id="c" width="1600" height="900"></canvas>
+<script>
+// A wayang kulit scene in the Kalian, Joget-Joget style: flat shapes, the game's curtain and stage,
+// one original puppet (a crowned dancer) worked on rods from below, its shadow thrown onto a lamp-lit screen.
+const c = document.getElementById('c').getContext('2d');
+const W = 1600, H = 900, T = 6;               // loop length in seconds
+const TAU = Math.PI * 2;
+const S = { l: 250, r: 1350, t: 120, b: 700 }; // the screen (kelir)
+const LAMP = { x: 800, y: 70 };
+
+function curtainSide(x0, w, dir) {
+  const folds = 6, fw = w / folds;
+  for (let i = 0; i < folds; i++) {
+    const x = x0 + i * fw;
+    const g = c.createLinearGradient(x, 0, x + fw, 0);
+    g.addColorStop(0, '#7a3f0e'); g.addColorStop(0.45, '#c47a20'); g.addColorStop(1, '#8B4A12');
+    c.fillStyle = g;
+    c.beginPath(); c.moveTo(x, 0); c.lineTo(x + fw + 1, 0);
+    c.quadraticCurveTo(x + fw + dir * 10, H * 0.6, x + fw + 1, H); c.lineTo(x, H);
+    c.quadraticCurveTo(x + dir * 10, H * 0.6, x, 0); c.fill();
+  }
+}
+function valance() {
+  const g = c.createLinearGradient(0, 0, 0, 110);
+  g.addColorStop(0, '#a86010'); g.addColorStop(1, '#c47a20');
+  c.fillStyle = g;
+  c.beginPath(); c.moveTo(0, 0); c.lineTo(W, 0); c.lineTo(W, 70);
+  for (let i = 8; i >= 0; i--) { const x = i * W / 8; c.quadraticCurveTo(x + W / 16, 120, x, 70); }
+  c.fill();
+  c.strokeStyle = '#d4aa40'; c.lineWidth = 3;
+  for (let x = 10; x < W; x += 22) { const y = 70 + 40 * Math.sin(Math.PI * ((x % (W / 8)) / (W / 8))); c.beginPath(); c.moveTo(x, y - 6); c.lineTo(x, y + 14); c.stroke(); }
+}
+
+// the puppet, drawn in its own space: origin at the waist, facing right, units in px
+function puppet(k, p, shadow) {
+  const col = shadow ? null : k;
+  const fill = (hex) => { c.fillStyle = shadow ? 'rgba(0,0,0,1)' : hex; };
+  // skirt (kain) with a flared hem
+  fill('#2f6f5e'); c.beginPath(); c.moveTo(-34, 0); c.lineTo(34, 0); c.lineTo(58, 150); c.quadraticCurveTo(0, 170, -58, 150); c.closePath(); c.fill();
+  fill('#d4aa40'); c.beginPath(); c.moveTo(-50, 128); c.lineTo(52, 128); c.lineTo(58, 150); c.quadraticCurveTo(0, 170, -58, 150); c.closePath(); c.fill();
+  if (!shadow) { c.fillStyle = '#e03030'; for (let i = -3; i <= 3; i++) { c.beginPath(); c.arc(i * 15, 140, 4, 0, TAU); c.fill(); } }
+  // legs, a dancer's stance
+  fill('#c47a20');
+  c.beginPath(); c.moveTo(-22, 150); c.lineTo(-10, 150); c.lineTo(-18, 215); c.lineTo(-40, 222); c.lineTo(-40, 214); c.lineTo(-28, 210); c.closePath(); c.fill();
+  c.beginPath(); c.moveTo(12, 150); c.lineTo(26, 150); c.lineTo(36, 210); c.lineTo(62, 216); c.lineTo(62, 224); c.lineTo(26, 220); c.closePath(); c.fill();
+  // torso, slender and tall
+  fill('#c47a20'); c.beginPath(); c.moveTo(-26, 4); c.lineTo(26, 4); c.lineTo(20, -110); c.lineTo(-18, -110); c.closePath(); c.fill();
+  fill('#d4aa40'); c.beginPath(); c.moveTo(-24, -10); c.lineTo(24, -10); c.lineTo(24, 4); c.lineTo(-24, 4); c.closePath(); c.fill();   // belt
+  fill('#e03030'); c.beginPath(); c.moveTo(-20, -98); c.quadraticCurveTo(0, -70, 20, -98); c.lineTo(22, -108); c.lineTo(-20, -108); c.closePath(); c.fill(); // collar
+  // head: long profile with a pointed nose, crown with flame tips
+  c.save(); c.translate(4, -118); c.rotate(p.head);
+  fill('#c47a20'); c.beginPath(); c.moveTo(-14, 6); c.lineTo(10, 6); c.lineTo(14, -14); c.lineTo(40, -18); c.lineTo(16, -26); c.lineTo(12, -44); c.lineTo(-16, -40); c.closePath(); c.fill();
+  if (!shadow) { c.fillStyle = '#0f0e0e'; c.beginPath(); c.ellipse(6, -28, 5, 2.4, -0.2, 0, TAU); c.fill(); }
+  fill('#d4aa40'); c.beginPath(); c.moveTo(-20, -38); c.lineTo(16, -42); c.lineTo(10, -58); c.lineTo(4, -84); c.lineTo(-4, -64); c.lineTo(-12, -92); c.lineTo(-16, -62); c.lineTo(-28, -76); c.lineTo(-24, -50); c.closePath(); c.fill();
+  // the long back-sweep of the headdress, a classic wayang silhouette
+  fill('#e03030'); c.beginPath(); c.moveTo(-18, -44); c.quadraticCurveTo(-70, -40, -78, 4); c.quadraticCurveTo(-56, -14, -16, -30); c.closePath(); c.fill();
+  if (!shadow) {   // punched holes: wayang kulit is perforated hide, light shows through
+    c.fillStyle = '#f6e7c8'; for (let i = 0; i < 4; i++) { c.beginPath(); c.arc(-30 - i * 11, -30 + i * 7, 2.6, 0, TAU); c.fill(); }
+  }
+  c.restore();
+  // arms on rods: shoulder, elbow, long hand
+  const arm = (sx, sy, a1, a2, front) => {
+    c.save(); c.translate(sx, sy); c.rotate(a1);
+    fill(front ? '#c47a20' : '#a86010'); c.beginPath(); c.roundRect(-6, 0, 12, 78, 6); c.fill();
+    c.translate(0, 76); c.rotate(a2);
+    c.beginPath(); c.roundRect(-5, 0, 10, 70, 5); c.fill();
+    c.translate(0, 68); fill('#d4aa40'); c.beginPath(); c.moveTo(-6, 0); c.lineTo(6, 0); c.lineTo(3, 26); c.lineTo(-3, 26); c.closePath(); c.fill();
+    const hx = c.getTransform(); c.restore();
+    return { x: hx.e, y: hx.f };
+  };
+  const back = arm(-12, -100, p.a1b, p.a2b, false);
+  const front = arm(14, -100, p.a1f, p.a2f, true);
+  return { back, front };
+}
+
+function draw(t) {
+  const ph = TAU * t / T;
+  c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = 1; c.filter = 'none';
+  c.fillStyle = '#0f0e0e'; c.fillRect(0, 0, W, H);
+
+  // the lit screen, warm at the lamp and falling off to the edges
+  const flick = 1 + 0.035 * Math.sin(ph * 7) + 0.02 * Math.sin(ph * 13 + 1);
+  const g = c.createRadialGradient(LAMP.x, S.t + 200, 20, LAMP.x, S.t + 260, 760 * flick);
+  g.addColorStop(0, '#fbf1da'); g.addColorStop(0.45, '#f0d9a8'); g.addColorStop(0.85, '#c98a3a'); g.addColorStop(1, '#7a3f0e');
+  c.fillStyle = g; c.fillRect(S.l, S.t, S.r - S.l, S.b - S.t);
+  c.strokeStyle = '#d4aa40'; c.lineWidth = 8; c.strokeRect(S.l, S.t, S.r - S.l, S.b - S.t);
+
+  // pose: a slow court-dance sway, all on whole cycles so the loop is seamless
+  const x = 820 + 70 * Math.sin(ph), y = 430 - 10 * Math.abs(Math.sin(ph * 2));
+  const lean = 0.05 * Math.sin(ph * 2);
+  const p = {
+    head: 0.06 * Math.sin(ph * 2 + 0.6),
+    a1f: -1.9 + 0.55 * Math.sin(ph * 2), a2f: -0.9 + 0.5 * Math.sin(ph * 2 + 1.1),
+    a1b: 0.5 + 0.45 * Math.sin(ph * 2 + Math.PI), a2b: 0.7 + 0.4 * Math.sin(ph * 2 + 2.2),
+  };
+  const K = 1.3;   // puppet scale
+  // shadow: projected from the lamp onto the screen, so it is larger, offset away from the lamp and softer
+  const pr = 1.32, sx = LAMP.x + (x - LAMP.x) * pr + 40, sy = LAMP.y + (y - LAMP.y) * pr - 60;
+  c.save();
+  c.translate(sx + 8 * Math.sin(ph * 7), sy); c.scale(K * pr, K * pr); c.rotate(lean);
+  c.filter = `blur(${7 + 2 * Math.sin(ph * 5)}px)`; c.globalAlpha = 0.6;
+  puppet(null, p, true);
+  c.restore();
+  c.save(); c.globalCompositeOperation = 'multiply'; c.fillStyle = 'rgba(122,63,14,0.12)'; c.fillRect(S.l, S.t, S.r - S.l, S.b - S.t); c.restore();
+
+  // the puppet itself, held against the screen
+  c.save(); c.translate(x, y); c.scale(K, K); c.rotate(lean);
+  const hands = puppet(true, p, false);
+  c.restore();
+
+  // rods (cempurit) from the dalang's hands below the stage to the body and both hands
+  c.strokeStyle = '#3b2410'; c.lineWidth = 4; c.lineCap = 'round';
+  const grip = [[x - 40, 900], [x + 70, 900], [x + 10, 900]];
+  [hands.front, hands.back, { x: x, y: y + 150 }].forEach((h, i) => { c.beginPath(); c.moveTo(grip[i][0], grip[i][1]); c.lineTo(h.x, h.y + 20); c.stroke(); });
+
+  // banana-trunk stage the puppets stand in
+  const bg = c.createLinearGradient(0, 690, 0, 760); bg.addColorStop(0, '#b8922a'); bg.addColorStop(1, '#7a5a12');
+  c.fillStyle = bg; c.beginPath(); c.roundRect(S.l - 40, 692, S.r - S.l + 80, 58, 28); c.fill();
+  c.fillStyle = 'rgba(255,240,200,.25)'; c.fillRect(S.l - 10, 700, S.r - S.l + 20, 4);
+
+  // the gunungan (tree of life) planted at the side, swaying
+  c.save(); c.translate(380, 700); c.rotate(0.05 * Math.sin(ph * 2 + 0.4));
+  c.fillStyle = '#2f6f5e'; c.beginPath(); c.moveTo(0, -420); c.quadraticCurveTo(110, -230, 90, -40); c.lineTo(-90, -40); c.quadraticCurveTo(-110, -230, 0, -420); c.fill();
+  c.fillStyle = '#d4aa40'; c.beginPath(); c.moveTo(0, -360); c.quadraticCurveTo(70, -220, 56, -70); c.lineTo(-56, -70); c.quadraticCurveTo(-70, -220, 0, -360); c.fill();
+  c.fillStyle = '#e03030'; c.beginPath(); c.roundRect(-46, -120, 92, 60, 6); c.fill();
+  c.fillStyle = '#2f6f5e'; for (let i = 0; i < 6; i++) { c.beginPath(); c.arc(0, -320 + i * 40, 7 + i, 0, TAU); c.fill(); }
+  c.strokeStyle = '#3b2410'; c.lineWidth = 4; c.beginPath(); c.moveTo(0, -40); c.lineTo(0, 200); c.stroke();
+  c.restore();
+
+  // the lamp (blencong), its flame flickering
+  c.save(); c.globalCompositeOperation = 'lighter';
+  const lg = c.createRadialGradient(LAMP.x, LAMP.y + 70, 0, LAMP.x, LAMP.y + 70, 90 * flick);
+  lg.addColorStop(0, 'rgba(255,200,90,.55)'); lg.addColorStop(1, 'rgba(255,200,90,0)'); c.fillStyle = lg; c.fillRect(LAMP.x - 120, LAMP.y - 50, 240, 240);
+  c.restore();
+
+  // curtains frame it all, as in the game
+  curtainSide(0, 210, 1); curtainSide(W - 210, 210, -1); valance();
+  c.fillStyle = '#e8c040'; c.beginPath(); c.moveTo(LAMP.x, LAMP.y + 42 - 10 * flick); c.quadraticCurveTo(LAMP.x + 12, LAMP.y + 70, LAMP.x, LAMP.y + 78); c.quadraticCurveTo(LAMP.x - 12, LAMP.y + 70, LAMP.x, LAMP.y + 42 - 10 * flick); c.fill();
+  c.fillStyle = '#7a3f0e'; c.beginPath(); c.roundRect(LAMP.x - 22, LAMP.y + 76, 44, 14, 6); c.fill();
+  // floor
+  c.fillStyle = '#1b1210'; c.fillRect(0, 760, W, 140);
+}
+window.draw = draw; window.T = T;
+draw(0); document.title = 'ready';
+</script></body></html>

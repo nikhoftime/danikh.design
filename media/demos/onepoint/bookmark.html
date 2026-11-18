@@ -1,0 +1,120 @@
+<!doctype html><html lang="en"><head><script id="no-parent-scroll">if(window!==window.top){(function(){var f=HTMLElement.prototype.focus;HTMLElement.prototype.focus=function(o){return f.call(this,Object.assign({},o||{},{preventScroll:true}))};Element.prototype.scrollIntoView=function(){};var st=document.createElement("style");st.textContent="::-webkit-scrollbar{width:12px;height:12px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(128,128,128,.45);border-radius:12px;border:3px solid transparent;background-clip:content-box}::-webkit-scrollbar-corner{background:transparent}html{scrollbar-width:thin;scrollbar-color:rgba(128,128,128,.5) transparent}";(document.head||document.documentElement).appendChild(st);})()}</script>
+
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>One Point Perspective · Bookmark</title>
+<style>
+@font-face{font-family:S;src:url(../../../fonts/switzer-latin-400-normal.woff2) format("woff2");font-weight:400}
+@font-face{font-family:S;src:url(../../../fonts/switzer-latin-500-normal.woff2) format("woff2");font-weight:500}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0F0E0E;color:#F2F1EE;font-family:S,system-ui,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none}
+.caps{text-transform:uppercase;letter-spacing:.02em;font-weight:500;font-size:11px}
+.mute{color:rgba(242,241,238,.55)}
+.app{position:absolute;inset:0;display:flex;flex-direction:column}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px 16px;flex-wrap:wrap;padding:12px clamp(14px,2.4vw,26px);flex:none}
+.seg{display:inline-flex;border:1px solid rgba(242,241,238,.16);border-radius:2px;overflow:hidden}
+.seg button{appearance:none;font:inherit;color:rgba(242,241,238,.6);background:transparent;border:0;padding:7px 11px;cursor:pointer;transition:background .2s,color .2s}
+.seg button+button{border-left:1px solid rgba(242,241,238,.16)}
+.seg button.on{background:#F2F1EE;color:#0F0E0E}
+.stage{position:relative;flex:1;min-height:0;touch-action:none;overflow:hidden}
+.still{position:absolute;background:#000 center/cover no-repeat;box-shadow:0 20px 50px rgba(0,0,0,.5);transition:filter .4s}
+.mark{position:absolute;cursor:grab;filter:drop-shadow(0 14px 26px rgba(0,0,0,.45));transition:filter .3s}
+.mark.drag{cursor:grabbing}
+.mark .acr{position:absolute;inset:0;border-radius:12px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.45);backdrop-filter:blur(.3px)}
+.mark .acr::after{content:"";position:absolute;right:12px;top:12px;width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(255,255,255,.6)}
+.mark svg{position:absolute;overflow:visible}
+.mark .lbl{position:absolute;left:12px;top:9px;font-style:italic}
+.mark.ok svg line,.mark.ok svg rect{stroke:#FFF}
+.mark.ok{filter:drop-shadow(0 0 14px rgba(255,90,60,.55)) drop-shadow(0 14px 26px rgba(0,0,0,.45))}
+.thumbs{display:flex;gap:6px;padding:10px clamp(14px,2.4vw,26px) 12px;overflow-x:auto;flex:none;scrollbar-width:none}
+.thumbs button{appearance:none;flex:none;width:92px;height:42px;border:1px solid rgba(242,241,238,.16);border-radius:2px;background:#000 center/cover;cursor:pointer;opacity:.55;transition:opacity .2s,border-color .2s}
+.thumbs button.on{opacity:1;border-color:#F2F1EE}
+.note{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:min(560px,calc(100% - 28px));background:rgba(15,14,14,.88);border:1px solid rgba(242,241,238,.16);border-radius:4px;padding:12px 14px;font-size:13px;line-height:1.5;opacity:0;transition:opacity .4s;pointer-events:none}
+.note.on{opacity:1}
+.note b{display:block;font-weight:500;text-transform:uppercase;letter-spacing:.02em;font-size:11px;color:#FF5A3C;margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="top"><div class="seg caps" id="grids"></div><span class="caps mute" id="hint">Drag the bookmark over the film still</span></div>
+ <div class="stage" id="stage"><div class="still" id="still"></div><div class="mark" id="mark"><div class="acr"></div><span class="lbl caps mute" id="ml"></span><svg id="svg"></svg></div><div class="note" id="note"><b id="nb"></b><span id="nt"></span></div></div>
+ <div class="thumbs" id="thumbs"></div>
+</div>
+<script>
+(() => {
+  const GRIDS = { one: 'One point perspective', thirds: 'Rule of thirds', arm: 'Harmonic armature' };
+  const STILLS = [
+    ['corridor', 'one', 'The corridor’s ceiling, walls and floor all run to a single vanishing point at the centre, pulling you straight down the ship.'],
+    ['podbay', 'one', 'The red pod bay recedes to one point behind the doorway, so the frame feels deep, enclosed and controlled.'],
+    ['centrifuge', 'one', 'The round hatch sits on the centre lines, and the curving walls and lockers fold in towards it.'],
+    ['pod', 'one', 'Dave and Frank sit mirrored on either side of the centre line, with HAL’s view framed in the window between them.'],
+    ['hal', 'one', 'HAL’s lens sits exactly where the diagonals cross. Nothing in the frame competes with it.'],
+    ['room', 'thirds', 'Try the rule of thirds here: the monolith, the bed and the room’s lines settle against the grid rather than the centre.'],
+    ['monolith', 'thirds', 'Try the rule of thirds: see how the monolith and the horizon sit against the lines instead of the middle.'],
+    ['cockpit', 'arm', 'Try the harmonic armature: the window frames and the figures follow the diagonals from the corners.'],
+  ];
+  const $ = id => document.getElementById(id), stage = $('stage'), still = $('still'), mark = $('mark'), svg = $('svg');
+  let grid = 'one', si = 0, F = {}, pos = { x: 0, y: 0 }, snapped = false;
+  // grid buttons
+  Object.entries(GRIDS).forEach(([k, t]) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = t; b.dataset.k = k; b.onclick = () => { grid = k; draw(); check(); }; $('grids').appendChild(b); });
+  STILLS.forEach(([n], i) => { const b = document.createElement('button'); b.type = 'button'; b.style.backgroundImage = 'url(' + n + '.webp)'; b.setAttribute('aria-label', n); b.onclick = () => pick(i); $('thumbs').appendChild(b); });
+  function pick(i) {
+    si = i; still.style.backgroundImage = 'url(' + STILLS[i][0] + '.webp)';
+    [...$('thumbs').children].forEach((b, k) => b.classList.toggle('on', k === i));
+    scatter(); check();
+  }
+  function L(x1, y1, x2, y2) { return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`; }
+  function draw() {
+    [...$('grids').children].forEach(b => b.classList.toggle('on', b.dataset.k === grid));
+    $('ml').textContent = GRIDS[grid];
+    const w = F.w, h = F.h; let s = `<rect x="0" y="0" width="${w}" height="${h}"/>`;
+    if (grid === 'one') {
+      s += L(0, 0, w, h) + L(w, 0, 0, h) + L(w / 2, 0, w / 2, h) + L(0, h / 2, w, h / 2);
+      [[.115, .118], [.28, .28]].forEach(([fx, fy]) => s += `<rect x="${w * fx}" y="${h * fy}" width="${w * (1 - 2 * fx)}" height="${h * (1 - 2 * fy)}"/>`);
+    } else if (grid === 'thirds') {
+      s += L(w / 3, 0, w / 3, h) + L(2 * w / 3, 0, 2 * w / 3, h) + L(0, h / 3, w, h / 3) + L(0, 2 * h / 3, w, 2 * h / 3);
+    } else {
+      s += L(0, 0, w, h) + L(w, 0, 0, h);
+      [[0, 0], [w, 0], [0, h], [w, h]].forEach(([x, y]) => { s += L(x, y, w / 2, h - y) + L(x, y, w - x, h / 2); });
+    }
+    svg.setAttribute('width', w); svg.setAttribute('height', h); svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    svg.innerHTML = `<g fill="none" stroke="rgba(255,255,255,.85)" stroke-width="1.4">${s}</g>`;
+  }
+  function fit() {
+    const W = stage.clientWidth, H = stage.clientHeight, pad = Math.min(60, W * 0.06);
+    let w = Math.min(W - pad * 2, (H - 70) * 2.2); const h = w / 2.2;
+    F = { x: (W - w) / 2, y: (H - h) / 2 - 20, w, h };
+    Object.assign(still.style, { left: F.x + 'px', top: F.y + 'px', width: w + 'px', height: h + 'px' });
+    const m = Math.max(16, w * 0.04); // acrylic border around the grid
+    Object.assign(mark.style, { width: w + 2 * m + 'px', height: h + 2 * m + 'px' });
+    svg.style.left = m + 'px'; svg.style.top = m + 'px'; F.m = m;
+    draw(); scatter(true);
+  }
+  function scatter(keep) {
+    if (!keep || !pos.set) { pos = { x: F.x + F.w * 0.16, y: F.y + F.h * 0.38, set: true }; }
+    snapped = false; place();
+  }
+  function place() { mark.style.left = (pos.x - F.m) + 'px'; mark.style.top = (pos.y - F.m) + 'px'; }
+  function check() {
+    const d = Math.hypot(pos.x - F.x, pos.y - F.y), ok = d < Math.max(10, F.w * 0.02);
+    if (ok) { pos.x = F.x; pos.y = F.y; place(); }
+    snapped = ok; mark.classList.toggle('ok', ok);
+    const [, best, text] = STILLS[si];
+    $('nb').textContent = best === grid ? 'Aligned · ' + GRIDS[grid] : 'Aligned · try ' + GRIDS[best].toLowerCase() + ' too';
+    $('nt').textContent = text;
+    $('note').classList.toggle('on', ok);
+    $('hint').textContent = ok ? 'Aligned' : 'Drag the bookmark over the film still';
+  }
+  let drag = null;
+  mark.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, px: pos.x, py: pos.y }; mark.setPointerCapture(e.pointerId); mark.classList.add('drag'); });
+  mark.addEventListener('pointermove', e => {
+    if (!drag) return; pos.x = drag.px + e.clientX - drag.x; pos.y = drag.py + e.clientY - drag.y;
+    const near = Math.hypot(pos.x - F.x, pos.y - F.y) < Math.max(10, F.w * 0.02);
+    place(); mark.classList.toggle('ok', near); if (!near) $('note').classList.remove('on');
+  });
+  const up = () => { if (!drag) return; drag = null; mark.classList.remove('drag'); check(); };
+  mark.addEventListener('pointerup', up); mark.addEventListener('pointercancel', up);
+  new ResizeObserver(fit).observe(stage);
+  fit(); pick(0);
+})();
+</script>
+</body></html>

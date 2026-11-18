@@ -1,0 +1,809 @@
+
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DECODE · Stations</title>
+<style>
+@font-face{font-family:S;src:url(../../../fonts/switzer-latin-400-normal.woff2) format("woff2");font-weight:400}
+@font-face{font-family:S;src:url(../../../fonts/switzer-latin-500-normal.woff2) format("woff2");font-weight:500}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0F0E0E;--fg:#F2F1EE;--mute:rgba(242,241,238,.55);--line:rgba(242,241,238,.14);--acc:#FF5A3C}
+html,body{height:100%;background:var(--bg);color:var(--fg);font-family:S,system-ui,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.caps{text-transform:uppercase;letter-spacing:.02em;font-weight:500;font-size:11px}
+.app{position:absolute;inset:0;display:flex;flex-direction:column}
+.top,.bot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px clamp(14px,2.4vw,26px);flex:none;z-index:3}
+.top .hint{color:var(--mute);text-align:right}
+.stage{position:relative;flex:1;min-height:0;touch-action:none}
+.stage canvas.main{position:absolute;inset:0;width:100%;height:100%;display:block}
+.scan{display:inline-flex;align-items:center;gap:9px;color:var(--mute)}
+.scan i{width:7px;height:7px;background:var(--acc);box-shadow:0 0 0 3px rgba(255,90,60,.18);animation:blink 1.4s steps(1) infinite}
+.scan.ok{color:var(--fg)}
+.scan.ok i{background:var(--fg);box-shadow:0 0 0 3px rgba(242,241,238,.18);animation:none}
+@keyframes blink{50%{opacity:0}}
+.btn{appearance:none;font:inherit;color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:2px;padding:8px 12px;cursor:pointer;transition:background .25s,color .25s,border-color .25s}
+.btn:hover,.btn:focus-visible{border-color:var(--fg);outline:0}
+.btn.solid{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn.solid:hover{background:transparent;color:var(--fg)}
+.btn[disabled]{opacity:.35;pointer-events:none}
+/* unlocked card */
+.done{position:absolute;left:50%;bottom:clamp(12px,3vh,26px);transform:translate(-50%,24px);width:min(460px,calc(100% - 28px));background:rgba(15,14,14,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:4px;padding:16px 18px;opacity:0;pointer-events:none;transition:opacity .45s,transform .45s cubic-bezier(.2,.8,.2,1);z-index:5}
+.done.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+@media (min-aspect-ratio:1/1){.done{left:auto;right:clamp(14px,2.4vw,26px);bottom:auto;top:46px;width:min(340px,40%);transform:translateY(-12px)}.done.on{transform:none}.done h3{font-size:18px}.done p{font-size:12.5px}}
+.done .k{display:flex;align-items:center;gap:8px;color:var(--mute)}
+.done .k::before{content:"";width:7px;height:7px;background:var(--fg)}
+.done h3{font-weight:500;font-size:20px;letter-spacing:-.01em;margin:8px 0 6px}
+.done p{font-size:13px;line-height:1.5;color:rgba(242,241,238,.78)}
+.done .row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.done .web{display:inline-block;margin-top:10px;color:#00FFAE;font-size:10px}
+/* station 3 key */
+.key{position:absolute;z-index:4;display:flex;align-items:center;justify-content:center;width:min(240px,46%);height:52px;border:1px solid rgba(242,241,238,.5);border-bottom-width:4px;border-radius:6px;background:#1a1919;color:var(--fg);cursor:pointer;transition:transform .06s,border-bottom-width .06s;left:50%;bottom:16px;transform:translateX(-50%)}
+.key.down{transform:translateX(-50%) translateY(3px);border-bottom-width:1px}
+/* station 4 */
+.cand{position:absolute;cursor:grab;touch-action:none;transition:opacity .3s}
+.cand canvas{display:block;width:100%;height:100%}
+.cand.used{opacity:.18;pointer-events:none}
+.float{position:absolute;z-index:6;pointer-events:none;filter:drop-shadow(0 10px 18px rgba(0,0,0,.45))}
+.float canvas{display:block;width:100%;height:100%}
+.float.back{transition:left .45s cubic-bezier(.2,.8,.2,1),top .45s cubic-bezier(.2,.8,.2,1),width .45s,height .45s,opacity .45s}
+.float.snap{transition:left .18s,top .18s}
+.float.no{animation:no .4s}
+@keyframes no{20%{margin-left:-8px}40%{margin-left:7px}60%{margin-left:-5px}80%{margin-left:3px}}
+/* station 5 pad */
+.pad{position:absolute;right:14px;bottom:14px;z-index:4;display:grid;grid-template-columns:repeat(3,38px);grid-template-rows:repeat(2,38px);gap:4px}
+.pad button{appearance:none;font:inherit;font-size:13px;color:var(--fg);background:rgba(15,14,14,.75);border:1px solid var(--line);border-radius:3px;cursor:pointer}
+.pad button:active{background:var(--fg);color:var(--bg)}
+.pad .u{grid-column:2}.pad .l{grid-column:1;grid-row:2}.pad .d{grid-column:2;grid-row:2}.pad .r{grid-column:3;grid-row:2}
+/* station 6 */
+.s6{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,1fr);gap:clamp(12px,2vw,24px);padding:0 clamp(14px,2.4vw,26px) clamp(14px,2.4vw,26px)}
+.s6 .view{position:relative;min-height:0}
+.s6 .view canvas{position:absolute;inset:0;width:100%;height:100%}
+.s6 .card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:4px;padding:clamp(14px,2vw,22px);min-height:0}
+.s6 .card .n{color:var(--mute)}
+.s6 .card h2{font-weight:500;font-size:clamp(18px,2.2vw,26px);letter-spacing:-.02em;line-height:1.1;margin:10px 0 10px}
+.s6 .card p{font-size:13.5px;line-height:1.55;color:rgba(242,241,238,.82)}
+.s6 .card ul{margin:12px 0 0 0;list-style:none;font-size:13px;line-height:1.5;color:var(--mute)}
+.s6 .card li{padding-left:14px;position:relative;margin-top:4px}
+.s6 .card li::before{content:"";position:absolute;left:0;top:.6em;width:5px;height:5px;background:var(--acc)}
+.s6 .card .out{margin-top:14px;display:none;font-size:13px;word-break:break-all}
+.s6 .card .out a{color:var(--fg);border-bottom:1px solid var(--fg)}
+.s6 .card .out.on{display:block}
+.s6 .dots{display:flex;gap:5px;margin-top:auto;padding-top:14px}
+.s6 .dots i{flex:1;height:2px;background:var(--line)}
+.s6 .dots i.on{background:var(--fg)}
+.s6 .ctl{display:flex;gap:8px;margin-top:12px}
+.s6 .ctl .btn:last-child{margin-left:auto}
+@media (max-aspect-ratio:1/1){
+  .top{flex-direction:column;align-items:flex-start;gap:4px}.top .hint{text-align:left}
+  .s6{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}
+  .s6 .card{padding:14px}.s6 .card h2{margin:6px 0}.s6 .card ul{display:none}.s6 .card p{font-size:12.5px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top"><span class="caps" id="ttl"></span><span class="caps hint" id="hint"></span></div>
+  <div class="stage" id="stage"><canvas class="main" id="cv"></canvas></div>
+  <div class="bot"><span class="scan caps" id="scan"><i></i><span>Scanner · searching</span></span><button class="btn caps" id="reset" type="button">Reset</button></div>
+  <div class="done" id="done"><span class="k caps">Unlocked</span><h3 id="dT"></h3><p id="dP"></p><div class="row" id="dR"></div></div>
+</div>
+<script src="jsqr.min.js"></script>
+<script src="qr.js"></script>
+<script>
+(() => {
+'use strict';
+const S = Math.min(6, Math.max(1, +(new URLSearchParams(location.search).get('s')) || 1));
+const INK = '#0F0E0E', PAPER = '#F2F1EE', FG = '#F2F1EE', ACC = '#FF5A3C', FONT = 'S, system-ui, sans-serif';
+const $ = id => document.getElementById(id);
+const stage = $('stage'), cv = $('cv'), ctx = cv.getContext('2d');
+const MAIN = QR.main.m, N = MAIN.length;
+let W = 0, H = 0, DPR = 1, portrait = false, dirty = true;
+const NAMES = ['', 'Contrast', 'Error Correction', 'White Space', 'Uniqueness', 'Universality', 'Digital Eyes'];
+$('ttl').textContent = 'Station 0' + S + ' · ' + NAMES[S];
+
+// ---------- helpers ----------
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const ease = t => 1 - Math.pow(1 - clamp(t, 0, 1), 3);
+const finderZone = (i, j, n) => (i < 8 && j < 8) || (i >= n - 8 && j < 8) || (i < 8 && j >= n - 8);
+function drawQR(g, m, x, y, s, skip, color) {
+  g.fillStyle = color || INK;
+  for (let j = 0; j < m.length; j++) for (let i = 0; i < m.length; i++)
+    if (m[j][i] === '1' && !(skip && skip(i, j))) g.fillRect(x + i * s, y + j * s, s, s);
+}
+function finder(g, x, y, s, color) {
+  g.fillStyle = color || INK; g.beginPath();
+  g.rect(x, y, 7 * s, 7 * s); g.rect(x + s, y + s, 5 * s, 5 * s); g.fill('evenodd');
+  g.fillRect(x + 2 * s, y + 2 * s, 3 * s, 3 * s);
+}
+function finders(g, x, y, s, n, color) { finder(g, x, y, s, color); finder(g, x + (n - 7) * s, y, s, color); finder(g, x, y + (n - 7) * s, s, color); }
+const scanCanvas = document.createElement('canvas'), sctx = scanCanvas.getContext('2d', { willReadFrequently: true });
+function decode(src, sx, sy, sw, sh, invert) {
+  // run a real QR decoder (jsQR) over a region of a canvas
+  sw = Math.round(sw); sh = Math.round(sh);
+  if (sw < 20 || sh < 20) return null;
+  const k = Math.min(1, 520 / Math.max(sw, sh));
+  scanCanvas.width = Math.round(sw * k); scanCanvas.height = Math.round(sh * k);
+  sctx.imageSmoothingEnabled = true;
+  sctx.drawImage(src, sx, sy, sw, sh, 0, 0, scanCanvas.width, scanCanvas.height);
+  const d = sctx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+  const r = jsQR(d.data, d.width, d.height, { inversionAttempts: invert ? 'attemptBoth' : 'dontInvert' });
+  return r ? r.data : null;
+}
+const scanEl = $('scan'), scanTxt = scanEl.querySelector('span');
+function status(txt, ok) { scanTxt.textContent = txt; scanEl.classList.toggle('ok', !!ok); }
+const done = $('done');
+// finishing a station unlocks its page on the DECODE website (same origin, shared storage)
+const WEB = ['one', 'two', 'three', 'four', 'five', 'six', 'seven'];
+function unlockWeb() {
+  try {
+    const k = 'decode-unlocked', a = JSON.parse(localStorage.getItem(k) || '[]'), n = WEB[S - 1];
+    if (!a.includes(n)) { a.push(n); localStorage.setItem(k, JSON.stringify(a)); }
+  } catch (e) {}
+}
+function unlock(title, text, extra, final) {
+  $('dT').textContent = title; $('dP').textContent = text;
+  if (final !== false) { unlockWeb(); const w = document.createElement('span'); w.className = 'web caps'; w.textContent = 'Page ' + WEB[S - 1] + ' of the DECODE website is now unlocked'; $('dP').appendChild(document.createElement('br')); $('dP').appendChild(w); }
+  const row = $('dR'); row.innerHTML = '';
+  (extra || []).forEach(b => row.appendChild(b));
+  const again = document.createElement('button'); again.className = 'btn caps'; again.type = 'button'; again.textContent = 'Play again';
+  again.onclick = () => { hideDone(); st.reset(); }; row.appendChild(again);
+  const close = document.createElement('button'); close.className = 'btn caps'; close.type = 'button'; close.textContent = 'Close';
+  close.onclick = hideDone; row.appendChild(close);
+  done.classList.add('on');
+}
+const hideDone = () => done.classList.remove('on');
+$('reset').onclick = () => { hideDone(); st.reset(); dirty = true; };
+
+// pixel fireworks (same square-pixel language as the site)
+const sparks = [];
+function burst(x, y, count) {
+  for (let q = 0; q < count; q++) {
+    const a = Math.random() * Math.PI * 2, v = 1.5 + Math.random() * 5;
+    sparks.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1.5, life: 1, s: 2 + Math.random() * 3, c: Math.random() < 0.3 ? ACC : null });
+  }
+}
+function drawSparks(g, dt, base) {
+  for (let i = sparks.length - 1; i >= 0; i--) {
+    const p = sparks[i]; p.vy += 0.12 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= 0.018 * dt;
+    if (p.life <= 0) { sparks.splice(i, 1); continue; }
+    g.globalAlpha = Math.round(p.life * 5) / 5; g.fillStyle = p.c || base;
+    g.fillRect(Math.round(p.x), Math.round(p.y), p.s, p.s);
+  }
+  g.globalAlpha = 1;
+}
+
+function fit() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const r = stage.getBoundingClientRect(); W = r.width; H = r.height; portrait = W < H * 0.95;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  st.resize && st.resize(); dirty = true;
+}
+function text(g, str, x, y, align, color, size) {
+  g.font = '500 ' + (size || 11) + 'px ' + FONT; g.textAlign = align || 'left'; g.textBaseline = 'middle';
+  g.fillStyle = color || 'rgba(242,241,238,.55)'; g.fillText(str.toUpperCase(), x, y);
+}
+
+// ================= STATION 1 · CONTRAST =================
+// Slide the engraved acrylic over five backgrounds; a real decoder reads whatever is under it.
+function station1() {
+  const BG = [
+    { name: 'Paper', base: [236, 232, 224], grain: 10 },
+    { name: 'Halftone', base: [244, 242, 238], dots: true },
+    { name: 'Kraft', base: [200, 162, 120], grain: 26, stripes: true },
+    { name: 'Felt grey', base: [184, 183, 180], grain: 22 },
+    { name: 'Black', base: [20, 20, 20], grain: 8 },
+  ];
+  // landscape: the acrylic slides along the whole tray. portrait: the acrylic stays put in a window
+  // and the (much wider) strip of backgrounds slides underneath it, like the physical slider.
+  let tray, A, ms, pw, len, pos = 0.06, strip = null, scanned = false, found = '', lastScan = 0, moved = true, okTime = 0;
+  function paintStrip() {
+    strip = document.createElement('canvas');
+    strip.width = Math.round(len * DPR); strip.height = Math.round(tray.h * DPR);
+    const g = strip.getContext('2d'), n = BG.length;
+    for (let b = 0; b < n; b++) {
+      const bg = BG[b], x0 = Math.round(b * strip.width / n), w = Math.round((b + 1) * strip.width / n) - x0, h = strip.height;
+      const img = g.createImageData(w, h), d = img.data;
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const p = (y * w + x) * 4;
+        let v = bg.grain ? (Math.random() - 0.5) * bg.grain : 0;
+        if (bg.stripes) v += Math.sin((x * 0.05 + Math.sin(y * 0.02) * 3)) * 9;
+        d[p] = bg.base[0] + v; d[p + 1] = bg.base[1] + v; d[p + 2] = bg.base[2] + v; d[p + 3] = 255;
+      }
+      g.putImageData(img, x0, 0);
+      if (bg.dots) {
+        g.save(); g.beginPath(); g.rect(x0, 0, w, h); g.clip();
+        const step = Math.max(5, ms * DPR * 1.1); g.fillStyle = '#1b1b1b';
+        for (let y = 0; y < h + step; y += step) for (let x = x0 + ((y / step) % 2 ? step / 2 : 0); x < x0 + w + step; x += step) { g.beginPath(); g.arc(x, y, step * 0.32, 0, 7); g.fill(); }
+        g.restore();
+      }
+    }
+  }
+  const off = () => portrait ? pw / 2 + pos * 4 * pw - tray.w / 2 : 0;
+  const center = () => portrait ? { x: tray.x + tray.w / 2, y: tray.y + tray.h / 2 } : { x: tray.x + A / 2 + pos * (tray.w - A), y: tray.y + tray.h / 2 };
+  const st = {
+    resize() {
+      if (portrait) {
+        A = Math.min(W * 0.6, H * 0.42); pw = A * 1.5; len = pw * 5;
+        const w = W - 24, h = A * 1.3; tray = { x: 12, y: (H - h) / 2 - 12, w, h };
+      } else {
+        const w = Math.min(W * 0.9, 1100), h = Math.min(H * 0.62, w / 5 * 1.15); tray = { x: (W - w) / 2, y: (H - h) / 2 - 8, w, h };
+        A = Math.min(h * 0.9, w / 5 * 1.25); pw = w / 5; len = w;
+      }
+      ms = Math.max(2, Math.floor(A * 0.74 / N));
+      $('hint').textContent = portrait ? 'Drag sideways to slide the backgrounds' : 'Drag the acrylic along the slider';
+      paintStrip(); moved = true;
+    },
+    reset() { pos = 0.06; scanned = false; found = ''; okTime = 0; moved = true; status('Scanner · searching'); },
+    move(p) { pos = clamp(p, 0, 1); moved = true; dirty = true; },
+    draw(now) {
+      ctx.clearRect(0, 0, W, H);
+      const pad = 12, o = off();
+      ctx.fillStyle = '#E4E2DD'; ctx.beginPath(); ctx.roundRect(tray.x - (portrait ? 6 : pad), tray.y - pad, tray.w + (portrait ? 12 : pad * 2), tray.h + pad * 2, 14); ctx.fill();
+      ctx.save(); ctx.beginPath(); ctx.rect(tray.x, tray.y, tray.w, tray.h); ctx.clip();
+      ctx.drawImage(strip, tray.x - o, tray.y, len, tray.h);
+      ctx.restore();
+      ctx.strokeStyle = 'rgba(0,0,0,.18)'; ctx.lineWidth = 1; ctx.strokeRect(tray.x + .5, tray.y + .5, tray.w - 1, tray.h - 1);
+      BG.forEach((bg, b) => {
+        const lx = tray.x - o + (b + 0.5) * pw;
+        if (lx < tray.x - 20 || lx > tray.x + tray.w + 20) return;
+        text(ctx, bg.name, lx, tray.y + tray.h + pad + 16, 'center', 'rgba(242,241,238,.5)', 10);
+      });
+      if (portrait) { // progress ticks along the bottom
+        const tw = Math.min(180, W * 0.5), tx = W / 2 - tw / 2, ty = tray.y + tray.h + pad + 40;
+        ctx.fillStyle = 'rgba(242,241,238,.15)'; ctx.fillRect(tx, ty, tw, 2);
+        ctx.fillStyle = FG; ctx.fillRect(tx + pos * (tw - 24), ty - 1, 24, 4);
+      }
+      const c = center(), x = c.x - A / 2, y = c.y - A / 2;
+      ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
+      ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.beginPath(); ctx.roundRect(x, y, A, A, 10); ctx.fill(); ctx.restore();
+      ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.roundRect(x + .75, y + .75, A - 1.5, A - 1.5, 10); ctx.stroke();
+      const q = N * ms, qx = Math.round(c.x - q / 2), qy = Math.round(c.y - q / 2);
+      drawQR(ctx, MAIN, qx, qy, ms, null, 'rgba(255,255,255,.45)');
+      ctx.fillStyle = 'rgba(255,255,255,.5)';
+      for (let k = -1; k <= 1; k++) ctx.fillRect(c.x + k * 5 - 1, y + A - 9, 2, 5);
+      if (moved && now - lastScan > 160) {
+        lastScan = now; moved = false;
+        const r = decode(cv, x * DPR, y * DPR, A * DPR, A * DPR, true);
+        const bi = clamp(Math.floor((c.x - tray.x + o) / pw), 0, 4);
+        if (r) { found = BG[bi].name; status('Scanned · ' + r.replace('https://', ''), true); if (!okTime) okTime = now; }
+        else { okTime = 0; if (!scanned) status('Scanner · ' + BG[bi].name + ' · no read'); }
+      }
+      if (okTime && !scanned && now - okTime > 450) {
+        scanned = true;
+        unlock('Contrast', 'It read on ' + found + '. A scanner only sees the difference between dark and light. Engraving on clear acrylic is pale, so it needs a dark surface behind it to stand out.');
+      }
+      if (okTime) { ctx.strokeStyle = FG; ctx.lineWidth = 2; ctx.strokeRect(x - 5, y - 5, A + 10, A + 10); }
+    },
+  };
+  let drag = null;
+  const rel = e => { const r = stage.getBoundingClientRect(); return e.clientX - r.left; };
+  stage.addEventListener('pointerdown', e => {
+    stage.setPointerCapture(e.pointerId);
+    drag = { x: rel(e), pos };
+    if (!portrait) st.move((rel(e) - tray.x - A / 2) / (tray.w - A));
+  });
+  stage.addEventListener('pointermove', e => {
+    if (!drag) return;
+    if (portrait) st.move(drag.pos - (rel(e) - drag.x) / (4 * pw)); // drag the strip: it follows your finger
+    else st.move((rel(e) - tray.x - A / 2) / (tray.w - A));
+  });
+  addEventListener('pointerup', () => drag = null);
+  addEventListener('keydown', e => { const d = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 }[e.key]; if (d) { st.move(pos + d * 0.05); e.preventDefault(); } });
+  st.always = true;
+  return st;
+}
+
+// ================= STATION 2 · ERROR CORRECTION =================
+// Scratch off the grey layer. The decoder tries after every stroke.
+function station2() {
+  let s, q, x0, y0, mask, mg, scanned = false, pct = 0, need = true, lastScan = 0, readAt = -1;
+  // where each codeword sits (version 4-H: 4 blocks of 9 data + 16 error-correction codewords, interleaved)
+  const isFunc = (x, y) => (x <= 8 && y <= 8) || (x >= N - 8 && y <= 8) || (x <= 8 && y >= N - 8) || x === 6 || y === 6 || (x >= 24 && x <= 28 && y >= 24 && y <= 28);
+  const order = [];
+  for (let right = N - 1; right >= 1; right -= 2) {
+    if (right === 6) right = 5;
+    for (let vert = 0; vert < N; vert++) for (let k = 0; k < 2; k++) { const x = right - k, up = ((right + 1) & 2) === 0, y = up ? N - 1 - vert : vert; if (!isFunc(x, y)) order.push([x, y]); }
+  }
+  const blockOf = c => c < 36 ? c % 4 : (c - 36) % 4, FIX = 8;
+  let dmg = [0, 0, 0, 0];
+  const small = document.createElement('canvas'); small.width = small.height = N; const smg = small.getContext('2d', { willReadFrequently: true });
+  function damage() {
+    smg.clearRect(0, 0, N, N); smg.imageSmoothingQuality = 'high'; smg.drawImage(mask, 0, 0, N, N);
+    const a = smg.getImageData(0, 0, N, N).data; dmg = [0, 0, 0, 0];
+    for (let c = 0; c < 100; c++) {
+      let hit = 0;
+      for (let b = 0; b < 8; b++) { const [x, y] = order[c * 8 + b]; if (a[(y * N + x) * 4 + 3] > 110) hit++; }
+      if (hit) dmg[blockOf(c)]++;
+    }
+    return dmg.every(v => v <= FIX);
+  }
+  $('hint').textContent = 'Scratch away the grey to reveal the code';
+  const st = {
+    resize() {
+      const room = portrait ? Math.min(W * 0.86, H * 0.66) : Math.min(H * 0.82, W * 0.5);
+      s = Math.max(3, Math.floor(room / (N + 8))); q = (N + 8) * s;
+      x0 = Math.round((portrait ? (W - q) / 2 : W * 0.5 - q * 0.62)); y0 = Math.round(portrait ? (H - q) / 2 - 24 : (H - q) / 2);
+      const old = mask; mask = document.createElement('canvas'); mask.width = mask.height = N * s; mg = mask.getContext('2d');
+      mg.fillStyle = '#6E6D6A'; mg.fillRect(0, 0, mask.width, mask.height);
+      if (old) mg.drawImage(old, 0, 0, mask.width, mask.height);
+      need = true;
+    },
+    reset() { mask = null; this.resize(); scanned = false; pct = 0; readAt = -1; damage(); status('Scanner · searching'); },
+    scratch(x, y, px, py) {
+      const mx = x - x0 - 4 * s, my = y - y0 - 4 * s;
+      mg.save(); mg.globalCompositeOperation = 'destination-out'; mg.lineCap = 'round'; mg.lineWidth = s * 3.6;
+      mg.beginPath(); mg.moveTo(px - x0 - 4 * s, py - y0 - 4 * s); mg.lineTo(mx, my); mg.stroke(); mg.restore();
+      need = true; dirty = true;
+    },
+    draw(now) {
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = PAPER; ctx.fillRect(x0, y0, q, q);
+      const cx = x0 + 4 * s, cy = y0 + 4 * s;
+      drawQR(ctx, MAIN, cx, cy, s);
+      ctx.drawImage(mask, cx, cy);
+      // the three position markers always stay visible, as in the original
+      ctx.fillStyle = PAPER;
+      [[0, 0], [N - 8, 0], [0, N - 8]].forEach(([i, j]) => ctx.fillRect(cx + i * s, cy + j * s, 8 * s, 8 * s));
+      finders(ctx, cx, cy, s, N);
+      if (need && now - lastScan > 200) {
+        lastScan = now; need = false;
+        const d = mg.getImageData(0, 0, mask.width, mask.height).data; let clear = 0;
+        for (let i = 3; i < d.length; i += 16) if (d[i] < 128) clear++;
+        pct = clear / (d.length / 16) * 100;
+        if (!scanned) {
+          const okRS = damage(), r = decode(cv, x0 * DPR, y0 * DPR, q * DPR, q * DPR, false) || (okRS ? QR.main.url : null);
+          if (r) {
+            scanned = true; readAt = pct; status('Scanned · ' + r.replace('https://', ''), true);
+            burst(x0 + q / 2, y0 + q / 2, 90);
+            unlock('Error correction', 'It scanned with ' + Math.round(pct) + '% uncovered. The code is split into 4 blocks of 25 codewords, and Reed–Solomon error correction can repair up to 8 broken codewords in each. Once every block was within that limit, the hidden rest was rebuilt.');
+          } else status('Scanner · no read yet');
+        }
+      }
+      // readout
+      const tx = portrait ? W / 2 : x0 + q + 36, ty = portrait ? y0 + q + 30 : y0 + q / 2;
+      const al = portrait ? 'center' : 'left';
+      text(ctx, 'Revealed', tx, ty - 26, al);
+      ctx.font = '500 ' + (portrait ? 34 : 48) + 'px ' + FONT; ctx.fillStyle = FG; ctx.textAlign = al; ctx.textBaseline = 'middle';
+      ctx.fillText(pct.toFixed(1) + '%', tx, ty + (portrait ? 6 : 10));
+      // damaged codewords per block, against what error correction can fix
+      const bw = portrait ? Math.min(W * 0.7, 240) : Math.min(220, W - tx - 24), by = ty + (portrait ? 40 : 62), bx = portrait ? tx - bw / 2 : tx;
+      text(ctx, 'Broken codewords per block · fixable up to 8', bx, by, 'left', 'rgba(242,241,238,.5)', 9);
+      for (let b = 0; b < 4; b++) {
+        const yy = by + 14 + b * 11, v = dmg[b];
+        ctx.fillStyle = 'rgba(242,241,238,.12)'; ctx.fillRect(bx, yy, bw, 5);
+        ctx.fillStyle = v <= FIX ? FG : ACC; ctx.fillRect(bx, yy, bw * v / 25, 5);
+        ctx.fillStyle = FG; ctx.fillRect(bx + bw * FIX / 25, yy - 2, 1.5, 9);
+      }
+      if (readAt >= 0) text(ctx, 'Read at ' + readAt.toFixed(1) + '%', bx, by + 64, 'left', FG);
+    },
+  };
+  let down = false, px = 0, py = 0;
+  const at = e => { const r = stage.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  stage.addEventListener('pointerdown', e => { down = true; stage.setPointerCapture(e.pointerId); [px, py] = at(e); st.scratch(px, py, px, py); });
+  stage.addEventListener('pointermove', e => { if (!down) return; const [x, y] = at(e); st.scratch(x, y, px, py); px = x; py = y; });
+  addEventListener('pointerup', () => down = false);
+  st.always = true;
+  return st;
+}
+
+// ================= STATION 3 · WHITE SPACE =================
+// Tap space to grow the quiet zone. Stop and it shrinks back into the dark screen.
+function station3() {
+  let s, qz = 0, hold = 0, scanned = false, pressT = -1e4;
+  const NEED = 4, MAX = 6, HOLD = 1.2;
+  $('hint').textContent = 'Press space, again and again';
+  const key = document.createElement('button'); key.className = 'key caps'; key.type = 'button'; key.textContent = 'Space';
+  stage.appendChild(key);
+  const press = () => { if (scanned) return; qz = Math.min(MAX, qz + 0.6); pressT = performance.now(); key.classList.add('down'); setTimeout(() => key.classList.remove('down'), 90); dirty = true; };
+  key.addEventListener('pointerdown', e => { e.preventDefault(); press(); });
+  addEventListener('keydown', e => { if (e.key === ' ' || e.code === 'Space') { e.preventDefault(); if (!e.repeat) press(); } });
+  const st = {
+    resize() { const room = Math.min(W * (portrait ? 0.9 : 0.6), (H - 90) * 0.92); s = Math.max(2, Math.floor(room / (N + 2 * MAX))); },
+    reset() { qz = 0; hold = 0; scanned = false; status('Scanner · searching'); },
+    draw(now, dt) {
+      const sec = dt / 60;
+      if (!scanned) {
+        qz = Math.max(0, qz - sec * (qz > NEED ? 1.0 : 0.75));
+        hold = qz >= NEED ? hold + sec : 0;
+        if (hold >= HOLD) {
+          scanned = true; status('Scanned · danikh.design', true); burst(W / 2, (H - 70) / 2, 110);
+          unlock('White space', 'A scanner needs a quiet zone: at least 4 modules of empty space around the code. Without it, the code melts into its surroundings and the position markers can no longer be found.');
+        } else status(qz >= NEED ? 'Scanner · reading… keep going' : 'Scanner · quiet zone ' + qz.toFixed(1) + ' / 4');
+      }
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+      const cx = W / 2, cy = (H - 70) / 2, side = (N + 2 * qz) * s;
+      ctx.fillStyle = '#fff'; ctx.fillRect(Math.round(cx - side / 2), Math.round(cy - side / 2), Math.round(side), Math.round(side));
+      drawQR(ctx, MAIN, Math.round(cx - N * s / 2), Math.round(cy - N * s / 2), s, null, '#000');
+      // meter
+      const mw = Math.min(260, W * 0.6), mx = cx - mw / 2, my = H - 92;
+      ctx.fillStyle = 'rgba(242,241,238,.15)'; ctx.fillRect(mx, my, mw, 2);
+      ctx.fillStyle = qz >= NEED ? FG : ACC; ctx.fillRect(mx, my, mw * qz / MAX, 2);
+      ctx.fillStyle = FG; ctx.fillRect(mx + mw * NEED / MAX - 1, my - 5, 2, 12);
+      text(ctx, '4 modules', mx + mw * NEED / MAX, my - 14, 'center', 'rgba(242,241,238,.6)', 10);
+      if (hold > 0 && !scanned) { ctx.strokeStyle = FG; ctx.lineWidth = 2; const p = hold / HOLD, r = side / 2 + 10; ctx.beginPath(); ctx.moveTo(cx - r, cy - r); ctx.lineTo(cx - r + 2 * r * p, cy - r); ctx.stroke(); }
+    },
+  };
+  st.always = true;
+  return st;
+}
+
+// ================= STATION 4 · UNIQUENESS =================
+// Your half is fixed in the holder. Find its other half on the wall and line it up.
+function station4() {
+  const ROUNDS = [
+    { name: 'Halved', tip: 'Your half has two position markers on the left', inA: (i, j) => i < 16 },
+    { name: 'Halved, the other way', tip: 'Your half has the two top markers', inA: (i, j) => j < 16 },
+    { name: 'Fragmented', tip: 'Follow the jagged edge', inA: (i, j) => i < 16 + [0, 0, 2, 2, 4, 4, 2, 2, 0, 0, -2, -2, -4, -4, -2, -2][j % 16] },
+  ];
+  const KEYS = ['main', 'path', 'simon', 'minda', 'decode', 'lilypad'];
+  let round = 0, order = [], s, ws, T, cands = [], solved = false, busy = false;
+  const tplEls = [];
+  function piece(key, part, scale, hilite) {
+    // draw one part (A or B) of a code at the given module size, with an acrylic backing
+    const m = QR[key].m, inA = ROUNDS[round].inA, c = document.createElement('canvas');
+    c.width = c.height = Math.round(N * scale * DPR); const g = c.getContext('2d'); g.scale(DPR, DPR);
+    const own = (i, j) => part === 'A' ? inA(i, j) : !inA(i, j);
+    g.fillStyle = hilite || PAPER;
+    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) if (own(i, j)) g.fillRect(i * scale, j * scale, scale + 0.5, scale + 0.5);
+    drawQR(g, m, 0, 0, scale, (i, j) => !own(i, j));
+    return c;
+  }
+  const wallBox = () => {
+    if (portrait) { const top = T.y + T.side + 18, h = H - top - 10; return { x: 10, y: top, w: W - 20, h, cols: 3, rows: 2 }; }
+    const x = T.x + T.side + 36; return { x, y: 18, w: W - x - 18, h: H - 36, cols: 2, rows: 3 };
+  };
+  function layout() {
+    if (portrait) { const side = Math.min(W * 0.72, H * 0.5); s = Math.floor(side / (N + 4)); }
+    else { const side = Math.min(H * 0.86, W * 0.46); s = Math.floor(side / (N + 4)); }
+    const side = (N + 4) * s;
+    T = { side, x: portrait ? Math.round((W - side) / 2) : Math.round(Math.max(18, W * 0.06)), y: portrait ? 8 : Math.round((H - side) / 2) };
+    T.cx = T.x + 2 * s; T.cy = T.y + 2 * s;
+    stage.dataset.slot = T.cx + ',' + T.cy + ',' + s;
+    const wb = wallBox(); const cell = Math.min(wb.w / wb.cols, wb.h / wb.rows);
+    ws = Math.max(1.5, (cell - 14) / N);
+    cands.forEach((cd, k) => {
+      const col = k % wb.cols, row = (k / wb.cols) | 0, size = N * ws;
+      cd.x = wb.x + (col + 0.5) * (wb.w / wb.cols) - size / 2; cd.y = wb.y + (row + 0.5) * (wb.h / wb.rows) - size / 2; cd.size = size;
+      Object.assign(cd.el.style, { left: cd.x + 'px', top: cd.y + 'px', width: size + 'px', height: size + 'px' });
+      const c = piece(cd.key, 'B', ws); c.style.width = c.style.height = '100%'; cd.el.replaceChildren(c);
+    });
+  }
+  function setup() {
+    cands.forEach(c => c.el.remove()); cands = []; solved = false; busy = false;
+    order = KEYS.slice().sort(() => Math.random() - 0.5);
+    order.forEach(key => {
+      const el = document.createElement('div'); el.className = 'cand'; stage.appendChild(el);
+      const cd = { key, el }; cands.push(cd);
+      el.addEventListener('pointerdown', e => grab(e, cd));
+    });
+    $('hint').textContent = 'Variation ' + (round + 1) + ' / 3 · ' + ROUNDS[round].name + ' · ' + ROUNDS[round].tip;
+    status('Scanner · waiting for a full code');
+    layout(); dirty = true;
+  }
+  let fl = null;
+  function grab(e, cd) {
+    if (solved || busy) return;
+    e.preventDefault();
+    const r = stage.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+    const fx = (px - cd.x) / cd.size, fy = (py - cd.y) / cd.size, size = N * s;
+    const el = document.createElement('div'); el.className = 'float';
+    const c = piece(cd.key, 'B', s); c.style.width = c.style.height = '100%'; el.appendChild(c);
+    Object.assign(el.style, { left: (px - fx * size) + 'px', top: (py - fy * size) + 'px', width: size + 'px', height: size + 'px' });
+    stage.appendChild(el); cd.el.classList.add('used');
+    fl = { el, cd, fx, fy, size, x: px - fx * size, y: py - fy * size };
+    stage.setPointerCapture(e.pointerId);
+  }
+  stage.addEventListener('pointermove', e => {
+    if (!fl || fl.lock) return;
+    const r = stage.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+    fl.x = px - fl.fx * fl.size; fl.y = py - fl.fy * fl.size;
+    // magnet: within a module of the slot, it clicks into place
+    const dx = (fl.x - T.cx) / s, dy = (fl.y - T.cy) / s;
+    const near = Math.abs(dx) < 1 && Math.abs(dy) < 1;
+    fl.el.style.left = (near ? T.cx : fl.x) + 'px'; fl.el.style.top = (near ? T.cy : fl.y) + 'px'; fl.near = near;
+  });
+  stage.addEventListener('pointerup', () => {
+    if (!fl) return; const f = fl;
+    if (!f.near) { // missed the slot: back to the wall
+      f.lock = true; f.el.classList.add('back');
+      Object.assign(f.el.style, { left: f.cd.x + 'px', top: f.cd.y + 'px', width: f.cd.size + 'px', height: f.cd.size + 'px', opacity: '0' });
+      setTimeout(() => { f.el.remove(); f.cd.el.classList.remove('used'); }, 460); fl = null;
+      status('Scanner · line it up with the dashed outline'); return;
+    }
+    fl = null; f.lock = true; busy = true; check(f);
+  });
+  function check(f) {
+    // render the assembled code and let the real decoder judge it
+    const c = document.createElement('canvas'), sc = 6, side = (N + 8) * sc; c.width = c.height = side;
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, side, side);
+    const inA = ROUNDS[round].inA, mA = MAIN, mB = QR[f.cd.key].m;
+    g.fillStyle = '#000';
+    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) if ((inA(i, j) ? mA : mB)[j][i] === '1') g.fillRect((i + 4) * sc, (j + 4) * sc, sc, sc);
+    const r = decode(c, 0, 0, side, side, false);
+    if (r === QR.main.url) {
+      status('Scanned · ' + r.replace('https://', ''), true); burst(T.x + T.side / 2, T.y + T.side / 2, 100);
+      setTimeout(() => {
+        f.el.remove();
+        if (round < ROUNDS.length - 1) {
+          const next = document.createElement('button'); next.className = 'btn solid caps'; next.type = 'button'; next.textContent = 'Next variation';
+          next.onclick = () => { hideDone(); round++; setup(); };
+          solved = true; dirty = true;
+          unlock('A perfect match', 'Only one half completes the code. The others look almost the same, but every QR code is unique, so no other half lines up with yours.', [next], false);
+          done.querySelector('.row .btn:nth-child(2)').remove();
+        } else {
+          solved = true; dirty = true;
+          unlock('Uniqueness', 'Halved twice and fragmented, and each time only one piece completed it. Similar-looking codes can carry completely different data. The position markers are the clues: count them.');
+        }
+      }, 700);
+    } else {
+      status('Scanner · no read · not a match');
+      f.el.classList.add('no');
+      setTimeout(() => {
+        f.el.classList.remove('no'); f.el.classList.add('back');
+        Object.assign(f.el.style, { left: f.cd.x + 'px', top: f.cd.y + 'px', width: f.cd.size + 'px', height: f.cd.size + 'px', opacity: '0' });
+        setTimeout(() => { f.el.remove(); busy = false; }, 460);
+      }, 450);
+    }
+  }
+  const st = {
+    resize() { layout(); },
+    reset() { round = 0; [...stage.querySelectorAll('.float')].forEach(e => e.remove()); setup(); },
+    draw() {
+      ctx.clearRect(0, 0, W, H);
+      // holder
+      ctx.fillStyle = '#E4E2DD'; ctx.beginPath(); ctx.roundRect(T.x - 10, T.y - 10, T.side + 20, T.side + 20, 14); ctx.fill();
+      ctx.fillStyle = '#CFCCC6'; ctx.fillRect(T.x, T.y, T.side, T.side);
+      const inA = ROUNDS[round].inA;
+      // your fixed half
+      ctx.fillStyle = PAPER;
+      for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) if (inA(i, j)) ctx.fillRect(T.cx + i * s, T.cy + j * s, s + .5, s + .5);
+      drawQR(ctx, MAIN, T.cx, T.cy, s, (i, j) => !inA(i, j));
+      // dashed outline of the missing part
+      ctx.save(); ctx.setLineDash([4, 4]); ctx.strokeStyle = 'rgba(15,14,14,.55)'; ctx.lineWidth = 1.2; ctx.beginPath();
+      for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+        if (inA(i, j)) continue;
+        const x = T.cx + i * s, y = T.cy + j * s, out = (a, b) => a < 0 || b < 0 || a >= N || b >= N || inA(a, b);
+        if (out(i, j - 1)) { ctx.moveTo(x, y); ctx.lineTo(x + s, y); }
+        if (out(i, j + 1)) { ctx.moveTo(x, y + s); ctx.lineTo(x + s, y + s); }
+        if (out(i - 1, j)) { ctx.moveTo(x, y); ctx.lineTo(x, y + s); }
+        if (out(i + 1, j)) { ctx.moveTo(x + s, y); ctx.lineTo(x + s, y + s); }
+      }
+      ctx.stroke(); ctx.restore();
+      if (solved) { // show the completed code
+        drawQR(ctx, MAIN, T.cx, T.cy, s, (i, j) => inA(i, j));
+      }
+      if (!portrait) text(ctx, 'Your piece', T.x, T.y + T.side + 26, 'left', 'rgba(242,241,238,.5)', 10);
+      if (!portrait) { const wb = wallBox(); text(ctx, 'The wall · drag one across', wb.x + 6, wb.y + 4, 'left', 'rgba(242,241,238,.5)', 10); }
+    },
+  };
+  setTimeout(setup, 0);
+  return st;
+}
+
+// ================= STATION 5 · UNIVERSALITY =================
+// Four codes without their markers. One acrylic with only the markers. Arrow keys to align.
+function station5() {
+  const KEYS = ['path', 'simon', 'minda', 'soundlab'];
+  let s, gx, gy, cols, slots = [], ov = { i: 0, j: 0 }, left = [], finale = false, finT = 0, lastHit = '';
+  $('hint').textContent = 'Click here, then use the arrow keys to slide the markers';
+  const pad = document.createElement('div'); pad.className = 'pad';
+  [['u', '▲', 0, -1], ['l', '◀', -1, 0], ['d', '▼', 0, 1], ['r', '▶', 1, 0]].forEach(([c, t, dx, dy]) => {
+    const b = document.createElement('button'); b.className = c; b.type = 'button'; b.textContent = t; b.setAttribute('aria-label', 'Move');
+    let rep; const go = () => st.nudge(dx, dy);
+    b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); go(); rep = setInterval(go, 110); });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, () => clearInterval(rep)));
+    pad.appendChild(b);
+  });
+  stage.appendChild(pad);
+  const cell = N + 6; // lattice cell per code (in modules)
+  const st = {
+    resize() {
+      cols = portrait ? 2 : 4; const rows = 4 / cols;
+      s = Math.max(2, Math.floor(Math.min((W - 20) / (cols * cell), (H - 70) / (rows * cell))));
+      gx = Math.round((W - cols * cell * s) / 2); gy = Math.round((H - rows * cell * s) / 2) - (portrait ? 20 : 0);
+      slots = KEYS.map((k, n) => ({ k, i: (n % cols) * cell + 3, j: ((n / cols) | 0) * cell + 3 }));
+      const maxI = cols * cell - N, maxJ = (4 / cols) * cell - N;
+      ov.i = clamp(ov.i, 0, maxI); ov.j = clamp(ov.j, 0, maxJ); ov.maxI = maxI; ov.maxJ = maxJ;
+    },
+    reset() { left = KEYS.slice(); finale = false; lastHit = ''; ov.i = Math.round(cell * 0.5); ov.j = Math.round(cell * 0.35); status('Scanner · searching'); dirty = true; },
+    nudge(dx, dy) { if (finale) return; ov.i = clamp(ov.i + dx, 0, ov.maxI); ov.j = clamp(ov.j + dy, 0, ov.maxJ); this.test(); dirty = true; },
+    test() {
+      const hit = slots.find(sl => left.includes(sl.k) && sl.i === ov.i && sl.j === ov.j);
+      if (!hit) { status(left.length ? 'Scanner · searching · ' + (4 - left.length) + ' / 4' : ''); return; }
+      // the markers sit on this code: render both together and decode for real
+      const c = document.createElement('canvas'), sc = 5, side = (N + 8) * sc; c.width = c.height = side;
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, side, side);
+      drawQR(g, QR[hit.k].m, 4 * sc, 4 * sc, sc, (i, j) => finderZone(i, j, N), '#000'); finders(g, 4 * sc, 4 * sc, sc, N, '#000');
+      const r = decode(c, 0, 0, side, side, false);
+      if (!r) return;
+      left = left.filter(k => k !== hit.k); lastHit = r;
+      status('Scanned · ' + r.replace('https://', ''), true);
+      burst(gx + (hit.i + N / 2) * s, gy + (hit.j + N / 2) * s, 90);
+      if (!left.length) setTimeout(() => {
+        finale = true; finT = performance.now(); status('Scanned · 4 / 4 · final code unlocked', true); dirty = true;
+        unlock('Universality', 'The same three markers worked on every code. Position markers are identical in every QR code. They only tell the scanner where the code is and which way up it is. The data lives in between.');
+      }, 650);
+    },
+    draw(now, dt) {
+      ctx.clearRect(0, 0, W, H);
+      const rows = 4 / cols, sw = cols * cell * s, sh = rows * cell * s;
+      ctx.fillStyle = '#DDE3E8'; ctx.fillRect(gx - 10, gy - 10, sw + 20, sh + 20); // the laptop screen
+      if (finale) {
+        const t = ease((now - finT) / 700), side = Math.min(sw, sh) * 0.8, ms = Math.floor(side / (N + 8)), q = (N + 8) * ms;
+        const x = Math.round(gx + sw / 2 - q / 2), y = Math.round(gy + sh / 2 - q / 2);
+        ctx.globalAlpha = t; ctx.fillStyle = '#fff'; ctx.fillRect(x, y, q, q); drawQR(ctx, MAIN, x + 4 * ms, y + 4 * ms, ms); ctx.globalAlpha = 1;
+        text(ctx, 'Scan me with your phone', gx + sw / 2, y + q + 16, 'center', INK, 10);
+      } else {
+        slots.forEach(sl => {
+          if (!left.includes(sl.k)) return;
+          const x = gx + sl.i * s, y = gy + sl.j * s;
+          drawQR(ctx, QR[sl.k].m, x, y, s, (i, j) => finderZone(i, j, N));
+          ctx.strokeStyle = 'rgba(15,14,14,.18)'; ctx.setLineDash([3, 3]);
+          [[0, 0], [N - 7, 0], [0, N - 7]].forEach(([a, b]) => ctx.strokeRect(x + a * s + .5, y + b * s + .5, 7 * s - 1, 7 * s - 1));
+          ctx.setLineDash([]);
+        });
+        // the acrylic: clear plate, three engraved markers
+        const ox = gx + ov.i * s, oy = gy + ov.j * s, m = 2 * s;
+        ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = 16; ctx.shadowOffsetY = 5;
+        ctx.fillStyle = 'rgba(255,255,255,.28)'; ctx.beginPath(); ctx.roundRect(ox - m, oy - m, (N) * s + 2 * m, (N) * s + 2 * m, 8); ctx.fill(); ctx.restore();
+        ctx.strokeStyle = 'rgba(15,14,14,.35)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(ox - m + .5, oy - m + .5, N * s + 2 * m - 1, N * s + 2 * m - 1, 8); ctx.stroke();
+        finders(ctx, ox, oy, s, N, 'rgba(15,14,14,.92)');
+      }
+      drawSparks(ctx, dt, ACC);
+    },
+  };
+  addEventListener('keydown', e => {
+    const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+    if (!d) return; e.preventDefault(); const k = e.shiftKey ? 4 : 1; for (let q = 0; q < k; q++) st.nudge(d[0], d[1]);
+  });
+  // dragging the plate also works (it moves in whole modules)
+  let drag = null;
+  stage.addEventListener('pointerdown', e => { if (finale) return; const r = stage.getBoundingClientRect(); drag = { x: e.clientX - r.left, y: e.clientY - r.top, i: ov.i, j: ov.j }; stage.setPointerCapture(e.pointerId); });
+  stage.addEventListener('pointermove', e => {
+    if (!drag) return; const r = stage.getBoundingClientRect();
+    const i = clamp(drag.i + Math.round((e.clientX - r.left - drag.x) / s), 0, ov.maxI), j = clamp(drag.j + Math.round((e.clientY - r.top - drag.y) / s), 0, ov.maxJ);
+    if (i !== ov.i || j !== ov.j) { ov.i = i; ov.j = j; st.test(); dirty = true; }
+  });
+  addEventListener('pointerup', () => drag = null);
+  st.always = true; st.reset();
+  return st;
+}
+
+// ================= STATION 6 · DIGITAL EYES =================
+// How a scanner reads a code, step by step, on the danikh.design code.
+function station6() {
+  document.querySelector('.bot').style.display = 'none';
+  stage.innerHTML = `<div class="s6"><div class="view"><canvas id="v6"></canvas></div><div class="card"><span class="n caps" id="n6"></span><h2 id="h6"></h2><p id="p6"></p><ul id="u6"></ul><p class="out" id="o6">Decoded → <a href="https://danikh.design" target="_blank" rel="noopener">https://danikh.design</a></p><div class="dots" id="d6"></div><div class="ctl"><button class="btn caps" id="b6" type="button">Back</button><button class="btn solid caps" id="x6" type="button">Next</button><button class="btn caps" id="r6" type="button">Reset</button></div></div></div>`;
+  $('hint').textContent = 'Step through what the scanner sees';
+  const STEPS = [
+    ['Image', 'The camera sees a photo, not a code: a tilted square, uneven light, colour and noise.', ['No interpretation yet, just pixels.']],
+    ['Preprocessing', 'Colour is thrown away and the image is cleaned up so the pattern stands out.', ['Greyscale', 'Contrast boost', 'Noise reduction']],
+    ['Binarisation', 'Every pixel becomes black or white, decided against its local neighbourhood.', ['Adaptive thresholding copes with shadows and glare.']],
+    ['Finding the markers', 'The scanner hunts for the three position markers. Through their centre they always read dark–light–dark–light–dark in a 1:1:3:1:1 ratio.', ['Three markers fix position, size and rotation.']],
+    ['Straightening', 'Using the markers, the alignment pattern and the timing lines, the tilt is undone and the code is mapped flat.', ['Alignment pattern corrects perspective.', 'Timing lines give the module count: 33 × 33.']],
+    ['Grid sampling', 'A 33 × 33 grid is laid over the code and each cell is sampled at its centre: dark is 1, light is 0.', ['1,089 cells → bits']],
+    ['Decoding + error correction', 'Bits are read in a zigzag from the bottom-right. Of 100 codewords, 36 carry data and 64 are Reed–Solomon error correction.', ['Data codewords', 'Error-correction codewords repair damage']],
+    ['Output', 'The bits are turned back into text. This code holds one URL.', ['Meaning comes last.']],
+  ];
+  const v = $('v6'), g = v.getContext('2d');
+  let step = 0, stepAt = performance.now(), vw, vh;
+  const dots = $('d6'); STEPS.forEach(() => dots.appendChild(document.createElement('i')));
+  // function patterns + zigzag placement order (the real QR layout for version 4)
+  const isFunc = (x, y) => (x <= 8 && y <= 8) || (x >= N - 8 && y <= 8) || (x <= 8 && y >= N - 8) || x === 6 || y === 6 || (x >= 24 && x <= 28 && y >= 24 && y <= 28);
+  const order = [];
+  for (let right = N - 1; right >= 1; right -= 2) {
+    if (right === 6) right = 5;
+    for (let vert = 0; vert < N; vert++) for (let k = 0; k < 2; k++) {
+      const x = right - k, up = ((right + 1) & 2) === 0, y = up ? N - 1 - vert : vert;
+      if (!isFunc(x, y)) order.push([x, y]);
+    }
+  }
+  const noise = document.createElement('canvas'); noise.width = noise.height = 160;
+  { const ng = noise.getContext('2d'), d = ng.createImageData(160, 160); for (let i = 0; i < d.data.length; i += 4) { const n = Math.random() * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = n; d.data[i + 3] = 26; } ng.putImageData(d, 0, 0); }
+  function go(n) { step = clamp(n, 0, STEPS.length - 1); stepAt = performance.now(); paint(); dirty = true; }
+  function paint() {
+    const [t, p, b] = STEPS[step];
+    $('n6').textContent = 'Step ' + (step + 1) + ' / ' + STEPS.length; $('h6').textContent = t; $('p6').textContent = p;
+    $('u6').innerHTML = b.map(x => '<li>' + x + '</li>').join('');
+    [...dots.children].forEach((d, i) => d.classList.toggle('on', i <= step));
+    $('b6').disabled = step === 0; $('x6').disabled = step === STEPS.length - 1;
+    $('o6').classList.toggle('on', step === STEPS.length - 1);
+    if (step === STEPS.length - 1) unlockWeb();
+  }
+  $('b6').onclick = () => go(step - 1); $('x6').onclick = () => go(step + 1); $('r6').onclick = () => go(0);
+  addEventListener('keydown', e => { if (e.key === 'ArrowRight') go(step + 1); if (e.key === 'ArrowLeft') go(step - 1); });
+  paint();
+  const st = {
+    resize() {
+      const r = v.getBoundingClientRect(); vw = r.width; vh = r.height;
+      v.width = Math.round(vw * DPR); v.height = Math.round(vh * DPR); g.setTransform(DPR, 0, 0, DPR, 0, 0);
+    },
+    reset() { go(0); },
+    draw(now) {
+      if (!vw) return;
+      const t = (now - stepAt) / 1000;
+      const raw = step === 0, grey = step === 1, bin = step >= 2;
+      // straightening animates during step 4
+      const flat = step < 4 ? 0 : step === 4 ? ease(t / 1.1) : 1;
+      g.clearRect(0, 0, vw, vh);
+      g.fillStyle = raw ? '#6b5a49' : grey ? '#5d5d5d' : bin && flat < 1 ? '#000' : '#0F0E0E';
+      g.beginPath(); g.roundRect(0, 0, vw, vh, 4); g.fill();
+      if (raw) { const gr = g.createLinearGradient(0, 0, vw, vh); gr.addColorStop(0, 'rgba(255,214,160,.25)'); gr.addColorStop(1, 'rgba(0,0,0,.35)'); g.fillStyle = gr; g.fillRect(0, 0, vw, vh); }
+      const side = Math.min(vw, vh) * 0.82, s = side / (N + 8);
+      g.save(); g.translate(vw / 2, vh / 2);
+      g.rotate((-9 * Math.PI / 180) * (1 - flat)); g.transform(1, 0.06 * (1 - flat), -0.1 * (1 - flat), 1 - 0.08 * (1 - flat), 0, 0);
+      const x0 = -side / 2 + 4 * s, y0 = -side / 2 + 4 * s;
+      const out = step === 7;
+      // the code card
+      g.fillStyle = raw ? '#efe3cf' : grey ? '#d8d8d8' : '#fff'; g.fillRect(-side / 2, -side / 2, side, side);
+      g.globalAlpha = out ? 0.18 : 1;
+      drawQR(g, MAIN, x0, y0, s, null, raw ? '#2b2420' : grey ? '#1a1a1a' : '#000');
+      g.globalAlpha = 1;
+      if (raw || grey) { // lighting + sensor noise
+        const lg = g.createRadialGradient(-side * 0.3, -side * 0.3, 0, -side * 0.3, -side * 0.3, side * 1.1);
+        lg.addColorStop(0, raw ? 'rgba(255,240,200,.28)' : 'rgba(255,255,255,.18)'); lg.addColorStop(1, 'rgba(0,0,0,.32)');
+        g.fillStyle = lg; g.fillRect(-side / 2, -side / 2, side, side);
+        if (raw) { g.globalAlpha = 0.9; for (let y = -side / 2; y < side / 2; y += 160) for (let x = -side / 2; x < side / 2; x += 160) g.drawImage(noise, x, y); g.globalAlpha = 1; }
+      }
+      const pulse = 0.55 + 0.45 * Math.sin(now / 240);
+      if (step === 3 || step === 4) { // markers
+        g.strokeStyle = ACC; g.lineWidth = 3;
+        [[0, 0], [N - 7, 0], [0, N - 7]].forEach(([a, b]) => g.strokeRect(x0 + a * s - 3, y0 + b * s - 3, 7 * s + 6, 7 * s + 6));
+        if (step === 3) { // the 1:1:3:1:1 scan line through the first marker
+          const y = y0 + 3.5 * s, k = clamp(t / 1.2, 0, 1);
+          g.fillStyle = ACC; g.globalAlpha = pulse; g.fillRect(x0 - 2 * s, y - 1, (11 * s) * k, 2); g.globalAlpha = 1;
+          if (k === 1) { g.font = '500 ' + Math.max(10, s * 1.3) + 'px ' + FONT; g.fillStyle = ACC; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText('1 : 1 : 3 : 1 : 1', x0 + 8.5 * s, y); }
+        }
+      }
+      if (step === 4) { // alignment + timing
+        g.strokeStyle = '#3C6EFF'; g.lineWidth = 2.5; g.setLineDash([4, 3]);
+        g.strokeRect(x0 + 24 * s - 2, y0 + 24 * s - 2, 5 * s + 4, 5 * s + 4);
+        g.beginPath(); g.moveTo(x0 + 8 * s, y0 + 6.5 * s); g.lineTo(x0 + (N - 8) * s, y0 + 6.5 * s); g.moveTo(x0 + 6.5 * s, y0 + 8 * s); g.lineTo(x0 + 6.5 * s, y0 + (N - 8) * s); g.stroke(); g.setLineDash([]);
+        g.strokeStyle = 'rgba(255,90,60,.9)'; g.lineWidth = 2; g.beginPath(); g.moveTo(x0 + 6.5 * s, y0 + 6.5 * s); g.lineTo(x0 + 26.5 * s, y0 + 26.5 * s); g.stroke();
+      }
+      if (step === 5) { // grid + samples
+        const k = clamp(t / 1.4, 0, 1), n = Math.round(N * k);
+        g.strokeStyle = 'rgba(255,90,60,.55)'; g.lineWidth = 1; g.beginPath();
+        for (let i = 0; i <= n; i++) { g.moveTo(x0 + i * s, y0); g.lineTo(x0 + i * s, y0 + N * s); g.moveTo(x0, y0 + i * s); g.lineTo(x0 + N * s, y0 + i * s); }
+        g.stroke();
+        if (k === 1) { const r = Math.max(1.2, s * 0.14);
+          for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) { g.fillStyle = MAIN[j][i] === '1' ? '#fff' : ACC; g.fillRect(x0 + (i + .5) * s - r, y0 + (j + .5) * s - r, 2 * r, 2 * r); } }
+      }
+      if (step === 6) { // zigzag: 288 data bits, then 512 error-correction bits
+        const shown = Math.min(order.length, Math.round(order.length * clamp(t / 3, 0, 1)));
+        for (let q = 0; q < shown; q++) {
+          const [x, y] = order[q], data = q < 288;
+          g.fillStyle = data ? 'rgba(255,90,60,.62)' : 'rgba(60,110,255,.38)';
+          g.fillRect(x0 + x * s, y0 + y * s, s, s);
+        }
+        if (shown < order.length) { const [x, y] = order[shown]; g.strokeStyle = ACC; g.lineWidth = 2; g.strokeRect(x0 + x * s - 1, y0 + y * s - 1, s + 2, s + 2); }
+        // legend
+        g.restore(); g.save();
+        g.font = '500 10px ' + FONT; g.textBaseline = 'middle'; g.textAlign = 'left';
+        g.fillStyle = 'rgba(255,90,60,.9)'; g.fillRect(12, vh - 34, 9, 9); g.fillStyle = FG; g.fillText('DATA · 36 CODEWORDS', 26, vh - 29.5);
+        g.fillStyle = 'rgba(60,110,255,.8)'; g.fillRect(12, vh - 18, 9, 9); g.fillStyle = FG; g.fillText('ERROR CORRECTION · 64 CODEWORDS', 26, vh - 13.5);
+      }
+      g.restore();
+      if (out) {
+        const k = ease(t / 0.8);
+        g.globalAlpha = k; g.font = '500 ' + Math.max(16, Math.min(34, vw / 16)) + 'px ' + FONT; g.fillStyle = FG; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.fillStyle = INK; g.fillText('https://danikh.design', vw / 2, vh / 2); g.globalAlpha = 1;
+      }
+    },
+  };
+  st.always = true;
+  return st;
+}
+
+const st = [null, station1, station2, station3, station4, station5, station6][S]();
+const ro = new ResizeObserver(() => fit()); ro.observe(stage);
+fit(); st.reset && S !== 4 && S !== 5 && st.reset();
+if (document.fonts) document.fonts.ready.then(() => { dirty = true; });
+let last = performance.now();
+function loop(now) {
+  const dt = Math.min(3, (now - last) / 16.7); last = now;
+  if (dirty || st.always || sparks.length) { dirty = false; st.draw(now, dt); if (S !== 5 && sparks.length) drawSparks(ctx, dt, S === 3 ? '#fff' : FG); }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+})();
+</script>
+</body></html>

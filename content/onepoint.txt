@@ -1,0 +1,14 @@
+SLUG onepoint
+TITLE One Point Perspective
+COVER op-cover.png
+TAGS Visual Communication, Editorial Design
+CLIENT Fundamental C (coursework)
+YEAR 2025
+EARLIER yes
+MEDIUM A5 zine, bookmark templates
+P An A5 zine that is a visual analysis of Stanley Kubrick’s 2001: A Space Odyssey, from its colour, typography and design principles to the one-point perspective that defines its frames.
+IMG op-mockup.png
+FRAME onepoint/book.html | Flip through the zine | op-cover.png |  | FULLSCREEN | Open the zine
+P The zine comes with clear bookmark templates printed with three composition grids: one-point perspective, the rule of thirds and the harmonic armature. Lay one over a film still and the structure of the shot appears.
+IMG op-bookmark.png
+FRAME onepoint/bookmark.html | Align the bookmark | op-bookmark.png |  | FULLSCREEN | Try the bookmark

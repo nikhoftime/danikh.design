@@ -1,0 +1,74 @@
+SLUG kalian-joget-joget
+TITLE Kalian, Joget-Joget
+COVER kjj-cover.png
+TAGS Interaction Design, Human-Computer Interaction, Creative Coding
+CLIENT Algorithmic Agent brief (coursework)
+TEAM Independent Project
+YEAR 2026
+MEDIUM p5.js, Ably Realtime, Suno AI
+P Kalian, Joget-Joget is an interactive multiplayer puppet game for up to four players that explores how algorithmic agents can express personality and emotion through smartphone interaction.
+P Inspired by the traditions of Wayang Kulit shadow puppetry, the project transforms smartphones into contemporary puppeteering tools. While players control their puppets on a shared digital stage, each character responds through its own emotional states and behavioural rules.
+P Like puppets with minds of their own, the characters do not simply obey. Instead, they express how they feel about what they are made to do, reacting with joy, frustration, fear, or resistance, turning every performance into a playful conversation between puppeteer and puppet.
+H It started with a phone in your hand
+P The brief was to design an algorithmic agent: a character with its own properties and rules, controlled through a smartphone. Looking around, most answers to it lived entirely inside the phone. The agent sat on the screen you were holding, and anyone standing next to you had to peer over your shoulder to see what was happening.
+P I wanted the opposite. If the phone was the controller, the character could live somewhere everyone could see it. That turned a private interaction into a performance, and a performance needs a stage, an audience, and someone pulling the strings out of sight.
+P Using the phone was a deliberate choice. Not long ago, a motion-controlled character like this meant wiring a microcontroller to a handful of separate sensors. Today most of those sensors are already inside the smartphone in everyone’s pocket, so anyone in the room can pick one up and play, with nothing to build or plug in.
+MP4 kjj-demo-day.mp4
+CAP Demo day · sound on
+H Behind the screen
+P That someone already exists in wayang kulit, the Indonesian shadow puppet theatre. The dalang sits behind a lit screen and works every character by hand. The audience only ever sees the shadows. The puppeteer is hidden, and the show belongs to the room.
+MP4 kjj-wayang-loop.mp4
+CAP Wayang kulit, redrawn in the Kalian, Joget-Joget style: the puppet is worked on rods, the lamp throws its shadow on the screen
+P Kalian, Joget-Joget keeps that arrangement. The phone becomes the dalang’s rod, the laptop becomes the screen, and the player stays hidden while their puppet performs for everyone else. The name is Indonesian for “You all, dance dance”, spoken straight to the audience.
+H Puppets who don’t want to dance
+P A puppet that simply copies your hand isn’t much of a character, so I gave mine a point of view. The emotional story comes from a band I grew up with. NSYNC’s No Strings Attached was named after the group fought to break free from the manager who controlled them: performers made to dance by someone powerful behind the scenes, who eventually push back.
+IMG kjj-plate-nsync.png
+P The puppets in Kalian, Joget-Joget feel the same way. They get happy, then excited, then annoyed, scared or exhausted, and they let you know. They can’t stop dancing while the phone is in your hands, but they never pretend to enjoy it.
+H Finding the cast
+P The idea of a performer hidden behind a screen, with only an exaggerated character visible, had been running through my sketchbook for a while.
+P From there came four characters, each built to move differently: Big Bird, an elegant crane spirit; Hippie Fella, a chaotic, spindly trickster in a top hat; Sumo, massive and grounded; and Samurai, angular and precise, with a kabuto helmet and a katana.
+P Everything is drawn in code with p5.js, so writing the code became the design process. The first version used a dotted, shadow-puppet look, but it read poorly on a big screen. I rebuilt all four as solid cartoon puppets with thick outlines, visible strings and a face for every mood: a beak that opens when happy, a tear when sad, a katana that changes angle, a belly that squashes and stretches.
+W Shadow stage | kjj-full-sketch-1.png | | An early sketch: performers behind a curved screen, seen only as shadows.
+W Sound wall | kjj-full-sketch-2.png | | A wall that answers every strum with sound and pattern.
+W Projection corridor | kjj-full-sketch-3.png | | Shadow projections on a frosted wall, with a rhythm floor underfoot.
+W First prototype | kjj-play-1.jpg | | The first dotted puppets on the laptop stage, controlled from a phone.
+W Tuning in code | kjj-play-2.jpg | | Writing the code became the design process.
+P Here is the final cast. Pick a state to see how each one carries it.
+EMBED kjj-cast.html
+H Pulling the strings
+P Each puppet is an agent: a set of properties and the rules that change them. The phone reads its sensors, decides how the puppet feels, and sends that to the stage. The laptop draws what that feeling looks like.
+TH Sensor | What it reads | What the puppet does
+TR Gyroscope | Tilt and spin | Swings its arms and wings, moves across the stage, gets excited when spun
+TR Accelerometer | Leg swing and kicks | Dances with its legs
+TR Shake strength | How hard you shake | Gets scared and jolts in panic
+TR Microphone | Blowing | Shatters, from any state
+TR Touch screen | A tap | Rains disco balls onto the stage
+TR Front camera | Covered or not | Stage goes dark, spotlight on each puppet
+P Ten states sit on top of those inputs. Tilt and the puppet starts dancing. Spin and it gets excited. Lean forward and it turns sad. Leave it alone for five seconds and it falls asleep. Flick it back and forth too often and its anger builds until it snaps, and it only calms down if you hold perfectly still for four seconds. Blow into the microphone and it explodes. Try it: the panel next to the stage stands in for the phone.
+EMBED kjj-stage.html
+CAP Keyboard: ← → tilt · S spin · H shake · L lean · B blow · Space disco balls
+IMG kjj-plate-states.png
+CAP The state transition diagram behind the agent
+H Setting the stage
+P A performance needs a venue. The backdrop borrows from the No Strings Attached artwork: amber curtains, a fringed valance, gold shell ornaments, a teal backdrop and a wooden floor, all drawn with bezier curves rather than images. A dangdut track, the Indonesian pop genre, generated with Suno, plays underneath.
+P Two interactions belong to the stage itself. Tapping the phone rains mirror disco balls from above; each spins a grid of coloured tiles and bursts into sparks and shards when it hits a puppet. Covering the front camera dims the whole theatre and drops a spotlight on every performer, like a stagehand reaching for the lights.
+W Disco balls | kjj-full-disco.png | | Tap the phone and mirror disco balls rain from above.
+W Spotlight | kjj-full-spotlight.png | | Cover the front camera and the stage goes dark, with a spotlight on each puppet.
+H Bringing friends on stage
+P One puppet on a big screen felt like a demo. Several felt like a show, and shadow theatre is never a solo act anyway. The question became how several phones could talk to one laptop at the same time.
+P My first multiplayer build used a shared-object library. It worked once, then dropped out minutes later, because every phone was overwriting the same data. I rebuilt it so that each phone publishes to its own channel and the laptop listens to all four at once. A lobby channel shows, in real time, which slots and characters are already taken.
+W One channel per player | kjj-plate-ably.png | | Each phone publishes to its own channel, and the laptop subscribes to all four.
+W Phone lobby | kjj-plate-lobby.png | | Pick a player slot and a character, then begin.
+P The stage splits into four zones, one per player. Each puppet dances within its own space, with its own colour, mood, explosions and panic.
+H Showtime
+P On demo day, people crowded around the screen with their phones out, setting off disco balls and trying to make each other’s puppets lose their temper.
+IMG kjj-demoday.jpg
+P The first question was always whether you could win. You can’t. It’s a dance show, not a game show, and the fun is in the collective chaos. The more useful note was that the puppets shared a stage but never noticed each other. So after demo day I added proximity sparks: when two puppets drift within reach, rainbow sparks fly between them, stronger the closer they get, and a faint rainbow thread links them when they are very close. It rewards dancing together without creating a winner. Add friends in the demo above to see it.
+W Proximity sparks off | kjj-full-sparks-off.png | | Two puppets dancing apart.
+W Proximity sparks on | kjj-full-sparks-on.png | | Bring them close and sparks fly between them.
+H What changed along the way
+P Most of the project was tuning. Anger triggered far too easily at first, so it now takes four flicks, builds more slowly and fades faster. The disco balls lost their hanging strings, and the spotlight lost its glare. States were hard to tell apart from across the room, so each one now has its own colour, size and face.
+IMG kjj-plate-birds.png
+CAP Big Bird across all ten states
+H Curtain call
+P Kalian, Joget-Joget came from two ideas that had been in my head before the brief arrived. One was a fascination with hidden performers: the person behind the act stays out of sight while the character takes the stage. The other was a boyband story about performers who are controlled and eventually push back. Put a phone in the dalang’s hand and both ideas fit on the same stage.

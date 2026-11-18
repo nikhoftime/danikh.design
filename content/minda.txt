@@ -1,0 +1,38 @@
+SLUG minda
+TITLE Minda
+COVER 4a1Pp24XrpTlXpwmMTcjDfcwTDc.png
+TAGS Interaction Design, Service & Experience Design, UX/UI Design
+CLIENT -
+TEAM Independent Project
+YEAR 2025
+SUM The brief | Explore how a neighbourhood can better support elderly residents, especially those living with early-stage dementia, building on research provided as part of the brief.
+SUM What we made | A quiet support ecosystem: a simple mobile app, scannable murals and landmarks that act as memory anchors, and a smart walker with gentle prompts.
+SUM My role | Independent project. I walked the neighbourhood myself and photographed its murals and landmarks, then designed the app, the mural system and the walker. The research on elderly residents was done by the lecturer as part of the brief.
+MEDIUM Figma, Rhino, Keyshot
+VIDEO file minda-film.mp4 minda-film-poster.jpg
+P Minda, derived from the Malay word meaning “mind”, explores how neighbourhoods can better support elderly individuals, especially those living with early-stage dementia. The foundation of the project was anchored in research on elderly residents, done by the lecturer as part of the brief, and the concept expands on the work of “Finding My Way Home” by exploring how familiar murals and everyday landmarks can become supportive cues. I visited the neighbourhood mentioned in the article myself, walking the same routes, photographing its murals and landmarks and noticing how small gaps in familiarity, routine and confidence can quietly shape an elderly person’s day. These impressions formed the heart of Minda, which aims to return small moments of autonomy to seniors while keeping their minds and bodies gently engaged.
+P Minda envisions a neighbourhood where support is woven naturally into daily life. A mobile app offers simple, familiar guidance that seniors can trust. Scannable murals and landmarks act as memory anchors that spark recognition and confidence. A smart walker brings together gentle prompts and sensorial cues to make journeys feel safer and more meaningful. Together, these elements form a quiet ecosystem that helps elderly users move, remember and reconnect with their surroundings through design that cares for both the mind and the moment.
+H How might we
+W How might we | 1k5ByepNoi2hMX9hc2yQxSuQQ4.png | | How might we engage elderly minds during mundane routines, such as walking from place to place?
+W Finding My Way Home | minda-plate-fmwh.png | | The concept expands on the work done by Dementia Singapore, exploring how familiar murals and everyday landmarks can become supportive cues.
+W Early research | minda-plate-brief.png | | Early research on elderly residents was provided by Brief. as part of the module's curriculum.
+W Murals in the neighbourhood | r2h4UMHwuUmiAxQPvxCclfWWlA.jpg | | I walked the same routes myself and photographed the murals that residents pass every day.
+W Everyday landmarks | OcDfTvBrKeHeFlDZfuJPfkqjAFo.png | | Each mural marks a block, and becomes a cue that can be recognised and remembered.
+H The Minda Mobile App
+P The Minda Mobile App supports elderly users, including those living with dementia, through large text, soft colours, clear icons, and familiar visuals. As part of a connected ecosystem, it transforms daily routines into meaningful journeys, encouraging memory recall, physical activity, social connection, and independence.
+IMG OzIMWKAgyoTPpWtciOeXXh16xLg.jpg
+W Homepage | minda-plate-home.png | | The Homepage is designed to be clear and welcoming, offering a personalised greeting. It provides elderly users with a familiar and reassuring starting point, helping them navigate their day with greater confidence, reduced cognitive strain, and a stronger sense of personal independence.
+W Caregiver Card | minda-plate-care.png | | The Caregiver Card on Minda shows key details at a glance and prompts for important caregiver calls, offering reassurance to elderly users and quick access to help if needed.
+W Recipes Page | minda-plate-recipes.png | | The Recipes Page presents meal ideas and ingredient lists in a clear, visual format, helping elderly users plan meals easily while supporting cognitive engagement through familiar routines.
+W Journey Page | minda-plate-journey.png | | The Journey Page lets elderly users choose their destination easily, with built-in murals on the navigation path to provide familiar visual cues and support wayfinding.
+H Murals as memory anchors
+P Minda draws inspiration from dementia-friendly wayfinding initiatives such as Finding My Way Home (Dementia Singapore). It transforms simple icons into interactive markers, using AR and XR to bring them to life. This approach helps create recognition patterns, keep users mentally engaged, and navigate their daily routes with greater confidence and emotional connection.
+IMG JZytwJdOPJyO4D5318XfUMPp9wA.png
+W Play | minda-plate-play.png | | Minda’s Play feature introduces gentle gamification through gesture-based interactions. Using fun, familiar interactions like chopping, mixing and painting, Play stimulates cognitive engagement while maintaining simplicity and accessibility for elderly users.
+W Connect | minda-plate-connect.png | | Minda’s Connect feature links nearby murals with short stories, encouraging exploration, memory prompts, and social engagement. These bite-sized narratives help users stay mentally active while feeling connected to the world around them.
+W Reminisce | minda-plate-reminisce.png | | Minda’s Reminisce feature, like animated memories and music visualisers, turns murals into portals that unlock familiar memories. Using culturally relevant icons and music, Reminisce supports emotional grounding and strengthens recall by anchoring memory cues visually—helping elderly users stay engaged while keeping their minds actively stimulated.
+H Minda’s Smart Walker
+P Minda’s Smart Walker integrates voice prompts, navigation, and sensorial feedback to guide and support elderly users. Informed by Brief's DIY PMD research, it builds on the familiarity of traditional walkers with a smart system that learns the user’s walking patterns, offering contextual, cognitive, and emotional support. The Smart Walker reduces cognitive strain, promotes independence, and makes daily walks more meaningful.
+IMG ZXp6ftVnGyZ7jIx6zKECjbah5A.png
+W Navigation | minda-plate-nav.png | | The Smart Walker provides voice prompts and mural cues to guide elderly users, offering relatable navigation without tracking exact locations. By using recognisable murals as wayfinding anchors, users can navigate safely and with confidence. With multiple language options, the walker also acts as gentle companionship, offering comfort along the journey.
+W Senses | minda-plate-sense.png | | The Smart Walker combines gentle haptics, familiar sounds, simple visuals, and light interactive tasks to create meaningful moments throughout the day. These micro-interactions, such as identifying objects, interacting with murals, or recalling memories, keep users mentally and physically engaged and turn daily walks into something they can look forward to.

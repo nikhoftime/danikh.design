@@ -1,0 +1,58 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0}svg{display:block}</style></head><body>
+<svg id="s" xmlns="http://www.w3.org/2000/svg" width="1920" height="1007" viewBox="0 0 1920 1007">
+  <image href="../originals/U9uOpuEx25Hp5bUtDmWGTdLI.png" x="0" y="0" width="1920" height="1007"/>
+  <defs><filter id="soft"><feGaussianBlur stdDeviation="9"/></filter></defs>
+  <g id="people"></g>
+</svg>
+<script>
+// Flat, architectural-render style silhouettes: one tone, no detail, slightly translucent.
+const NS = 'http://www.w3.org/2000/svg', g = document.getElementById('people');
+const el = (n, a, p = g) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); p.appendChild(e); return e; };
+function person(parts, tone = '#5f6266', op = 0.88) {
+  const grp = el('g', { opacity: op });
+  for (const [kind, a] of parts) {
+    if (kind === 'limb') el('polyline', { points: a.pts.map(p => p.join(',')).join(' '), fill: 'none', stroke: tone, 'stroke-width': a.w, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, grp);
+    else if (kind === 'head') el('ellipse', { cx: a.x, cy: a.y, rx: a.r * 0.86, ry: a.r, fill: tone }, grp);
+    else if (kind === 'poly') el('path', { d: a.d, fill: tone }, grp);
+  }
+}
+const shadow = (cx, cy, rx, ry, o = 0.22) => el('ellipse', { cx, cy, rx, ry, fill: `rgba(40,40,40,${o})`, filter: 'url(#soft)' });
+
+// contact shadows first
+shadow(1250, 792, 70, 10, 0.25);
+shadow(400, 452, 90, 12, 0.18);
+shadow(880, 438, 70, 10, 0.18);
+
+// A: adult perched on the front edge of the green stool, facing left, hand on knee
+person([
+  ['limb', { pts: [[1345, 500], [1180, 512]], w: 62 }],            // thigh
+  ['limb', { pts: [[1176, 512], [1166, 712], [1160, 780]], w: 46 }], // shin
+  ['poly', { d: 'M1150 772 L1110 790 L1112 800 L1176 800 L1180 776 Z' }], // foot
+  ['limb', { pts: [[1300, 500], [1250, 500]], w: 54 }],            // second leg, mostly hidden
+  ['poly', { d: 'M1300 515 C1290 420 1300 330 1330 255 L1392 262 C1410 340 1400 430 1392 515 Z' }], // torso
+  ['limb', { pts: [[1350, 270], [1310, 390], [1210, 470]], w: 30 }], // arm to knee
+  ['limb', { pts: [[1355, 248], [1352, 222]], w: 34 }],            // neck
+  ['head', { x: 1350, y: 178, r: 50 }],
+]);
+
+// B: someone leaning back in the lounge seat, knees up, arm along the backrest
+person([
+  ['poly', { d: 'M300 452 C296 400 286 330 270 286 L322 270 C346 320 356 400 360 452 Z' }],   // torso leaning back
+  ['limb', { pts: [[335, 440], [430, 382], [475, 448]], w: 40 }],  // near leg, knee up
+  ['limb', { pts: [[322, 446], [410, 398], [450, 452]], w: 36 }],  // far leg
+  ['limb', { pts: [[300, 290], [250, 300], [215, 360]], w: 24 }],  // arm over the backrest
+  ['limb', { pts: [[298, 270], [292, 250]], w: 24 }],              // neck
+  ['head', { x: 287, y: 218, r: 36 }],
+], '#64676b', 0.85);
+
+// C: a child sitting cross-legged on the textured pad, hands on the surface
+person([
+  ['poly', { d: 'M820 438 C840 410 920 410 944 438 C930 450 836 452 820 438 Z' }],   // crossed legs
+  ['poly', { d: 'M852 425 C846 360 852 300 870 262 L912 266 C924 310 922 370 914 425 Z' }], // torso
+  ['limb', { pts: [[870, 280], [842, 350], [830, 418]], w: 20 }],
+  ['limb', { pts: [[908, 282], [932, 350], [944, 414]], w: 20 }],
+  ['limb', { pts: [[890, 262], [890, 245]], w: 20 }],
+  ['head', { x: 890, y: 214, r: 32 }],
+], '#64676b', 0.85);
+document.title = 'ready';
+</script></body></html>

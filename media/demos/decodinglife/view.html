@@ -1,0 +1,94 @@
+<!doctype html><html lang="en"><head><script id="no-parent-scroll">if(window!==window.top){(function(){var f=HTMLElement.prototype.focus;HTMLElement.prototype.focus=function(o){return f.call(this,Object.assign({},o||{},{preventScroll:true}))};Element.prototype.scrollIntoView=function(){};var st=document.createElement("style");st.textContent="::-webkit-scrollbar{width:12px;height:12px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(128,128,128,.45);border-radius:12px;border:3px solid transparent;background-clip:content-box}::-webkit-scrollbar-corner{background:transparent}html{scrollbar-width:thin;scrollbar-color:rgba(128,128,128,.5) transparent}";(document.head||document.documentElement).appendChild(st);})()}</script>
+
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DECODE · website</title>
+<style>
+@font-face{font-family:S;src:url(../../../fonts/switzer-latin-500-normal.woff2) format("woff2");font-weight:500}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0F0E0E;--fg:#F2F1EE;--mute:rgba(242,241,238,.55);--line:rgba(242,241,238,.16)}
+html,body{height:100%;background:var(--bg);color:var(--fg);font-family:S,system-ui,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased}
+.caps{text-transform:uppercase;letter-spacing:.02em;font-weight:500;font-size:11px}
+.app{position:absolute;inset:0;display:flex;flex-direction:column}
+.bar{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;padding:12px clamp(12px,2vw,20px);border-bottom:1px solid var(--line);z-index:2}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:2px;overflow:hidden}
+.seg button{appearance:none;font:inherit;color:var(--mute);background:transparent;border:0;padding:7px 11px;cursor:pointer;transition:background .2s,color .2s}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--fg);color:var(--bg)}
+.seg button:not(.on):hover{color:var(--fg)}
+.lbl{color:var(--mute)}
+[hidden]{display:none!important}
+.bar .open{margin-left:auto;color:var(--fg);border-bottom:1px solid var(--line);padding-bottom:1px}
+.view{position:relative;flex:1;min-height:0;overflow:hidden}
+/* desktop: the site at full size */
+.desk{position:absolute;inset:0}
+.desk iframe{position:absolute;left:0;top:0;border:0;background:#111;transform-origin:0 0}
+/* phone: the site inside an iPhone 17 Pro on the standard plate */
+.phone{position:absolute;inset:0;background:#F2F1EE;display:none}
+.phone .tag{position:absolute;top:14px;left:18px;color:#0F0E0E}
+.phone .tag.r{left:auto;right:18px;color:rgba(15,14,14,.5)}
+.dev{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+.dev .scr{position:absolute;overflow:hidden;background:#111}
+.dev .scr iframe{position:absolute;left:0;top:0;width:393px;height:852px;border:0;transform-origin:0 0}
+.dev img{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;filter:drop-shadow(0 18px 30px rgba(0,0,0,.18))}
+.mode-phone .desk{display:none}.mode-phone .phone{display:block}
+@media (max-width:520px){.bar .lbl{display:none}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="bar">
+    <div class="seg caps" id="mode"><button type="button" data-m="desktop">Desktop</button><button type="button" data-m="phone">Phone</button></div>
+    <a class="open caps" id="open" href="index.html" target="_blank" rel="noopener">Open ↗</a>
+  </div>
+  <div class="view">
+    <div class="desk" id="desk"><iframe id="fd" title="DECODE website, desktop"></iframe></div>
+    <div class="phone" id="phone"><span class="tag caps">Phone UI</span><span class="tag r caps">DECODE</span>
+      <div class="dev" id="dev"><div class="scr" id="scr"><iframe id="fp" title="DECODE website, phone"></iframe></div><img src="assets/iphone.webp" alt=""></div>
+    </div>
+  </div>
+</div>
+<script>
+(() => {
+  const NUM = ['one', 'two', 'three', 'four', 'five', 'six', 'seven'];
+  const $ = id => document.getElementById(id);
+  const fd = $('fd'), fp = $('fp'), view = document.querySelector('.view');
+  let mode = innerWidth < 560 ? 'phone' : 'desktop', page = 'index.html';
+  // which page the visible frame is on, and its state
+  const parse = url => { const u = new URL(url, location.href); return { file: u.pathname.split('/').pop() || 'index.html', q: u.search }; };
+  function states(file) {
+    const key = file.replace('.html', '');
+    if (!NUM.includes(key)) return null;
+    const s = [['Not scanned', key + '.html'], ['Scanned', key + '.html?success_' + key + '=true']];
+    if (key === 'seven') s.splice(1, 0, ['Menu', 'seven.html?others=menu'], ['Payment', 'seven.html?others=payment'], ['Survey', 'seven.html?others=survey']);
+    return s;
+  }
+  function paintBar() {
+    $('open').href = page;
+    [...$('mode').children].forEach(b => b.classList.toggle('on', b.dataset.m === mode));
+  }
+  function go(href) { page = href; (mode === 'phone' ? fp : fd).src = href; paintBar(); }
+  [fd, fp].forEach(f => f.addEventListener('load', () => {
+    if ((f === fp) !== (mode === 'phone')) return;
+    try { const p = parse(f.contentWindow.location.href); page = p.file + p.q; } catch (e) {}
+    paintBar();
+  }));
+  [...$('mode').children].forEach(b => b.onclick = () => { if (mode === b.dataset.m) return; mode = b.dataset.m; layout(); go(page); });
+  function layout() {
+    document.getElementById('app').className = 'app mode-' + mode;
+    const W = view.clientWidth, H = view.clientHeight;
+    // desktop: real size when there is room, otherwise a scaled-down 1280px desktop
+    const k = W >= 760 ? 1 : W / 1280;
+    Object.assign(fd.style, { width: W / k + 'px', height: H / k + 'px', transform: 'scale(' + k + ')' });
+    // phone: frame 1406 x 2822, screen hole 100..1305 x 100..2721
+    const fh = Math.min(H * 0.9, (W - 24) * 2822 / 1406), fw = fh * 1406 / 2822, u = fw / 1406;
+    const dev = $('dev'), scr = $('scr');
+    Object.assign(dev.style, { width: fw + 'px', height: fh + 'px' });
+    const sw = 1206 * u, sh = 2622 * u;
+    Object.assign(scr.style, { left: 100 * u + 'px', top: 100 * u + 'px', width: sw + 'px', height: sh + 'px', borderRadius: (190 * u) + 'px' });
+    const ks = sw / 393; Object.assign(fp.style, { transform: 'scale(' + ks + ')', height: sh / ks + 'px' });
+  }
+  new ResizeObserver(layout).observe(view);
+  layout(); go(page);
+})();
+</script>
+</body></html>

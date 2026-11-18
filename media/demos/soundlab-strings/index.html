@@ -1,0 +1,227 @@
+<!doctype html><html lang="en"><head><script id="no-parent-scroll">if(window!==window.top){(function(){var f=HTMLElement.prototype.focus;HTMLElement.prototype.focus=function(o){return f.call(this,Object.assign({},o||{},{preventScroll:true}))};Element.prototype.scrollIntoView=function(){};var st=document.createElement("style");st.textContent="::-webkit-scrollbar{width:12px;height:12px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(128,128,128,.45);border-radius:12px;border:3px solid transparent;background-clip:content-box}::-webkit-scrollbar-corner{background:transparent}html{scrollbar-width:thin;scrollbar-color:rgba(128,128,128,.5) transparent}";(document.head||document.documentElement).appendChild(st);})()}</script>
+
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SoundLab · Wall of Strings</title>
+<style>
+@font-face{font-family:S;src:url(../../../fonts/switzer-latin-400-normal.woff2) format("woff2");font-weight:400}
+@font-face{font-family:S;src:url(../../../fonts/switzer-latin-500-normal.woff2) format("woff2");font-weight:500}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#07060B;color:#F2F1EE;font-family:S,system-ui,sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased;user-select:none;-webkit-user-select:none;touch-action:none}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
+.caps{text-transform:uppercase;letter-spacing:.02em;font-weight:500;font-size:11px}
+.mute{color:rgba(242,241,238,.55)}
+.top{position:absolute;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:clamp(14px,2.4vw,26px) clamp(16px,2.6vw,30px);z-index:2;pointer-events:none}
+.top h1{font-weight:500;font-size:clamp(18px,2.4vw,30px);letter-spacing:.02em;text-transform:uppercase;margin-top:6px}
+.top .r{text-align:right}
+.live{display:inline-flex;align-items:center;gap:8px}
+.live::before{content:"";width:7px;height:7px;border-radius:50%;background:#ff4d3d;box-shadow:0 0 12px #ff4d3d}
+.cards{position:absolute;left:clamp(16px,2.6vw,30px);right:clamp(16px,2.6vw,30px);bottom:clamp(14px,2.4vw,26px);display:flex;justify-content:space-between;align-items:flex-end;gap:12px;z-index:3;pointer-events:none}
+.glass{background:rgba(20,14,24,.55);border:1px solid rgba(242,241,238,.14);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:14px;padding:12px 16px}
+.glass strong{display:block;font-weight:500;font-size:clamp(16px,1.8vw,22px);letter-spacing:.02em;text-transform:uppercase;margin-top:6px}
+.glass.r{max-width:300px;text-align:right}
+.glass.r p+p{margin-top:6px;font-size:12.5px;line-height:1.45;color:rgba(242,241,238,.75)}
+.hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:4;pointer-events:none;transition:opacity .6s}
+.hint span{display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border-radius:999px;background:rgba(20,14,24,.65);border:1px solid rgba(242,241,238,.22);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.hint i{width:18px;height:18px;border-radius:50%;border:1.5px solid #F2F1EE;animation:sw 1.6s ease-in-out infinite}
+@keyframes sw{0%,100%{transform:translateX(-10px)}50%{transform:translateX(10px)}}
+.hint.off{opacity:0}
+@media (max-aspect-ratio:1/1){.glass.r{display:none}.top{flex-direction:column;gap:6px}.top .r{text-align:left}}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div class="top">
+ <div><p class="caps live">Wall of Strings</p><h1>Touch to play</h1></div>
+ <div class="r"><p class="caps mute">Stage 01 · Imitation</p><p class="caps" style="margin-top:6px" id="sub">No skills required</p></div>
+</div>
+<div class="hint" id="hint"><span class="caps"><i></i>Swipe across the strings · sound on</span></div>
+<div class="cards">
+ <div class="glass"><p class="caps mute">Strings played</p><strong id="count">0</strong></div>
+ <div class="glass r"><p class="caps mute">How it works</p><p>Every string is a rock power chord from the same pentatonic scale, so any sweep sounds like a riff. In the space, each touch also lights the wall and sends a small vibration back.</p></div>
+</div>
+<script>
+(() => {
+  const cv = document.getElementById('cv'), g = cv.getContext('2d');
+  let W, H, DPR, strings = [], count = 0;
+  // rock rhythm guitar: every string is a power chord (root + fifth + octave) on an E minor pentatonic root,
+  // low chords on the left, high on the right
+  const BASE = 82.41, STEPS = [0, 3, 5, 7, 10];
+  const freqOf = i => BASE * Math.pow(2, (Math.floor(i / 5) * 12 + STEPS[i % 5]) / 12);
+  const NOTES = 11;
+  // ---------- sound: Karplus–Strong strings through a high-gain amp and 4x12 cabinet ----------
+  let ac = null, master = null; const bufs = [];
+  function ks(d, f, off, amp, sr) {
+    const p = Math.max(2, Math.round(sr / f)), line = new Float32Array(p);
+    for (let i = 0; i < p; i++) line[i] = Math.random() * 2 - 1;
+    // picked a little off the bridge, then softened so it reads as a steel string, not a plucked zither
+    const pk = Math.max(1, Math.round(p * 0.2)), tmp = line.slice();
+    for (let i = 0; i < p; i++) line[i] = 0.5 * (tmp[i] - tmp[(i + pk) % p]);
+    let idx = 0; const decay = 0.9994;
+    for (let i = off; i < d.length; i++) {
+      const cur = line[idx], next = line[(idx + 1) % p];
+      line[idx] = decay * 0.5 * (cur + next);
+      d[i] += amp * cur * Math.min(1, (i - off) / (sr * 0.003)); idx = (idx + 1) % p;
+    }
+  }
+  function audio() {
+    if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    ac = new AC(); master = ac.createGain(); master.gain.value = 1;
+    // amp: tighten the lows, push hard into two clipping stages, then a guitar cab
+    const tight = ac.createBiquadFilter(); tight.type = 'highpass'; tight.frequency.value = 110;
+    const pre = ac.createGain(); pre.gain.value = 14;
+    const mkCurve = (k, bias) => { const c = new Float32Array(4096); for (let i = 0; i < 4096; i++) { const x = i / 2047.5 - 1; c[i] = Math.tanh(k * (x + bias)) - Math.tanh(k * bias); } return c; };
+    const d1 = ac.createWaveShaper(); d1.curve = mkCurve(3, 0.08); d1.oversample = '4x';
+    const mid = ac.createGain(); mid.gain.value = 0.9;
+    const d2 = ac.createWaveShaper(); d2.curve = mkCurve(2.5, 0); d2.oversample = '4x';
+    const low = ac.createBiquadFilter(); low.type = 'peaking'; low.frequency.value = 120; low.Q.value = 0.9; low.gain.value = 5;
+    const scoop = ac.createBiquadFilter(); scoop.type = 'peaking'; scoop.frequency.value = 520; scoop.Q.value = 0.9; scoop.gain.value = -5;
+    const pres = ac.createBiquadFilter(); pres.type = 'peaking'; pres.frequency.value = 2400; pres.Q.value = 1.1; pres.gain.value = 4;
+    const cab = ac.createBiquadFilter(); cab.type = 'lowpass'; cab.frequency.value = 4600; cab.Q.value = 1.1;
+    const cab2 = ac.createBiquadFilter(); cab2.type = 'lowpass'; cab2.frequency.value = 6200;
+    const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 70;
+    const out = ac.createGain(); out.gain.value = 0.16;
+    master.connect(tight); tight.connect(pre); pre.connect(d1); d1.connect(mid); mid.connect(d2);
+    d2.connect(low); low.connect(scoop); scoop.connect(pres); pres.connect(cab); cab.connect(cab2); cab2.connect(hp); hp.connect(out);
+    // a short room, like a mic'd amp in a studio
+    const dl = ac.createDelay(1), fb = ac.createGain(), wet = ac.createGain();
+    dl.delayTime.value = 0.09; fb.gain.value = 0.22; wet.gain.value = 0.16;
+    out.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(wet);
+    const comp = ac.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4;
+    out.connect(comp); wet.connect(comp); comp.connect(ac.destination);
+    const sr = ac.sampleRate, len = Math.floor(sr * 2.6);
+    for (let n = 0; n < NOTES; n++) {
+      const f = freqOf(n), b = ac.createBuffer(1, len, sr), d = b.getChannelData(0);
+      // a quick downstroke: root, fifth, octave a few ms apart
+      ks(d, f, 0, 0.5, sr); ks(d, f * 1.4983, Math.round(sr * 0.006), 0.42, sr); ks(d, f * 2, Math.round(sr * 0.012), 0.3, sr);
+      bufs.push(b);
+    }
+  }
+  function play(n, vel) {
+    if (!ac || !bufs[n]) return;
+    const s = ac.createBufferSource(), gn = ac.createGain(), pan = ac.createStereoPanner ? ac.createStereoPanner() : null;
+    s.buffer = bufs[n]; gn.gain.value = 0.35 + 0.45 * vel;
+    // let the last chord ring into the next, but choke it a little like a real player would
+    gn.gain.setTargetAtTime(0, ac.currentTime + 1.6, 0.35);
+    s.connect(gn); if (pan) { pan.pan.value = (n / (NOTES - 1)) * 0.8 - 0.4; gn.connect(pan); pan.connect(master); } else gn.connect(master);
+    s.start();
+  }
+  // ---------- the wall ----------
+  function fit() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight;
+    cv.width = W * DPR; cv.height = H * DPR; g.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const n = Math.max(22, Math.min(64, Math.round(W / 20)));
+    const x0 = W * 0.06, x1 = W * 0.94;
+    strings = [];
+    for (let k = 0; k < n; k++) {
+      const u = k / (n - 1), x = x0 + u * (x1 - x0);
+      // the wall's wave: the top and the ledge both swell, like the render
+      const top = H * (0.2 + 0.07 * Math.sin(u * Math.PI * 1.3 + 0.6));
+      const bot = H * (0.74 - 0.08 * Math.sin(u * Math.PI * 1.1 - 0.2));
+      strings.push({ x, top, bot, u, amp: 0, ph: 0, heat: 0, note: Math.min(NOTES - 1, Math.floor(u * NOTES)), w: 2.2 + 1.6 * Math.sin(u * 9) ** 2 });
+    }
+  }
+  addEventListener('resize', fit); fit();
+  function pluck(s, vel) {
+    if (s.amp > 0.55 && s.heat > 0.7) return; // still ringing hard
+    s.amp = Math.min(1, 0.45 + vel); s.heat = 1; s.ph = 0;
+    play(s.note, Math.min(1, vel));
+    count++; document.getElementById('count').textContent = count;
+    try { if (navigator.vibrate && matchMedia('(pointer: coarse)').matches) navigator.vibrate(8); } catch (e) {}
+  }
+  // ---------- touch: sweep across strings ----------
+  let last = null, started = false, down = false;
+  const hint = document.getElementById('hint');
+  function start() { audio(); if (!started) { started = true; hint.classList.add('off'); } }
+  function cross(a, b) {
+    const dx = b.x - a.x, dt = Math.max(1, b.t - a.t), vel = Math.min(1, Math.abs(dx) / dt / 2.2);
+    for (const s of strings) {
+      if ((a.x - s.x) * (b.x - s.x) <= 0 && a.x !== b.x) {
+        const y = a.y + (b.y - a.y) * ((s.x - a.x) / dx);
+        if (y > s.top && y < s.bot) pluck(s, 0.25 + vel);
+      }
+    }
+  }
+  cv.addEventListener('pointerdown', e => {
+    start(); down = true; cv.setPointerCapture(e.pointerId);
+    last = { x: e.clientX, y: e.clientY, t: performance.now() };
+    // a tap plays the nearest string
+    let best = null, bd = 1e9; for (const s of strings) { const d = Math.abs(s.x - e.clientX); if (d < bd) { bd = d; best = s; } }
+    if (best && bd < 18 && e.clientY > best.top && e.clientY < best.bot) pluck(best, 0.5);
+  });
+  cv.addEventListener('pointermove', e => {
+    const p = { x: e.clientX, y: e.clientY, t: performance.now() };
+    // with a mouse, once sound is on, simply brushing across the wall plays it
+    if (last && (down || (started && e.pointerType === 'mouse'))) cross(last, p);
+    last = p;
+  });
+  addEventListener('pointerup', () => { down = false; });
+  cv.addEventListener('pointerleave', () => { if (!down) last = null; });
+  // ---------- draw ----------
+  let t0 = performance.now(), idleDemo = 0;
+  function frame(now) {
+    // clamp the step: a stalled or out-of-order frame must never push a string off the wall
+    const dt = Math.max(0, Math.min(3, (now - t0) / 16.7)); t0 = now;
+    // before anyone touches it, a slow ripple runs along the wall (silent)
+    if (!started && now > idleDemo) {
+      idleDemo = now + 70; const k = Math.floor((now / 70) % (strings.length + 30));
+      if (strings[k]) { strings[k].amp = Math.max(strings[k].amp, 0.35); strings[k].heat = Math.max(strings[k].heat, 0.6); }
+    }
+    // backdrop: night, magenta ceiling glow, dark floor
+    g.fillStyle = '#07060B'; g.fillRect(0, 0, W, H);
+    const sky = g.createLinearGradient(0, 0, 0, H * 0.42);
+    sky.addColorStop(0, 'rgba(214,60,255,.55)'); sky.addColorStop(.55, 'rgba(150,40,200,.18)'); sky.addColorStop(1, 'rgba(7,6,11,0)');
+    g.fillStyle = sky; g.fillRect(0, 0, W, H * 0.42);
+    const fl = g.createLinearGradient(0, H * 0.72, 0, H);
+    fl.addColorStop(0, 'rgba(40,24,22,.0)'); fl.addColorStop(1, 'rgba(40,24,22,.9)');
+    g.fillStyle = fl; g.fillRect(0, H * 0.72, W, H * 0.28);
+    // the dark wall behind the strings
+    g.beginPath(); strings.forEach((s, i) => i ? g.lineTo(s.x, s.top - 6) : g.moveTo(s.x - 20, s.top - 6));
+    for (let i = strings.length - 1; i >= 0; i--) g.lineTo(strings[i].x, strings[i].bot + 4);
+    g.closePath(); g.fillStyle = '#120a0a'; g.fill();
+    // strings
+    for (const s of strings) {
+      s.ph += 0.9 * dt; s.amp *= Math.pow(0.955, dt); s.heat *= Math.pow(0.965, dt);
+      if (!(s.amp >= 0.004)) s.amp = 0; if (s.amp > 1) s.amp = 1; if (!(s.heat >= 0) || s.heat > 1) s.heat = Math.min(1, s.heat || 0);
+      const len = s.bot - s.top, a = s.amp * Math.min(10, W / 90);
+      const h = s.heat;
+      // copper body, warming to red-hot light when played
+      const r = Math.round(150 + 105 * h), gg = Math.round(82 - 30 * h + 10 * (1 - h)), bb = Math.round(48 - 10 * h);
+      const grad = g.createLinearGradient(0, s.top, 0, s.bot);
+      grad.addColorStop(0, `rgba(${r},${gg + 40},${bb + 20},.95)`); grad.addColorStop(.5, `rgb(${r},${gg},${bb})`); grad.addColorStop(1, `rgba(${Math.round(r * .55)},${Math.round(gg * .5)},${Math.round(bb * .5)},.95)`);
+      g.strokeStyle = grad; g.lineWidth = s.w; g.lineCap = 'round';
+      if (h > 0.05) { g.shadowColor = `rgba(255,${Math.round(70 + 60 * (1 - h))},50,${0.9 * h})`; g.shadowBlur = 22 * h; } else g.shadowBlur = 0;
+      g.beginPath();
+      const seg = a > 0.05 ? 18 : 1;
+      for (let q = 0; q <= seg; q++) {
+        const y = s.top + len * q / seg, env = Math.sin(Math.PI * q / seg);
+        const x = s.x + Math.sin(s.ph) * a * env;
+        q ? g.lineTo(x, y) : g.moveTo(x, y);
+      }
+      g.stroke();
+      // a fine highlight down one side of each rod
+      g.shadowBlur = 0; g.strokeStyle = `rgba(255,214,170,${0.18 + 0.4 * h})`; g.lineWidth = 0.8;
+      g.beginPath(); g.moveTo(s.x - s.w * 0.25, s.top + 4); g.lineTo(s.x - s.w * 0.25 + Math.sin(s.ph) * a * 0.6, s.top + len / 2); g.lineTo(s.x - s.w * 0.25, s.bot - 4); g.stroke();
+    }
+    g.shadowBlur = 0;
+    // the curved ledge with its warm LED line, brighter under played strings
+    g.lineCap = 'round';
+    for (let i = 0; i < strings.length - 1; i++) {
+      const s = strings[i], n = strings[i + 1], h = Math.max(s.heat, n.heat);
+      g.strokeStyle = `rgba(255,${Math.round(170 - 90 * h)},${Math.round(70 - 30 * h)},${0.55 + 0.45 * h})`;
+      g.lineWidth = 2 + 2 * h; g.shadowColor = 'rgba(255,150,60,.9)'; g.shadowBlur = 8 + 18 * h;
+      g.beginPath(); g.moveTo(s.x, s.bot + 10); g.lineTo(n.x, n.bot + 10); g.stroke();
+    }
+    g.shadowBlur = 0;
+    // a soft reflection of the glow on the floor
+    for (const s of strings) if (s.heat > 0.05) {
+      const rg = g.createRadialGradient(s.x, s.bot + 26, 0, s.x, s.bot + 26, 46);
+      rg.addColorStop(0, `rgba(255,80,50,${0.22 * s.heat})`); rg.addColorStop(1, 'rgba(255,80,50,0)');
+      g.fillStyle = rg; g.fillRect(s.x - 46, s.bot - 20, 92, 92);
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body></html>

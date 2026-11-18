@@ -1,0 +1,42 @@
+SLUG designtype
+TITLE design_type()
+COVER dt-cover.png
+TAGS UX/UI Design, Interaction Design, Human-AI Interaction, Creative Coding
+CLIENT Algorithmic AI brief (coursework)
+YEAR 2026
+MEDIUM p5.js, OpenAI API
+VIDEO file dt-film.mp4 dt-film-poster.jpg
+SUM The brief | Build an algorithmic, AI-powered personality quiz in p5.js, driven by an LLM API.
+SUM What we made | A retro, game-style quiz that works out what kind of designer a student is, then writes them a personalised AI design mentor.
+SUM My role | Independent project. I designed the flow, the archetypes and the four mini-games, and built the quiz in p5.js with the OpenAI API.
+P design_type() is an interactive AI chatbot that acts as a personalised design mentor. The quiz is not the end goal, but a way to understand a student’s design tendencies so the system can generate a mentor tailored to how they think and work. The name borrows from programming syntax: like a function, it takes your interactions as input and returns your design archetype and a custom mentor.
+H The brief
+P The brief asked for an algorithmic, AI-powered personality quiz: an agent built in p5.js that talks to an LLM through an API. It had to sort people into at least four personalities using at least three kinds of question, from typed text to on-screen controls, with voice or image input as an option. The same answers had to give the same result every time, and the flow had to stay clear, with a way back when something went wrong.
+P Alongside a live demo, the submission included the p5 sketch, a system diagram of how the user, front end, API and LLM connect, documentation of the prompts and patterns used, and a video walkthrough. It was assessed on implementation, interaction design, prompt engineering, error handling and documentation.
+H Why a design personality quiz
+P The NUS Industrial Design programme offers many design platforms and project directions, and students don’t always know which ones match their instincts. Students also already use tools like ChatGPT, Gemini and Claude, but these give generic answers because they don’t know how a student thinks. design_type() turns a short quiz into a mentor prompt that does.
+H A Pokémon-style journey
+P Traditional personality quizzes feel like surveys. Borrowing the structure of the early Pokémon games, I reframed the quiz as a journey of discovery: a mentor, Professor Denki, introduces the world, you choose an avatar and a name, and dialogue boxes guide you through. The retro interface keeps the experience playful and familiar, and its simple shapes and pixel graphics suited p5.js.
+W Professor Denki | dt-shot-intro.png | | Professor Denki introduces the quiz, like the professor at the start of a Pokémon game.
+W Choose your avatar | dt-shot-char.png | | Pick a character and enter your name.
+H Four design archetypes
+P The archetypes draw on the tone of Adobe’s Creative Types quiz, the directions of the Industrial Design curriculum, and real platform briefs. A fourth archetype for Human–Computer Interaction came from my experience in a research lab.
+W The four archetypes | dt-shot-arch.png | | The Provocateur, the Mediator, the Builder and the Visionary. Tap a card to read it before you start.
+W Reading an archetype | dt-shot-archcard.png | | Each card explains what drives that kind of designer, their strengths and what to be careful of.
+H Phase 1: playing on instinct
+P Four short interactions capture instinct before reflection. A choice reveals what kind of problem excites you, a ranking reveals priorities, a Space Invaders–style arcade reveals which belief you aim for, and a Pac-Man game collects the words you think make a good design. Each answer adds points to one of the four archetypes.
+W Stage 01 · Choice | dt-shot-stage1.png | | A choice reveals what kind of problem excites you.
+W Stage 02 · Ranking | dt-shot-stage2.png | | Ranking what made you realise design was for you reveals your priorities.
+W Stage 03 · Arcade | dt-shot-stage3.png | | Shoot down the one that matters most: a belief, answered on instinct.
+W Stage 04 · Maze | dt-shot-stage4.png | | Steer through the maze and collect the words you agree with. Avoid the ghost.
+H Phase 2: critique with AI
+P The second phase uses the OpenAI API to write three adaptive critique questions, built around a design object chosen from the student’s Phase 1 scores. Each typed answer is analysed by the model and scored, and these answers count twice as much as Phase 1, since how someone reasons in critique says more than a quick choice. If the top two archetypes are within three points, the result is a hybrid.
+W Adaptive critique | dt-shot-crit.png | | A critique question built around a design object chosen from your Phase 1 answers.
+W Your design_type() | dt-shot-result.png | | The result: your dominant archetype, your second lens and how your answers split across all four.
+H Your own AI mentor
+P The quiz ends by generating a system prompt from the student’s scores and answers. Pasted into a custom GPT, it becomes a studio mentor that knows how the student thinks: it asks reflective questions, suggests next experiments and pushes on their blind spots.
+W Your mentor prompt | dt-shot-mentor.png | | A system prompt written from your scores and answers.
+W A custom GPT mentor | dt-shot-gpt.png | | Pasted into a custom GPT, it becomes a studio mentor that knows how you think.
+H Play it
+P This version was rebuilt for my portfolio. The AI-written questions are replaced with pre-written ones so it runs without an API key, and I redesigned the arcade and maze games to be clearer to play, on both desktop and phone.
+FRAME designtype/index.html | design_type() · rebuilt | dt-cover.png |  | FULLSCREEN | Play the quiz

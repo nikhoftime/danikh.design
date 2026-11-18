@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalian, Joget-Joget: stage simulator</title>
+<script src="p5.min.js"></script>
+<script src="kjj-core.js"></script>
+<style>
+@font-face{font-family:'Switzer';font-weight:400;src:url('../../fonts/switzer-latin-400-normal.woff2') format('woff2')}
+@font-face{font-family:'Switzer';font-weight:500;src:url('../../fonts/switzer-latin-500-normal.woff2') format('woff2')}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#0F0E0E;color:#F2F1EE;font-family:'Switzer',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.app{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px}
+.stage{position:relative;border-radius:4px;overflow:hidden;background:#2a5a52;align-self:start}
+.stage canvas{display:block;width:100%!important;height:auto!important}
+.stage .tag{position:absolute;left:10px;bottom:10px;font-size:11px;letter-spacing:.04em;text-transform:uppercase;background:rgba(15,14,14,.7);padding:6px 9px;border-radius:2px;color:#cfcdc8}
+.phone{background:#151414;border:1px solid #262524;border-radius:22px;padding:16px 14px;display:flex;flex-direction:column;gap:12px;user-select:none;-webkit-user-select:none}
+.ph-top{display:flex;justify-content:space-between;align-items:center;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#8D8B86}
+.ph-top b{color:#e03060;font-weight:500}
+.chars{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.chip{border:1px solid #2f2e2c;background:transparent;color:#F2F1EE;border-radius:6px;padding:7px 2px;font:inherit;font-size:11px;cursor:pointer}
+.chip.on{background:#F2F1EE;color:#0F0E0E;border-color:#F2F1EE}
+.state{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:#1d1c1b}
+.dot{width:14px;height:14px;border-radius:3px;flex:none;transition:background .3s}
+.state strong{font-weight:500;font-size:18px;text-transform:capitalize}
+.hint{font-size:12px;color:#8D8B86;line-height:1.4;min-height:34px}
+.pad{position:relative;height:120px;border-radius:12px;background:repeating-linear-gradient(0deg,#1b1a19 0 23px,#232221 23px 24px),#1b1a19;touch-action:none;cursor:grab;overflow:hidden}
+.pad:active{cursor:grabbing}
+.pad .knob{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:#F2F1EE;left:50%;top:50%;box-shadow:0 0 0 6px rgba(242,241,238,.12)}
+.pad .lbl{position:absolute;left:10px;top:8px;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#6c6a66}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.btn{border:1px solid #2f2e2c;background:#1b1a19;color:#F2F1EE;border-radius:8px;padding:10px 6px;font:inherit;font-size:12px;cursor:pointer;touch-action:none;transition:background .15s,border-color .15s}
+.btn small{display:block;color:#8D8B86;font-size:10px;margin-top:2px}
+.btn:hover{border-color:#5E5C58}
+.btn.hold{background:#F2F1EE;color:#0F0E0E}.btn.hold small{color:#0F0E0E;opacity:.6}
+.btn.wide{grid-column:1/-1}
+.tapzone{background:#2a1f33;border-color:#4a3560}
+.meters{display:grid;gap:6px;font-size:11px;color:#8D8B86}
+.meter{display:grid;grid-template-columns:78px 1fr 34px;gap:8px;align-items:center}
+.bar{height:6px;border-radius:3px;background:#262524;overflow:hidden}.bar i{display:block;height:100%;width:0;background:#F2F1EE}
+.meter span:last-child{text-align:right;color:#cfcdc8;font-variant-numeric:tabular-nums}
+.foot{display:flex;gap:6px}
+.foot .btn{flex:1;padding:8px 4px;font-size:11px}
+@media (max-width:760px){.app{grid-template-columns:1fr}.phone{border-radius:16px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="stage" id="stage"><span class="tag">Laptop · shared stage</span></div>
+  <div class="phone" aria-label="Simulated phone controller">
+    <div class="ph-top"><span><b>●</b> You</span><span>Phone controller</span></div>
+    <div class="chars" role="group" aria-label="Character">
+      <button class="chip on" data-c="wayang">Big Bird</button>
+      <button class="chip" data-c="robot">Hippie</button>
+      <button class="chip" data-c="sumo">Sumo</button>
+      <button class="chip" data-c="samurai">Samurai</button>
+    </div>
+    <div class="state"><span class="dot" id="dot"></span><strong id="stName">idle</strong></div>
+    <p class="hint" id="hint">Tilt to dance</p>
+    <div class="pad" id="pad"><span class="lbl">Drag to tilt · flick side to side fast</span><span class="knob" id="knob"></span></div>
+    <div class="btns">
+      <button class="btn" data-hold="spin">Spin<small>hold · gyro Z</small></button>
+      <button class="btn" data-hold="shake">Shake<small>hold · accelerometer</small></button>
+      <button class="btn" data-hold="lean">Lean forward<small>hold · gyro X</small></button>
+      <button class="btn" data-hold="blow">Blow<small>hold · microphone</small></button>
+      <button class="btn" id="cam">Cover camera<small>tap · front camera</small></button>
+      <button class="btn tapzone" id="tap">Tap screen<small>disco balls</small></button>
+    </div>
+    <div class="meters">
+      <div class="meter"><span>angerLevel</span><span class="bar"><i id="mAnger"></i></span><span id="vAnger">0</span></div>
+      <div class="meter"><span>stillTimer</span><span class="bar"><i id="mStill"></i></span><span id="vStill">0s</span></div>
+      <div class="meter"><span>tiltChanges</span><span class="bar"><i id="mTilt"></i></span><span id="vTilt">0</span></div>
+    </div>
+    <div class="foot">
+      <button class="btn" id="friends">Add 3 friends</button>
+      <button class="btn" id="restart">Restart</button>
+    </div>
+  </div>
+</div>
+<script>
+// ---------- simulated phone (state machine is the original phone sketch's updateState) ----------
+const VW = 1100, VH = Math.round(1100 * 480 / 680);
+let sim = { rotX: 0, rotY: 0, rotZ: 0, accX: 0, accY: 0, shake: 0, mic: 0, camDark: false };
+let hold = { spin: false, shake: false, lean: false, blow: false };
+let padTarget = { x: 0, y: 0 }, dragging = false;
+let selectedChar = 'wayang';
+let currentState = 'idle', angerLevel = 0, stillTimer = 0;
+let lastTiltDir = 0, tiltChanges = 0, lastTiltChangeTime = 0, prevRotY = 0, prevRotZ = 0, lastJerkTime = 0;
+let brokenTimer = null, friendsOn = false;
+
+function updateState() {
+  if (currentState === 'blown' || currentState === 'broken') return;
+  if (sim.mic > 0.08) {
+    currentState = 'blown';
+    brokenTimer = setTimeout(() => { currentState = 'broken'; }, 2500);
+    return;
+  }
+  let tilt = sim.rotY, tiltX = sim.rotX;
+  let deltaZ = abs(sim.rotZ - prevRotZ); if (deltaZ > 180) deltaZ = 360 - deltaZ; prevRotZ = sim.rotZ;
+  let deltaY = abs(sim.rotY - prevRotY); prevRotY = sim.rotY;
+  let isMoving = abs(tilt) > 4 || abs(tiltX) > 4;
+  let isSpinning = deltaZ > 2.5;
+  let isJerk = deltaY > 18;
+  let isLeaning = tiltX > 50;
+  let isShaking = sim.shake > 25;
+  let isStill = !isMoving && !isSpinning && !isShaking;
+  if (isJerk && millis() - lastJerkTime > 800) lastJerkTime = millis();
+  let tiltDir = tilt > 4 ? 1 : tilt < -4 ? -1 : 0;
+  if (tiltDir !== 0 && tiltDir !== lastTiltDir) { tiltChanges++; lastTiltDir = tiltDir; lastTiltChangeTime = millis(); }
+  if (millis() - lastTiltChangeTime > 1200) { tiltChanges = max(0, tiltChanges - 1); lastTiltChangeTime = millis(); }
+  let isSpamming = tiltChanges >= 4;
+  if (isStill) stillTimer += deltaTime; else stillTimer = max(0, stillTimer - deltaTime * 2);
+
+  if (currentState === 'idle') {
+    if (isMoving || isSpinning || isShaking) currentState = 'happy';
+  } else if (currentState === 'happy') {
+    if (isShaking) currentState = 'scared';
+    else if (isSpinning) currentState = 'excited';
+    else if (isJerk && millis() - lastJerkTime < 300) { currentState = 'surprised'; lastJerkTime = millis() - 999; }
+    else if (isLeaning) currentState = 'sad';
+    else if (stillTimer > 5000) { currentState = 'sleepy'; stillTimer = 0; }
+    else if (isSpamming) { angerLevel = min(100, angerLevel + 3); if (angerLevel >= 100) currentState = 'angry'; }
+    else { angerLevel = max(0, angerLevel - 2); if (!isMoving) currentState = 'idle'; }
+  } else if (currentState === 'excited') {
+    if (!isSpinning) currentState = isMoving ? 'happy' : 'idle';
+  } else if (currentState === 'surprised') {
+    if (millis() - lastJerkTime > 1500) currentState = 'happy';
+  } else if (currentState === 'sad') {
+    if (!isLeaning) currentState = 'happy';
+  } else if (currentState === 'sleepy') {
+    if (isMoving || isSpinning || isShaking) { currentState = 'happy'; stillTimer = 0; }
+  } else if (currentState === 'scared') {
+    if (!isShaking) currentState = 'happy';
+  } else if (currentState === 'angry') {
+    angerLevel = 100;
+    if (isStill) { if (stillTimer > 4000) { currentState = 'idle'; angerLevel = 0; stillTimer = 0; tiltChanges = 0; } }
+    else stillTimer = 0;
+  }
+}
+
+const HINTS = {
+  idle: 'Tilt to dance', happy: 'Flick ×4 = angry · Spin = excited · Lean = sad · Still 5s = sleepy',
+  excited: 'Spinning! Keep spinning!', surprised: 'Whoa! Sharp tilt detected',
+  sad: 'Leaning forward. Let go to recover', sleepy: 'Zzz… move to wake up',
+  scared: 'SHAKING! Stop to calm down', angry: 'FURIOUS. Hold still 4s to cool, or blow to destroy',
+  blown: 'It shattered…', broken: 'Press Restart to summon a new puppet'
+};
+
+// ---------- friends (bots on slots 2–4) ----------
+const ME = 1, BOT_SLOTS = [0, 2, 3];
+const BOT_CHARS = ['robot', 'sumo', 'samurai'];
+SLOT_NAMES[0] = 'Friend'; SLOT_NAMES[1] = 'You'; SLOT_NAMES[2] = 'Friend'; SLOT_NAMES[3] = 'Friend';
+SLOT_COLORS[1] = '#e03060'; SLOT_COLORS[0] = '#30a0e0';
+const BOT_STATES = ['happy', 'excited', 'happy', 'surprised', 'happy', 'sad', 'happy', 'scared'];
+let bots = [0, 1, 2].map(i => ({ state: 'happy', until: 0, phase: Math.random() * 6 }));
+
+function feedSlots() {
+  slotData[ME] = { state: currentState, character: selectedChar, rotX: sim.rotX, rotY: sim.rotY, rotZ: sim.rotZ,
+    accX: sim.accX, accY: sim.accY, accZ: 0, shake: sim.shake, micLevel: sim.mic, tap: false,
+    intensity: angerLevel / 100, active: true, cameraDark: sim.camDark, cameraBrightness: sim.camDark ? 10 : 255 };
+  slots[ME].active = true;
+  for (let i = 0; i < 3; i++) {
+    const si = BOT_SLOTS[i];
+    const b = bots[i], t = millis() / 1000;
+    if (millis() > b.until) { b.state = BOT_STATES[floor(random(BOT_STATES.length))]; b.until = millis() + random(2500, 6000); }
+    // lean toward a neighbour now and then so proximity sparks happen
+    const ry = sin(t * 0.7 + b.phase) * 55 + (si === 0 ? 25 : si === 2 ? -25 : -10);
+    slotData[si] = { state: b.state, character: BOT_CHARS[i], rotX: sin(t * 1.3 + b.phase) * 20, rotY: ry, rotZ: sin(t * 2 + b.phase) * 25,
+      accX: sin(t * 3 + b.phase) * 8, accY: cos(t * 2.4 + b.phase) * 6, accZ: 0, shake: b.state === 'scared' ? 30 : 0, micLevel: 0,
+      tap: false, intensity: 0, active: friendsOn, cameraDark: false, cameraBrightness: 255 };
+    slots[si].active = friendsOn;
+  }
+}
+
+// ---------- p5 ----------
+let cnv;
+function setup() {
+  cnv = createCanvas(VW, VH);
+  cnv.parent('stage');
+  pixelDensity(Math.min(2, window.devicePixelRatio || 1));
+  textAlign(CENTER, CENTER);
+  for (let i = 0; i < NUM_SLOTS; i++) { slots[i].puppetX = width * (i + 0.5) / NUM_SLOTS; slots[i].puppetY = height - 180; }
+  slots[ME].active = true;
+}
+
+function draw() {
+  // simulated sensors
+  if (!dragging) { padTarget.x *= 0.82; padTarget.y *= 0.82; }
+  sim.rotY = lerp(sim.rotY, padTarget.x * 60, 0.16);
+  sim.rotX = hold.lean ? lerp(sim.rotX, 62, 0.3) : lerp(sim.rotX, padTarget.y * 45, 0.16);
+  if (hold.spin) sim.rotZ = (sim.rotZ + 7) % 360;
+  sim.shake = hold.shake ? 32 + random(8) : 0;
+  sim.accX = hold.shake ? random(-14, 14) : sim.rotY / 6;
+  sim.accY = hold.shake ? random(-14, 14) : 0;
+  sim.mic = hold.blow ? 0.2 : 0;
+  updateState();
+  feedSlots();
+
+  drawStage();
+  breathe += 0.022;
+  for (let i = 0; i < NUM_SLOTS; i++) updateSlot(i);
+  updateSpotlight();
+  updateDiscoBalls();
+  updateParticles();
+  drawDiscoBallsBehind();
+  for (let i = 0; i < NUM_SLOTS; i++) {
+    let s = slots[i];
+    if (!s.active) continue;
+    if (s.currentState === 'blown' || s.currentState === 'broken') drawExplosionForSlot(i);
+    else drawPuppetForSlot(i);
+    drawSlotBadge(i);
+  }
+  checkPuppetProximity();
+  drawSpotlight();
+  drawDiscoBallsFront();
+  if (frameCount % 3 === 0) updateUI();
+}
+
+// ---------- UI ----------
+const $ = id => document.getElementById(id);
+function updateUI() {
+  const c = STATE_COLORS[currentState] || STATE_COLORS.idle;
+  $('dot').style.background = `rgb(${c.r},${c.g},${c.b})`;
+  $('stName').textContent = currentState;
+  $('hint').textContent = HINTS[currentState] || '';
+  $('mAnger').style.width = angerLevel + '%'; $('vAnger').textContent = Math.round(angerLevel);
+  $('mStill').style.width = Math.min(100, stillTimer / 50) + '%'; $('vStill').textContent = (stillTimer / 1000).toFixed(1) + 's';
+  $('mTilt').style.width = Math.min(100, tiltChanges * 25) + '%'; $('vTilt').textContent = tiltChanges;
+  const k = $('knob');
+  k.style.left = (50 + padTarget.x * 42) + '%'; k.style.top = (50 + padTarget.y * 38) + '%';
+}
+document.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => {
+  selectedChar = b.dataset.c;
+  document.querySelectorAll('.chip').forEach(x => x.classList.toggle('on', x === b));
+}));
+const pad = $('pad');
+const padMove = e => {
+  const r = pad.getBoundingClientRect();
+  padTarget.x = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width - 0.5) * 2));
+  padTarget.y = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height - 0.5) * 2));
+};
+pad.addEventListener('pointerdown', e => { dragging = true; pad.setPointerCapture(e.pointerId); padMove(e); });
+pad.addEventListener('pointermove', e => { if (dragging) padMove(e); });
+['pointerup', 'pointercancel'].forEach(ev => pad.addEventListener(ev, () => { dragging = false; }));
+document.querySelectorAll('[data-hold]').forEach(b => {
+  const k = b.dataset.hold;
+  const on = e => { e.preventDefault(); hold[k] = true; b.classList.add('hold'); };
+  const off = () => { hold[k] = false; b.classList.remove('hold'); };
+  b.addEventListener('pointerdown', on);
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, off));
+});
+$('tap').addEventListener('click', () => spawnDiscoBalls(ME));
+$('cam').addEventListener('click', () => { sim.camDark = !sim.camDark; $('cam').classList.toggle('hold', sim.camDark); });
+$('friends').addEventListener('click', () => {
+  friendsOn = !friendsOn; $('friends').textContent = friendsOn ? 'Remove friends' : 'Add 3 friends';
+  $('friends').classList.toggle('hold', friendsOn);
+});
+$('restart').addEventListener('click', () => {
+  clearTimeout(brokenTimer); currentState = 'idle'; angerLevel = 0; stillTimer = 0; tiltChanges = 0;
+  slotExplosions[ME] = []; slots[ME].lastState = 'idle';
+});
+// keyboard: arrows tilt, S spin, H shake, L lean, B blow, Space tap
+const keyMap = { s: 'spin', h: 'shake', l: 'lean', b: 'blow' };
+addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') padTarget.x = -1; else if (e.key === 'ArrowRight') padTarget.x = 1;
+  else if (e.key === ' ') { e.preventDefault(); spawnDiscoBalls(ME); }
+  else if (keyMap[e.key.toLowerCase()]) hold[keyMap[e.key.toLowerCase()]] = true;
+});
+addEventListener('keyup', e => { if (keyMap[e.key.toLowerCase()]) hold[keyMap[e.key.toLowerCase()]] = false; });
+// tell the parent page how tall this is
+const post = () => { try { parent.postMessage({ kjjHeight: document.documentElement.scrollHeight }, '*'); } catch (e) {} };
+addEventListener('load', post); addEventListener('resize', post); setTimeout(post, 600);
+</script>
+</body>
+</html>

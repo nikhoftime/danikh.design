@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalian, Joget-Joget: the cast</title>
+<script src="p5.min.js"></script>
+<script src="kjj-core.js"></script>
+<style>
+@font-face{font-family:'Switzer';font-weight:400;src:url('../../fonts/switzer-latin-400-normal.woff2') format('woff2')}
+@font-face{font-family:'Switzer';font-weight:500;src:url('../../fonts/switzer-latin-500-normal.woff2') format('woff2')}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#0F0E0E;color:#F2F1EE;font-family:'Switzer',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.stage{border-radius:4px;overflow:hidden;background:#2a5a52}
+.stage canvas{display:block;width:100%!important;height:auto!important}
+.names{display:grid;grid-template-columns:repeat(4,1fr);margin-top:12px;font-size:13px;text-align:center;color:#cfcdc8}
+.names span{display:block;font-size:11px;color:#8D8B86;margin-top:2px}
+.states{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+.st{display:inline-flex;align-items:center;gap:7px;border:1px solid #262524;background:transparent;color:#F2F1EE;border-radius:2px;padding:7px 10px;font:inherit;font-size:13px;cursor:pointer;text-transform:capitalize;transition:border-color .2s,background .2s}
+.st i{width:9px;height:9px;border-radius:2px}
+.st:hover{border-color:#F2F1EE}
+.st.on{background:#F2F1EE;color:#0F0E0E;border-color:#F2F1EE}
+.auto{margin-left:auto}
+@media (max-width:600px){.names{font-size:11px}.auto{margin-left:0}}
+</style>
+</head>
+<body>
+<div class="stage" id="stage"></div>
+<div class="names">
+  <p>Big Bird<span>Crane spirit</span></p><p>Hippie Fella<span>Trickster</span></p><p>Sumo<span>Wrestler</span></p><p>Samurai<span>Warrior</span></p>
+</div>
+<div class="states" id="states"></div>
+<script>
+const VW = 1100, VH = 560;
+const CHARS = ['wayang', 'robot', 'sumo', 'samurai'];
+const ORDER = ['idle', 'happy', 'excited', 'surprised', 'sad', 'sleepy', 'scared', 'angry', 'blown'];
+let chosen = 'happy', auto = true, autoIdx = 1, nextSwitch = 0;
+
+function setup() {
+  const c = createCanvas(VW, VH); c.parent('stage');
+  pixelDensity(Math.min(2, window.devicePixelRatio || 1));
+  textAlign(CENTER, CENTER);
+  for (let i = 0; i < 4; i++) { slots[i].puppetX = width * (i + 0.5) / 4; slots[i].puppetY = height - 150; slots[i].active = true; }
+}
+function draw() {
+  if (auto && millis() > nextSwitch) { chosen = ORDER[autoIdx++ % ORDER.length]; nextSwitch = millis() + (chosen === 'blown' ? 3200 : 2600); paint(); }
+  const t = millis() / 1000;
+  for (let i = 0; i < 4; i++) {
+    slotData[i] = { state: chosen, character: CHARS[i], rotX: sin(t * 1.4 + i) * 25, rotY: sin(t * 1.1 + i * 1.7) * 30,
+      rotZ: sin(t * 2 + i) * 30, accX: sin(t * 3 + i) * 9, accY: cos(t * 2.2 + i) * 7, accZ: 0,
+      shake: chosen === 'scared' ? 30 : 0, micLevel: 0, tap: false, intensity: 0, active: true, cameraDark: false, cameraBrightness: 255 };
+    slots[i].active = true;
+  }
+  drawStage();
+  breathe += 0.022;
+  for (let i = 0; i < 4; i++) updateSlot(i);
+  updateParticles();
+  for (let i = 0; i < 4; i++) {
+    if (slots[i].currentState === 'blown') drawExplosionForSlot(i); else drawPuppetForSlot(i);
+  }
+}
+const wrap = document.getElementById('states');
+ORDER.forEach(s => {
+  const b = document.createElement('button'); b.className = 'st'; b.dataset.s = s;
+  const c = STATE_COLORS[s]; b.innerHTML = `<i style="background:rgb(${c.r},${c.g},${c.b})"></i>${s}`;
+  b.addEventListener('click', () => { auto = false; chosen = s; if (s === 'blown') for (let i = 0; i < 4; i++) slots[i].lastState = 'x'; paint(); });
+  wrap.appendChild(b);
+});
+const a = document.createElement('button'); a.className = 'st auto on'; a.textContent = 'Auto play';
+a.addEventListener('click', () => { auto = !auto; nextSwitch = 0; paint(); }); wrap.appendChild(a);
+function paint() {
+  document.querySelectorAll('.st[data-s]').forEach(b => b.classList.toggle('on', b.dataset.s === chosen));
+  a.classList.toggle('on', auto);
+}
+const post = () => { try { parent.postMessage({ kjjHeight: document.documentElement.scrollHeight, id: 'cast' }, '*'); } catch (e) {} };
+addEventListener('load', post); addEventListener('resize', post); setTimeout(post, 600);
+</script>
+</body>
+</html>

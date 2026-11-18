@@ -1,0 +1,542 @@
+<!doctype html><html lang="en"><head><script id="no-parent-scroll">if(window!==window.top){(function(){var f=HTMLElement.prototype.focus;HTMLElement.prototype.focus=function(o){return f.call(this,Object.assign({},o||{},{preventScroll:true}))};Element.prototype.scrollIntoView=function(){};var st=document.createElement("style");st.textContent="::-webkit-scrollbar{width:12px;height:12px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(128,128,128,.45);border-radius:12px;border:3px solid transparent;background-clip:content-box}::-webkit-scrollbar-corner{background:transparent}html{scrollbar-width:thin;scrollbar-color:rgba(128,128,128,.5) transparent}";(document.head||document.documentElement).appendChild(st);})()}</script>
+
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>design_type()</title>
+<style>
+@font-face{font-family:V;src:url(fonts/vt323-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:P;src:url(fonts/press-start-2p-latin-400-normal.woff2) format("woff2")}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#141826;--panel:#232A3D;--panel2:#2C3550;--line:#C9D3E6;--ink:#EEF2FA;--mute:#8E99B4;--red:#D9443A;--lcd:#9BBC0F;--lcd2:#306230;--F:#E05AD1;--M:#3CC8E8;--P:#F2B33D;--V:#58C46A}
+html,body{height:100%;background:var(--bg);color:var(--ink);font-family:V,monospace;font-size:22px;overflow:hidden;-webkit-font-smoothing:none;user-select:none;-webkit-user-select:none}
+button{font:inherit;color:inherit}
+.px{font-family:P,monospace;font-size:10px;letter-spacing:.04em;text-transform:uppercase;line-height:1.5}
+.bgfx{position:absolute;inset:0;background:radial-gradient(1200px 600px at 50% -10%,#2a3352,transparent),var(--bg)}
+.bgfx::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px);pointer-events:none}
+.app{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:clamp(6px,2vw,22px)}
+.shell{position:relative;width:min(1080px,100%);height:min(640px,100%);display:flex;flex-direction:column;border:3px solid var(--line);border-radius:14px;background:var(--panel);box-shadow:0 0 0 6px #0c0f19,0 24px 60px rgba(0,0,0,.6);overflow:hidden}
+.hd{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:3px solid var(--line);background:#1b2133;flex:none}
+.hd .st{color:var(--mute)}
+.ft{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;background:#5a1d1d;border-top:3px solid var(--line);flex:none;color:#f5d6d3}
+.ft button{background:none;border:0;cursor:pointer;color:inherit}
+.body{position:relative;flex:1;min-height:0}
+.scr{position:absolute;inset:0;display:none;padding:18px 22px}
+.scr.on{display:flex;animation:fadein .35s steps(5)}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+/* dialogue */
+.talk{display:flex;gap:14px;align-items:flex-start}
+.talk .who{flex:none;width:78px;text-align:center}
+.talk .who img{width:78px;height:78px;object-fit:cover;object-position:50% 12%;border:3px solid var(--line);border-radius:8px;background:#38425e;image-rendering:auto}
+.talk .who span{display:block;margin-top:4px;color:var(--red)}
+.bub{flex:1;background:var(--panel2);border:3px solid var(--line);border-radius:10px;padding:12px 16px;line-height:1.1;min-height:72px;position:relative}
+.bub .more{position:absolute;right:10px;bottom:6px;animation:blink 1s steps(1) infinite;color:var(--mute)}
+@keyframes blink{50%{opacity:0}}
+.me{display:flex;justify-content:flex-end;gap:10px;align-items:flex-end;margin-top:10px}
+.me .bub{flex:0 1 auto;max-width:70%;background:#3a2f4d}
+.me img{width:56px;height:56px;object-fit:cover;object-position:50% 10%;border:3px solid var(--line);border-radius:50%;background:#38425e}
+.col{flex-direction:column;width:100%}
+.grow{flex:1;min-height:0;position:relative}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.opt{position:relative;text-align:left;cursor:pointer;background:#1b2133;border:3px solid var(--line);border-radius:8px;padding:10px 12px 10px 44px;line-height:1.05;transition:transform .08s,background .15s,border-color .15s}
+.opt::before{content:attr(data-k);position:absolute;left:10px;top:50%;transform:translateY(-50%);font-family:P,monospace;font-size:10px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;border:2px solid var(--mute);border-radius:4px;color:var(--mute)}
+.opt:hover,.opt:focus-visible{background:#2b3552;outline:0;border-color:#fff}
+.opt:active{transform:translateY(2px)}
+.opt.sel{background:var(--ink);color:#141826;border-color:var(--ink)}
+.opt.sel::before{border-color:#141826;color:#141826;content:attr(data-r)}
+.btn{cursor:pointer;background:var(--red);border:3px solid var(--line);border-radius:8px;padding:9px 16px;color:#fff;box-shadow:0 4px 0 #6d1e19;transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #6d1e19}
+.btn.ghost{background:transparent;box-shadow:none}
+.btn[disabled]{opacity:.35;pointer-events:none}
+.row{display:flex;gap:10px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.note{color:var(--mute);font-size:18px;line-height:1.1}
+/* boot */
+#boot{align-items:center;justify-content:center;flex-direction:column;gap:18px;background:#0c0f19}
+.lcd{width:min(420px,86%);aspect-ratio:10/9;background:var(--lcd);border:14px solid #4a4f63;border-radius:10px 10px 40px 10px;box-shadow:inset 0 0 0 3px #8bac0f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--lcd2);overflow:hidden}
+.lcd .logo{font-family:P,monospace;font-size:clamp(14px,3.2vw,22px);transform:translateY(-140%);animation:drop 1.6s steps(16) .3s forwards}
+@keyframes drop{to{transform:none}}
+.lcd .ps{font-family:P,monospace;font-size:10px;opacity:0;animation:blink 1.1s steps(1) 2.1s infinite}
+.lcd .sub{font-size:20px;opacity:0;animation:fadein .2s steps(2) 1.9s forwards}
+/* intro */
+#intro,#char,#arch,#q,#res{flex-direction:column}
+.sprite{display:flex;align-items:flex-end;justify-content:center;flex:1;min-height:0}
+.sprite img{height:100%;max-height:300px;object-fit:contain;animation:bob 2.4s steps(4) infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+/* character */
+.chars{display:flex;gap:20px;justify-content:center;flex:1;min-height:0;align-items:stretch;padding:10px 0}
+.chr{flex:0 1 220px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;cursor:pointer;background:#1b2133;border:3px solid var(--line);border-radius:10px;padding:10px;min-height:0;transition:background .15s}
+.chr img{flex:1;min-height:0;max-height:260px;object-fit:contain}
+.chr.sel{background:#3b4a72;border-color:#fff}
+.chr:hover{background:#2b3552}
+.name{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
+.name input{font:inherit;background:#0e1220;color:var(--ink);border:3px solid var(--line);border-radius:8px;padding:6px 12px;width:min(280px,60vw);outline:0}
+/* archetypes */
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:12px;flex:1;min-height:0;padding:8px 0}
+.cards button{background:none;border:0;cursor:pointer;padding:0;transition:transform .12s}
+.cards button:hover{transform:translateY(-3px)}
+.cards button{min-height:0;position:relative}.cards img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
+.modal{position:absolute;inset:0;background:rgba(10,12,20,.82);display:none;align-items:center;justify-content:center;padding:16px;z-index:5}
+.modal.on{display:flex}
+.mbox{width:min(680px,100%);max-height:100%;overflow:auto;background:var(--panel);border:3px solid var(--line);border-radius:10px;padding:16px 18px;line-height:1.1}
+.mbox h3{font-family:P,monospace;font-size:13px;margin-bottom:10px}
+.mbox p{margin-bottom:10px}
+.mbox ul{list-style:none;margin:0 0 10px}
+.mbox li::before{content:"▸ ";color:var(--red)}
+.mbox pre{white-space:pre-wrap;font:inherit;font-size:18px;background:#0e1220;border:2px solid #3a4566;border-radius:6px;padding:10px;max-height:46vh;overflow:auto;user-select:text;-webkit-user-select:text}
+/* games */
+canvas.game{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+@media (pointer:fine){.pad{display:none!important}}
+.pad{position:absolute;right:8px;bottom:8px;display:grid;grid-template-columns:repeat(3,40px);grid-template-rows:repeat(2,40px);gap:4px;z-index:3}
+.pad button{background:rgba(27,33,51,.85);border:2px solid var(--line);border-radius:6px;cursor:pointer;font-family:P,monospace;font-size:10px}
+.pad button:active{background:var(--ink);color:#141826}
+.pad .u{grid-column:2}.pad .l{grid-column:1;grid-row:2}.pad .d{grid-column:2;grid-row:2}.pad .r{grid-column:3;grid-row:2}
+.tray{display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-height:34px}
+.tray .w{background:var(--ink);color:#141826;border-radius:4px;padding:2px 10px}
+.tray .w.e{background:transparent;border:2px dashed #4b577a;color:var(--mute)}
+.lock{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--panel);border:3px solid var(--line);border-radius:10px;padding:14px 18px;text-align:center;display:none;z-index:4;width:min(380px,90%)}
+.lock.on{display:block;animation:fadein .3s steps(4)}
+.lock p{margin-bottom:12px;line-height:1.05}
+.lock .row{justify-content:center}
+/* result */
+.resgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;flex:1;min-height:0}
+.resgrid>div{min-height:0;overflow:auto}
+.rescard{width:100%;display:block;animation:pop .6s steps(6)}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+.bar{margin:8px 0}
+.bar .t{display:flex;justify-content:space-between}
+.bar i{display:block;height:12px;border:2px solid var(--line);border-radius:3px;margin-top:3px;background:#0e1220;overflow:hidden}
+.bar i b{display:block;height:100%;width:0;transition:width 1.2s steps(14)}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:9}
+.flash.go{animation:fl .35s steps(3)}
+@keyframes fl{0%{opacity:.8}100%{opacity:0}}
+@media (max-width:640px){
+ html,body{font-size:19px}
+ .opts{grid-template-columns:1fr}
+ .talk .who{width:54px}.talk .who img{width:54px;height:54px}
+ .resgrid{display:block;overflow:auto}
+ .resgrid>div{overflow:visible;margin-bottom:12px}
+ .rescard{max-width:320px}
+ .shell{border-radius:10px}
+ .hd .st{display:none}
+}
+</style>
+</head>
+<body>
+<div class="bgfx"></div>
+<div class="app"><div class="shell">
+ <div class="hd"><span class="px" id="stage">design_type()</span><span class="px st" id="phase">Phase 00</span></div>
+ <div class="body">
+  <!-- boot -->
+  <section class="scr on" id="boot"><div class="lcd"><div class="logo">design_type()</div><div class="sub">programming simulator</div><div class="ps">Press start</div></div><p class="note">Click, tap or press Enter · sound on</p></section>
+  <!-- intro -->
+  <section class="scr" id="intro"><div class="sprite"><img src="a/denki.webp" alt="Professor Denki"></div><div class="talk"><div class="who"><img src="a/denki.webp" alt=""><span class="px">Denki</span></div><div class="bub" id="introTxt"></div></div><div class="row" style="margin-top:10px"><span class="note">Click or press Enter to continue</span></div></section>
+  <!-- character -->
+  <section class="scr" id="char"><div class="talk"><div class="who"><img src="a/denki.webp" alt=""><span class="px">Denki</span></div><div class="bub">Choose your avatar, then tell me your name.</div></div>
+   <div class="chars"><button class="chr" data-g="male" type="button"><img src="a/male.webp" alt="Avatar 1"><span class="px">Player 1</span></button><button class="chr" data-g="female" type="button"><img src="a/female.webp" alt="Avatar 2"><span class="px">Player 2</span></button></div>
+   <div class="name"><input id="nm" maxlength="14" placeholder="Your name" autocomplete="off"><button class="btn px" id="nmGo" type="button" disabled>Confirm</button></div></section>
+  <!-- archetypes -->
+  <section class="scr" id="arch"><div class="talk"><div class="who"><img src="a/denki.webp" alt=""><span class="px">Denki</span></div><div class="bub" id="archTxt"></div></div>
+   <div class="cards" id="cards"></div><div class="row"><span class="note">Tap a card to read it</span><button class="btn px" id="archGo" type="button">Start quiz</button></div></section>
+  <!-- quiz -->
+  <section class="scr" id="q"><div class="talk"><div class="who"><img src="a/denki.webp" alt=""><span class="px">Denki</span></div><div class="bub" id="qTxt"></div></div>
+   <div class="grow" id="qArea"></div><div class="me" id="meRow"></div></section>
+  <!-- result -->
+  <section class="scr" id="res"><div class="resgrid"><div><img class="rescard" id="resImg" alt=""><p class="px" id="resT" style="margin:12px 0 6px"></p><p id="resTag"></p><p class="note" id="resHy" style="margin-top:6px"></p><div id="bars" style="margin-top:8px"></div></div>
+   <div><p id="resDesc" style="line-height:1.1"></p><p class="px" style="margin:12px 0 4px;color:var(--mute)">Strengths</p><ul id="resS" class="lst"></ul><p class="px" style="margin:12px 0 4px;color:var(--mute)">Be careful of</p><ul id="resC" class="lst"></ul><p class="px" style="margin:12px 0 4px;color:var(--mute)">You might enjoy</p><p id="resD"></p></div></div>
+   <div class="row" style="margin-top:10px"><button class="btn ghost px" id="again" type="button">Play again</button><button class="btn px" id="mentor" type="button">Create mentor prompt</button></div></section>
+  <div class="modal" id="modal"><div class="mbox" id="mbox"></div></div>
+  <div class="flash" id="flash"></div>
+ </div>
+ <div class="ft"><span class="px" id="credits">Credits 03</span><button class="px" id="snd" type="button">Sound off</button></div>
+</div></div>
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const AX = ['F', 'M', 'P', 'V'];
+const ARCH = {
+  F: { n: 'The Provocateur', img: 'provocateur', tag: 'You redesign the question before designing the answer.',
+    d: 'When others rush toward solutions, you pause. You’re drawn to the assumptions underneath a brief, and if something feels incomplete, you don’t refine it, you reframe it. For you, a project is a position.',
+    s: ['Reframing complex issues', 'Challenging dominant ideas', 'Imagining alternative futures', 'Articulating strong conceptual positions'],
+    c: ['Thinking longer than you act', 'Rejecting constraints too quickly', 'Staying in critique without building'],
+    dom: 'Design futures · Critical & speculative design · Design research · Narrative design · Exhibitions' },
+  M: { n: 'The Mediator', img: 'mediator', tag: 'You design the space between people and systems.',
+    d: 'You notice the invisible agreements between humans and technology: behaviour, interaction and trust. When something feels clumsy or opaque, you want to understand the logic behind it. You design how things behave, not just what they are.',
+    s: ['Translating complexity into usable systems', 'Designing thoughtful interaction logic', 'Bridging research and experience', 'Seeing patterns in human–technology relationships'],
+    c: ['Analysing longer than you build', 'Staying abstract without resolving form', 'Overcomplicating simple solutions'],
+    dom: 'HCI · Interaction design · UX research · Digital experience design · Responsive systems' },
+  P: { n: 'The Builder', img: 'builder', tag: 'You think best when you’re making.',
+    d: 'When an idea sparks, you don’t debate it, you prototype it. A model on the table tells you more than a long discussion ever could. Constraints don’t frustrate you, they sharpen you.',
+    s: ['Rapid prototyping', 'Refining ideas through iteration', 'Strong material and spatial judgement', 'Turning concepts into viable outcomes'],
+    c: ['Optimising instead of questioning', 'Avoiding conceptual risk', 'Prioritising function over deeper critique'],
+    dom: 'Industrial design · Product design · Furniture & spatial design · Hardware innovation' },
+  V: { n: 'The Visionary', img: 'visionary', tag: 'You design at the scale of systems.',
+    d: 'You naturally zoom out. While others focus on artefacts, you think about institutions, ecosystems and long-term consequences. You care how design decisions ripple across organisations and communities.',
+    s: ['Mapping stakeholders and networks', 'Designing for long-term transformation', 'Connecting ethics with strategy', 'Seeing the bigger picture'],
+    c: ['Structuring before experimenting', 'Delaying tangible resolution', 'Losing sight of form and detail'],
+    dom: 'Service design · Strategic design · Public sector innovation · Policy & systems design' },
+};
+const COLOR = { F: '#E05AD1', M: '#3CC8E8', P: '#F2B33D', V: '#58C46A' };
+let player = { g: null, name: '' }, p1 = { F: 0, M: 0, P: 0, V: 0 }, p2 = { F: 0, M: 0, P: 0, V: 0 }, answers = [];
+
+// ---------- sound: tiny square-wave chip sounds + optional music ----------
+let ac = null, muted = true, music = null;
+try { muted = localStorage.getItem('dt-mute') === '1'; } catch (e) {}
+function audio() {
+  try { if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume(); } catch (e) {}
+  if (!music) { music = new Audio('a/music.mp3'); music.loop = true; music.volume = 0.22; }
+  if (!muted) music.play().catch(() => {});
+}
+function tone(f, d, type, v, at) {
+  if (!ac || muted) return;
+  const t = ac.currentTime + (at || 0), o = ac.createOscillator(), g = ac.createGain();
+  o.type = type || 'square'; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(v || .06, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + d + .02);
+}
+const sfx = {
+  tick: () => tone(1400, .02, 'square', .025), sel: () => { tone(660, .06); tone(990, .08, 'square', .06, .06); },
+  ok: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, .09, 'square', .06, i * .07)),
+  shot: () => tone(880, .05, 'square', .03), hit: () => tone(180, .08, 'sawtooth', .07), boom: () => { tone(120, .3, 'sawtooth', .1); tone(80, .4, 'square', .06, .05); },
+  eat: () => { tone(500, .04); tone(750, .05, 'square', .06, .04); }, ouch: () => [400, 300, 200].forEach((f, i) => tone(f, .08, 'square', .06, i * .08)),
+  start: () => [262, 330, 392, 523, 392, 523, 659].forEach((f, i) => tone(f, .1, 'square', .07, i * .09)),
+};
+function paintSnd() { $('snd').textContent = muted ? 'Sound off' : 'Sound on'; }
+$('snd').onclick = () => { muted = !muted; try { localStorage.setItem('dt-mute', muted ? '1' : '0'); } catch (e) {} audio(); if (music) muted ? music.pause() : music.play().catch(() => {}); paintSnd(); };
+paintSnd();
+const flash = () => { const f = $('flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); };
+
+// ---------- screens ----------
+function show(id, stage, phase) {
+  document.querySelectorAll('.scr').forEach(s => s.classList.toggle('on', s.id === id));
+  $('stage').textContent = stage || 'design_type()'; $('phase').textContent = phase || '';
+}
+let typing = null;
+function type(el, text, done) {
+  clearInterval(typing); el.textContent = ''; let i = 0; el.dataset.full = text; el.dataset.done = '';
+  typing = setInterval(() => {
+    el.textContent = text.slice(0, ++i); if (i % 2) sfx.tick();
+    if (i >= text.length) { clearInterval(typing); el.dataset.done = '1'; done && done(); }
+  }, 22);
+}
+function finishType(el) { if (el.dataset.done) return false; clearInterval(typing); el.textContent = el.dataset.full; el.dataset.done = '1'; return true; }
+
+// boot
+let booted = false;
+function boot() { if (booted) return; booted = true; audio(); sfx.start(); flash(); setTimeout(intro, 450); }
+$('boot').addEventListener('click', boot);
+
+// intro
+const LINES = ['Initialising design_type()...', 'Welcome! My name is Professor Denki.', 'design_type() was designed (no pun intended) to help you better understand the type of designer you are.', 'Before we begin, please introduce yourself.'];
+let li = 0;
+function intro() { show('intro', 'design_type()', 'Intro'); li = 0; type($('introTxt'), LINES[0]); }
+function introNext() {
+  if (finishType($('introTxt'))) return;
+  li++; if (li < LINES.length) { sfx.sel(); type($('introTxt'), LINES[li]); } else { sfx.sel(); charScr(); }
+}
+$('intro').addEventListener('click', introNext);
+
+// character
+function charScr() { show('char', 'Select character', 'Phase 00'); }
+document.querySelectorAll('.chr').forEach(b => b.onclick = () => { player.g = b.dataset.g; document.querySelectorAll('.chr').forEach(x => x.classList.toggle('sel', x === b)); sfx.sel(); canGo(); $('nm').focus(); });
+const canGo = () => $('nmGo').disabled = !(player.g && $('nm').value.trim());
+$('nm').addEventListener('input', canGo);
+$('nm').addEventListener('keydown', e => { if (e.key === 'Enter' && !$('nmGo').disabled) $('nmGo').click(); e.stopPropagation(); });
+$('nmGo').onclick = () => { player.name = $('nm').value.trim(); sfx.ok(); flash(); archScr(); };
+
+// archetypes
+function archScr() {
+  show('arch', 'Explore archetypes', 'Phase 00');
+  type($('archTxt'), 'Nice to meet you, ' + player.name + '! There are four kinds of designer. Have a look, then let’s find out which one you are.');
+  const c = $('cards'); c.innerHTML = '';
+  AX.forEach(k => { const b = document.createElement('button'); b.type = 'button'; b.innerHTML = '<img src="a/' + ARCH[k].img + '.webp" alt="' + ARCH[k].n + '">'; b.onclick = () => { sfx.sel(); modal(archHTML(k) + '<div class="row"><button class="btn px" type="button" data-x>Close</button></div>'); }; c.appendChild(b); });
+}
+function archHTML(k) { const a = ARCH[k]; return `<h3 style="color:${COLOR[k]}">${a.n}</h3><p>${a.tag}</p><p>${a.d}</p><p class="px" style="color:var(--mute)">Strengths</p><ul>${a.s.map(x => '<li>' + x + '</li>').join('')}</ul><p class="px" style="color:var(--mute)">Be careful of</p><ul>${a.c.map(x => '<li>' + x + '</li>').join('')}</ul>`; }
+function modal(html) { $('mbox').innerHTML = html; $('modal').classList.add('on'); $('mbox').querySelectorAll('[data-x]').forEach(b => b.onclick = () => $('modal').classList.remove('on')); }
+$('modal').addEventListener('click', e => { if (e.target === $('modal')) $('modal').classList.remove('on'); });
+$('archGo').onclick = () => { sfx.ok(); flash(); stage1(); };
+
+// shared question frame
+const head = () => 'a/' + player.g + '-head.webp';
+function ask(stage, phase, text) {
+  show('q', stage, phase); $('qArea').innerHTML = ''; $('meRow').innerHTML = '';
+  type($('qTxt'), text);
+}
+function say(text) { $('meRow').innerHTML = `<div class="bub">${text}</div><img src="${head()}" alt="">`; }
+function next(fn) { setTimeout(() => { flash(); fn(); }, 900); }
+let stop = null; const halt = () => { if (stop) { stop(); stop = null; } };
+
+// ---------- STAGE 01 · choice ----------
+function stage1() {
+  ask('Stage 01', 'Phase 01 · Choice', 'When choosing a design platform, what draws you in first?');
+  const o = [['F', 'Challenge how we think'], ['M', 'Strong interaction potential'], ['P', 'Build something tangible'], ['V', 'Impact systems & communities']];
+  const wrap = document.createElement('div'); wrap.className = 'opts'; wrap.style.cssText = 'position:absolute;left:0;right:0;bottom:0';
+  o.forEach(([ax, t], i) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'opt'; b.dataset.k = i + 1; b.textContent = t; b.onclick = () => pick1(ax, t); wrap.appendChild(b); });
+  $('qArea').appendChild(wrap);
+  const key = e => { const n = +e.key; if (n >= 1 && n <= 4) wrap.children[n - 1].click(); };
+  addEventListener('keydown', key); stop = () => removeEventListener('keydown', key);
+  function pick1(ax, t) { halt(); p1[ax] += 20; answers.push('Platform: ' + t); sfx.ok(); wrap.remove(); say(t); next(stage2); }
+}
+
+// ---------- STAGE 02 · ranking ----------
+function stage2() {
+  ask('Stage 02', 'Phase 01 · Ranking', 'What made you realise design was for you? Tap them in order, from what resonates most to least.');
+  const o = [['F', 'Questioning how things work'], ['M', 'Watching how people interact'], ['P', 'Making and prototyping'], ['V', 'Understanding systems']];
+  let order = [];
+  const box = document.createElement('div'); box.style.cssText = 'position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:10px';
+  const wrap = document.createElement('div'); wrap.className = 'opts';
+  const ctl = document.createElement('div'); ctl.className = 'row'; ctl.innerHTML = '<span class="note" id="rk">Tap again to remove</span><button class="btn ghost px" type="button" id="rkX">Clear</button><button class="btn px" type="button" id="rkGo" disabled>Confirm</button>';
+  o.forEach(([ax, t], i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'opt'; b.dataset.k = '·'; b.textContent = t;
+    b.onclick = () => { const at = order.indexOf(i); if (at >= 0) order.splice(at, 1); else order.push(i); sfx.sel(); paint(); };
+    wrap.appendChild(b);
+  });
+  function paint() {
+    [...wrap.children].forEach((b, i) => { const r = order.indexOf(i); b.classList.toggle('sel', r >= 0); b.dataset.r = r + 1; });
+    $('rkGo').disabled = order.length !== 4;
+  }
+  box.appendChild(wrap); box.appendChild(ctl); $('qArea').appendChild(box);
+  $('rkX').onclick = () => { order = []; paint(); };
+  $('rkGo').onclick = () => {
+    const first = o[order[0]]; p1[first[0]] += 15; p1[o[order[1]][0]] += 5;
+    answers.push('Ranked first: ' + first[1]); sfx.ok(); box.remove(); say('1. ' + first[1]); next(stage3);
+  };
+}
+
+// ---------- STAGE 03 · belief invaders (redesigned) ----------
+function stage3() {
+  ask('Stage 03', 'Phase 01 · Arcade', 'When a project feels meaningful, it’s because of... Shoot down the one that matters most to you.');
+  const area = $('qArea'), cv = document.createElement('canvas'); cv.className = 'game'; area.appendChild(cv);
+  const lock = document.createElement('div'); lock.className = 'lock'; area.appendChild(lock);
+  const hint = document.createElement('p'); hint.className = 'note'; hint.style.cssText = 'position:absolute;left:0;right:0;top:0;text-align:center;pointer-events:none';
+  hint.textContent = matchMedia('(pointer:fine)').matches ? 'Move with the mouse or ← →  ·  hold click or space to fire' : 'Drag to move · your ship fires while your finger is down'; area.appendChild(hint);
+  const g = cv.getContext('2d');
+  const L = [['F', 'Strong idea'], ['M', 'People love it'], ['P', 'Making it real'], ['V', 'Social impact']];
+  const HP = 6, SPR = ['00100000100', '00010001000', '00111111100', '01101110110', '11111111111', '10111111101', '10100000101', '00011011000'];
+  let W, H, D, cores, ship, bullets = [], parts = [], fire = false, keys = {}, last = 0, done = false, sway = 0, raf;
+  function fit() { D = Math.min(devicePixelRatio || 1, 2); const r = area.getBoundingClientRect(); W = r.width; H = r.height; cv.width = W * D; cv.height = H * D; g.setTransform(D, 0, 0, D, 0, 0); }
+  fit(); const ro = new ResizeObserver(fit); ro.observe(area);
+  cores = L.map(([ax, t], i) => ({ ax, t, hp: HP, i, hitT: 0 }));
+  ship = { x: W / 2 };
+  const pos = c => { const sw = Math.sin(sway) * Math.min(40, W * .04); if (W < 560) { const col = c.i % 2, row = (c.i / 2) | 0; return { x: W / 2 + (col - .5) * W * .46 + sw, y: H * (.2 + row * .27) }; } const sp = W / 4.4; return { x: W / 2 + (c.i - 1.5) * sp + sw, y: Math.max(60, H * .26) }; };
+  const toX = e => e.clientX - cv.getBoundingClientRect().left;
+  cv.addEventListener('pointerdown', e => { if (done) return; audio(); fire = true; ship.x = toX(e); cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', e => { if (done) return; if (e.pointerType === 'mouse' || fire) ship.x = toX(e); });
+  const up = () => fire = false; cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  const kd = e => { if (e.key === ' ') { fire = true; e.preventDefault(); } keys[e.key] = true; }, ku = e => { if (e.key === ' ') fire = false; keys[e.key] = false; };
+  addEventListener('keydown', kd); addEventListener('keyup', ku);
+  function inv(x, y, s, col, a) {
+    g.fillStyle = col; g.globalAlpha = a;
+    SPR.forEach((row, j) => [...row].forEach((c, i) => { if (c === '1') g.fillRect(x + (i - 5.5) * s, y + (j - 4) * s, s, s); }));
+    g.globalAlpha = 1;
+  }
+  function loop(t) {
+    const dt = Math.min(3, (t - (last || t)) / 16.7); last = t; sway += .012 * dt;
+    if (!done) { if (keys.ArrowLeft) ship.x -= 7 * dt; if (keys.ArrowRight) ship.x += 7 * dt; }
+    ship.x = Math.max(24, Math.min(W - 24, ship.x));
+    const sy = H - 46;
+    if (fire && !done && t - (loop.s || 0) > 150) { loop.s = t; bullets.push({ x: ship.x, y: sy - 12 }); sfx.shot(); }
+    g.clearRect(0, 0, W, H);
+    const s = Math.max(3, Math.min(6, W / 150));
+    cores.forEach(c => {
+      if (c.hp <= 0) return; const p = pos(c), shake = t - c.hitT < 120 ? (Math.random() - .5) * 4 : 0;
+      inv(p.x + shake, p.y, s, COLOR[c.ax], 1);
+      g.fillStyle = '#EEF2FA'; g.font = `${Math.max(16, Math.min(22, W / 36))}px V, monospace`; g.textAlign = 'center'; g.fillText(c.t, p.x, p.y + 6.5 * s + 14);
+      for (let k = 0; k < HP; k++) { g.fillStyle = k < c.hp ? COLOR[c.ax] : '#3a4566'; g.fillRect(p.x - HP * 5 + k * 10, p.y + 6.5 * s + 22, 8, 5); }
+    });
+    for (let k = bullets.length - 1; k >= 0; k--) {
+      const b = bullets[k]; b.y -= 11 * dt; g.fillStyle = '#EEF2FA'; g.fillRect(b.x - 2, b.y, 4, 12);
+      if (b.y < -20) { bullets.splice(k, 1); continue; }
+      for (const c of cores) {
+        if (c.hp <= 0) continue; const p = pos(c);
+        if (Math.abs(b.x - p.x) < 6 * s && b.y < p.y + 4 * s && b.y > p.y - 4 * s) {
+          bullets.splice(k, 1); c.hp--; c.hitT = t; sfx.hit();
+          for (let q = 0; q < 6; q++) parts.push({ x: b.x, y: b.y, vx: (Math.random() - .5) * 5, vy: -Math.random() * 3, l: 1, c: COLOR[c.ax] });
+          if (c.hp <= 0) { boom(c, p); } break;
+        }
+      }
+    }
+    // ship
+    g.fillStyle = '#EEF2FA'; const ss = 4; ['00100', '01110', '11111', '11011'].forEach((row, j) => [...row].forEach((ch, i) => { if (ch === '1') g.fillRect(ship.x + (i - 2.5) * ss * 2, sy + j * ss * 2, ss * 2, ss * 2); }));
+    for (let k = parts.length - 1; k >= 0; k--) { const q = parts[k]; q.vy += .15 * dt; q.x += q.vx * dt; q.y += q.vy * dt; q.l -= .025 * dt; if (q.l <= 0) { parts.splice(k, 1); continue; } g.globalAlpha = Math.round(q.l * 4) / 4; g.fillStyle = q.c; g.fillRect(q.x, q.y, 4, 4); }
+    g.globalAlpha = 1;
+    raf = requestAnimationFrame(loop);
+  }
+  function boom(c, p) {
+    done = true; fire = false; sfx.boom(); flash();
+    for (let q = 0; q < 50; q++) parts.push({ x: p.x, y: p.y, vx: (Math.random() - .5) * 9, vy: (Math.random() - .7) * 7, l: 1, c: COLOR[c.ax] });
+    setTimeout(() => {
+      lock.innerHTML = `<p><span class="px" style="color:${COLOR[c.ax]}">Locked in</span><br>${c.t}</p><div class="row"><button class="btn ghost px" type="button" data-a>Replay</button><button class="btn px" type="button" data-k>Keep</button></div>`;
+      lock.classList.add('on');
+      lock.querySelector('[data-a]').onclick = () => { lock.classList.remove('on'); cores.forEach(x => x.hp = HP); done = false; sfx.sel(); };
+      lock.querySelector('[data-k]').onclick = () => { finish(c); };
+    }, 700);
+  }
+  function finish(c) {
+    cancelAnimationFrame(raf); ro.disconnect(); removeEventListener('keydown', kd); removeEventListener('keyup', ku);
+    p1[c.ax] += 30; answers.push('Most meaningful: ' + c.t); sfx.ok(); area.innerHTML = ''; say(c.t); next(stage4);
+  }
+  raf = requestAnimationFrame(loop);
+}
+
+// ---------- STAGE 04 · word maze (redesigned Pac-Man) ----------
+function stage4() {
+  ask('Stage 04', 'Phase 01 · Arcade', 'A good design is... Steer through the maze and collect the 3 words you agree with most. Avoid the ghost.');
+  const area = $('qArea'); area.style.display = 'flex'; area.style.flexDirection = 'column'; area.style.gap = '6px';
+  const tray = document.createElement('div'); tray.className = 'tray'; area.appendChild(tray);
+  const holder = document.createElement('div'); holder.className = 'grow'; area.appendChild(holder);
+  const cv = document.createElement('canvas'); cv.className = 'game'; holder.appendChild(cv);
+  const pad = document.createElement('div'); pad.className = 'pad'; holder.appendChild(pad);
+  [['u', '▲', 0, -1], ['l', '◀', -1, 0], ['d', '▼', 0, 1], ['r', '▶', 1, 0]].forEach(([c, t, dx, dy]) => { const b = document.createElement('button'); b.type = 'button'; b.className = c; b.textContent = t; b.onpointerdown = e => { e.preventDefault(); want = [dx, dy]; audio(); }; pad.appendChild(b); });
+  let MAP = ['#############', '#.....#.....#', '#.##.....##.#', '#.#..#.#..#.#', '#....#.#....#', '#.##.....##.#', '#.....#.....#', '#############'];
+  const tall = holder.getBoundingClientRect().height > holder.getBoundingClientRect().width;
+  if (tall) MAP = MAP[0].split('').map((_, x) => MAP.map(r => r[x]).join(''));
+  const START = tall ? { x: 4, y: 6 } : { x: 6, y: 4 };
+  const R = MAP.length, C = MAP[0].length, wall = (x, y) => MAP[y][x] === '#';
+  const POOL = { F: ['Original', 'Bold', 'Meaningful'], M: ['Clear', 'Intuitive', 'Human'], P: ['Well made', 'Precise', 'Reliable'], V: ['Sustainable', 'Inclusive', 'Responsible'] };
+  const open = []; for (let y = 0; y < R; y++) for (let x = 0; x < C; x++) if (!wall(x, y)) open.push([x, y]);
+  let me = { ...START }, dir = [0, 0], want = [0, 0], ghost = { x: 1, y: 1 }, got = [], words = [], raf, tick = 0, gtick = 0, done = false, mouth = 0, inv = 0;
+  const sh = a => a.sort(() => Math.random() - .5);
+  AX.forEach(ax => sh(POOL[ax].slice()).slice(0, 2).forEach(w => words.push({ w, ax })));
+  { const cand = sh(open.filter(([x, y]) => Math.abs(x - START.x) + Math.abs(y - START.y) > 2 && !(x === 1 && y === 1))), used = [];
+    for (const p of cand) { if (used.length === words.length) break; if (used.every(q => Math.abs(q[0] - p[0]) + Math.abs(q[1] - p[1]) >= 3)) used.push(p); }
+    used.forEach((p, i) => { words[i].x = p[0]; words[i].y = p[1]; }); }
+  const g = cv.getContext('2d'); let W, H, D, cs, ox, oy;
+  function fit() { D = Math.min(devicePixelRatio || 1, 2); const r = holder.getBoundingClientRect(); W = r.width; H = r.height; cv.width = W * D; cv.height = H * D; g.setTransform(D, 0, 0, D, 0, 0); cs = Math.floor(Math.min(W / C, H / R)); ox = Math.floor((W - cs * C) / 2); oy = Math.floor((H - cs * R) / 2); }
+  fit(); const ro = new ResizeObserver(fit); ro.observe(holder);
+  function paintTray() { tray.innerHTML = ''; for (let i = 0; i < 3; i++) { const s = document.createElement('span'); s.className = 'w' + (got[i] ? '' : ' e'); s.textContent = got[i] ? got[i].w : 'empty'; tray.appendChild(s); } }
+  paintTray();
+  const kd = e => { const m = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0], w: [0, -1], s: [0, 1], a: [-1, 0], d: [1, 0] }[e.key]; if (m) { want = m; e.preventDefault(); audio(); } };
+  addEventListener('keydown', kd);
+  let sw = null; cv.addEventListener('pointerdown', e => { sw = [e.clientX, e.clientY]; audio(); });
+  cv.addEventListener('pointermove', e => { if (!sw) return; const dx = e.clientX - sw[0], dy = e.clientY - sw[1]; if (Math.hypot(dx, dy) > 24) { want = Math.abs(dx) > Math.abs(dy) ? [Math.sign(dx), 0] : [0, Math.sign(dy)]; sw = [e.clientX, e.clientY]; } });
+  cv.addEventListener('pointerup', () => sw = null);
+  function step(o, d) { const nx = o.x + d[0], ny = o.y + d[1]; if (!wall(nx, ny)) { o.x = nx; o.y = ny; return true; } return false; }
+  function loop(t) {
+    if (!done) {
+      if (t - tick > 150) {
+        tick = t;
+        if (want[0] || want[1]) { if (!wall(me.x + want[0], me.y + want[1])) dir = want; }
+        step(me, dir);
+        const k = words.findIndex(w => w.x === me.x && w.y === me.y);
+        if (k >= 0) { got.push(words[k]); words.splice(k, 1); sfx.eat(); paintTray(); if (got.length === 3) end(); }
+      }
+      if (t - gtick > 420) {
+        gtick = t; const opts = [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(d => !wall(ghost.x + d[0], ghost.y + d[1]));
+        opts.sort((a, b) => (Math.abs(ghost.x + a[0] - me.x) + Math.abs(ghost.y + a[1] - me.y)) - (Math.abs(ghost.x + b[0] - me.x) + Math.abs(ghost.y + b[1] - me.y)));
+        step(ghost, Math.random() < .7 ? opts[0] : opts[(Math.random() * opts.length) | 0]);
+      }
+      if (ghost.x === me.x && ghost.y === me.y && t > inv) { sfx.ouch(); me = { ...START }; dir = [0, 0]; want = [0, 0]; inv = t + 1200; if (got.length) { const w = got.pop(); words.push(w); paintTray(); } }
+    }
+    g.clearRect(0, 0, W, H);
+    for (let y = 0; y < R; y++) for (let x = 0; x < C; x++) if (wall(x, y)) { g.fillStyle = '#2f3c6b'; g.fillRect(ox + x * cs + 2, oy + y * cs + 2, cs - 4, cs - 4); g.fillStyle = '#4a5ea3'; g.fillRect(ox + x * cs + 2, oy + y * cs + 2, cs - 4, 3); }
+    words.forEach(w => {
+      const cx = ox + (w.x + .5) * cs, cy = oy + (w.y + .5) * cs, s = cs * .26 * (1 + .12 * Math.sin(t / 200));
+      g.fillStyle = COLOR[w.ax]; g.fillRect(cx - s / 2, cy - s / 2, s, s);
+      g.font = `${Math.max(13, Math.min(20, cs * .36))}px V, monospace`; g.textAlign = 'center'; g.fillStyle = '#EEF2FA';
+      g.fillText(w.w, cx, cy - s / 2 - 4);
+    });
+    // ghost
+    const gx = ox + ghost.x * cs, gy = oy + ghost.y * cs, gs = cs * .7, go = (cs - gs) / 2;
+    g.fillStyle = '#ff5a6e'; g.beginPath(); g.arc(gx + cs / 2, gy + go + gs * .45, gs / 2, Math.PI, 0); g.lineTo(gx + go + gs, gy + go + gs); g.lineTo(gx + go, gy + go + gs); g.fill();
+    g.fillStyle = '#fff'; g.fillRect(gx + cs * .36, gy + cs * .38, cs * .1, cs * .12); g.fillRect(gx + cs * .56, gy + cs * .38, cs * .1, cs * .12);
+    // player (blinks while invulnerable)
+    if (!(t < inv && Math.floor(t / 100) % 2)) {
+      mouth = .25 + .2 * Math.sin(t / 70); const a = Math.atan2(dir[1], dir[0] || (dir[1] ? 0 : 1));
+      g.fillStyle = '#ffd23f'; g.beginPath(); g.moveTo(ox + (me.x + .5) * cs, oy + (me.y + .5) * cs);
+      g.arc(ox + (me.x + .5) * cs, oy + (me.y + .5) * cs, cs * .36, a + mouth, a + Math.PI * 2 - mouth); g.fill();
+    }
+    raf = requestAnimationFrame(loop);
+  }
+  function end() {
+    done = true; sfx.ok(); flash();
+    setTimeout(() => {
+      cancelAnimationFrame(raf); ro.disconnect(); removeEventListener('keydown', kd);
+      got.forEach(w => p1[w.ax] += 12); answers.push('Good design is: ' + got.map(w => w.w).join(', '));
+      area.innerHTML = ''; area.style.display = ''; say(got.map(w => w.w).join(' · ')); next(() => critique(0));
+    }, 600);
+  }
+  raf = requestAnimationFrame(loop);
+}
+
+// ---------- PHASE 02 · critique (hardcoded; originally written live by an LLM) ----------
+const OBJ = { F: 'an exhibition piece about screen time', M: 'a self-checkout kiosk for elderly shoppers', P: 'a folding chair for small flats', V: 'a neighbourhood recycling service' };
+const CRIT = [
+  { q: o => `You’re designing ${o}. At the first critique, your tutor says the idea feels unclear. What’s your first move?`,
+    a: { F: 'Rethink what the project is really questioning', M: 'Watch someone try the current version', P: 'Make a rough model and see it in real life', V: 'Map who else is affected, and how' } },
+  { q: () => 'During testing, people keep stopping halfway and looking around. How do you find out why?',
+    a: { F: 'Ask what they expected it to mean', M: 'Ask them to think aloud while they use it', P: 'Swap one part and see if the behaviour changes', V: 'Look at what’s around it: staff, signs, timing' } },
+  { q: () => 'You’ve found the problem, with one week left. What do you change?',
+    a: { F: 'Sharpen the message so the intent is unmistakable', M: 'Redesign the step where people get stuck', P: 'Rebuild the weak part properly and test again', V: 'Change the service around it so the object can stay simple' } },
+];
+let obj = '';
+function critique(n) {
+  if (n === 0) { const top = AX.slice().sort((a, b) => p1[b] - p1[a])[0]; obj = OBJ[top]; }
+  const c = CRIT[n];
+  ask('Stage 0' + (5 + n), 'Phase 02 · Critique', c.q(obj));
+  const wrap = document.createElement('div'); wrap.className = 'opts'; wrap.style.cssText = 'position:absolute;left:0;right:0;bottom:0';
+  const ax = AX.slice().sort(() => Math.random() - .5);
+  ax.forEach((k, i) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'opt'; b.dataset.k = i + 1; b.textContent = c.a[k]; b.onclick = () => pick(k); wrap.appendChild(b); });
+  const note = document.createElement('p'); note.className = 'note'; note.style.cssText = 'position:absolute;left:0;right:0;top:0';
+  note.textContent = n === 0 ? 'In the original, these critique questions were written live by an AI model from your earlier answers, and you replied in your own words. Here they’re pre-written.' : '';
+  $('qArea').appendChild(note); $('qArea').appendChild(wrap);
+  const key = e => { const k = +e.key; if (k >= 1 && k <= 4) wrap.children[k - 1].click(); };
+  addEventListener('keydown', key); stop = () => removeEventListener('keydown', key);
+  function pick(k) { halt(); p2[k] += 8; answers.push('Critique ' + (n + 1) + ': ' + c.a[k]); sfx.ok(); wrap.remove(); note.remove(); say(c.a[k]); next(() => n < 2 ? critique(n + 1) : result()); }
+}
+
+// ---------- result ----------
+let dom, sec, hybrid;
+function result() {
+  const tot = {}; AX.forEach(k => tot[k] = p1[k] + p2[k] * 2);
+  const ord = AX.slice().sort((a, b) => tot[b] - tot[a]); dom = ord[0]; sec = ord[1]; hybrid = tot[dom] - tot[sec] <= 3;
+  show('res', 'Result', 'Your design_type()'); sfx.start();
+  const a = ARCH[dom];
+  $('resImg').src = 'a/' + a.img + '.webp'; $('resImg').alt = a.n;
+  $('resT').textContent = player.name + ', you are ' + a.n; $('resT').style.color = COLOR[dom];
+  $('resTag').textContent = a.tag;
+  $('resHy').textContent = hybrid ? 'Close call: you’re a hybrid of ' + a.n + ' and ' + ARCH[sec].n + '.' : 'With a bit of ' + ARCH[sec].n + ' as your second lens.';
+  $('resDesc').textContent = a.d; $('resS').innerHTML = a.s.map(x => '<li>' + x + '</li>').join(''); $('resC').innerHTML = a.c.map(x => '<li>' + x + '</li>').join(''); $('resD').textContent = a.dom;
+  const max = Math.max(...AX.map(k => tot[k])) || 1, sum = AX.reduce((s, k) => s + tot[k], 0) || 1;
+  $('bars').innerHTML = AX.map(k => `<div class="bar"><div class="t"><span>${ARCH[k].n.replace('The ', '')}</span><span>${Math.round(tot[k] / sum * 100)}%</span></div><i><b style="background:${COLOR[k]}" data-w="${tot[k] / max * 100}"></b></i></div>`).join('');
+  requestAnimationFrame(() => requestAnimationFrame(() => document.querySelectorAll('#bars b').forEach(b => b.style.width = b.dataset.w + '%')));
+}
+document.querySelectorAll('.lst').forEach(() => {});
+function mentorPrompt() {
+  const tot = {}; AX.forEach(k => tot[k] = p1[k] + p2[k] * 2);
+  return `You are a design mentor for ${player.name}, a student in NUS Industrial Design.
+
+STUDENT ORIENTATION RESULTS
+Provocateur: ${tot.F} · Mediator: ${tot.M} · Builder: ${tot.P} · Visionary: ${tot.V}
+Dominant orientation: ${ARCH[dom].n}
+Secondary orientation: ${ARCH[sec].n}
+${hybrid ? 'The student sits between two orientations. Treat this as a hybrid mindset.' : 'The student leans most strongly toward the dominant orientation.'}
+
+STUDENT RESPONSES DURING THE QUIZ
+${answers.map(a => '- ' + a).join('\n')}
+
+Mentoring approach:
+Use the dominant orientation as the student's natural instinct, and the secondary orientation as a supporting lens.
+Guide the student like a studio tutor. Ask reflective critique questions, suggest practical experiments or next steps, and encourage exploration without locking them into an identity.
+
+Tone: clear, direct, supportive, academically grounded but simple.
+Always ask at least one reflective question, suggest a concrete next experiment, and relate advice to studio practice or design critique.`;
+}
+$('mentor').onclick = () => {
+  sfx.sel();
+  modal(`<h3>Your mentor prompt</h3><p>Paste this into a custom GPT (or any AI assistant) to get a mentor that knows how you think. In the original, an AI wrote this from your full answers.</p><pre id="mp"></pre><div class="row"><button class="btn ghost px" type="button" data-x>Close</button><button class="btn px" type="button" id="cp">Copy</button></div>`);
+  $('mp').textContent = mentorPrompt();
+  $('cp').onclick = () => { const t = $('mp').textContent; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => $('cp').textContent = 'Copied', () => { const r = document.createRange(); r.selectNodeContents($('mp')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $('cp').textContent = 'Selected'; }); };
+};
+$('again').onclick = () => { p1 = { F: 0, M: 0, P: 0, V: 0 }; p2 = { F: 0, M: 0, P: 0, V: 0 }; answers = []; sfx.sel(); flash(); stage1(); };
+
+// keyboard: Enter advances boot and dialogue
+addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if ($('boot').classList.contains('on')) boot();
+  else if ($('intro').classList.contains('on')) introNext();
+});
+// skip typing on the question bubble when tapped
+$('qTxt').addEventListener('click', () => finishType($('qTxt')));
+// testing hook
+window.__dt = { stage3, stage4, critique, result, set: (g, n) => { player.g = g; player.name = n; } };
+})();
+</script>
+</body></html>
