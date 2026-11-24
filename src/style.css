@@ -477,7 +477,7 @@ main figure video[data-auto]{background:var(--card)}
 .wl-col{flex:1;display:flex;flex-direction:column;gap:14px}
 .wl-col:nth-child(even){transform:translateY(-18%)}.wl-col:nth-child(3n){transform:translateY(-34%)}
 .off .wl-col{animation-play-state:paused}.wl-col.rev{animation-direction:reverse}
-@keyframes wlm{to{transform:translateY(-50%)}}
+@keyframes wlm{from{transform:translateY(0)}to{transform:translateY(-50%)}}
 .wl-t{display:block;flex:none;aspect-ratio:3/2;border-radius:4px;overflow:hidden;position:relative}
 .wl-t img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) brightness(.5);transition:filter .5s var(--ease),transform .8s var(--ease)}
 /* 1 · archive band */
@@ -562,10 +562,13 @@ main figure video[data-auto]{background:var(--card)}
 /* phones: the collage fills the whole hero, dimmed behind the wordmark instead of cut out */
 @media (max-width:700px){
   .wl-bg{-webkit-mask-image:none;mask-image:none}
+  .wl-bg .wl-col:nth-child(1){animation-duration:60s;animation-direction:normal}
+  .wl-bg .wl-col:nth-child(2){animation-duration:70s;animation-direction:reverse}
+  .wl-bg .wl-col:nth-child(3){animation-duration:55s;animation-direction:normal}
   .wl-bg .wl-wall{inset:-30% -30%;opacity:.5}
   .wl-bg::after{background:radial-gradient(ellipse 90% 30% at 50% 50%,rgba(15,14,14,.75),rgba(15,14,14,.25) 70%,transparent),linear-gradient(var(--bg),transparent 10%,transparent 88%,var(--bg))}
 }
-.wl-band .wl-col{animation:wlm var(--s) linear infinite;will-change:transform}.wl-band .wl-col.rev{animation-direction:reverse}
+.wl-band .wl-col{animation:wlm var(--s) linear infinite;will-change:transform}.wl-band .wl-col:nth-child(even){animation-delay:-14s}.wl-band .wl-col:nth-child(3n){animation-delay:-27s}.wl-band .wl-col.rev{animation-direction:reverse}
 
 /* project text runs the full width of the images */
 .p-body .text,.p-body .text p{max-width:none}
