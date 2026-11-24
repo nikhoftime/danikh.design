@@ -1,3 +1,11 @@
+// On the live site, show clean addresses (danikh.design/projects/path, not …/path.html).
+// The links point at real files so the offline preview works; the server answers the clean ones too.
+(() => {
+  if (!/(^|\.)danikh\.design$|\.vercel\.app$/.test(location.hostname)) return;
+  const clean = location.pathname.replace(/\/index\.html$/, '/').replace(/\.html$/, '').replace(/(.)\/$/, '$1');
+  if (clean !== location.pathname) try { history.replaceState(history.state, '', clean + location.search + location.hash); } catch (e) {}
+})();
+
 // Every page opens at the top: no restored scroll positions, and the logo or a tab for the page
 // you are already on brings you back to the top instead of doing nothing.
 (() => {
@@ -20,7 +28,7 @@
     if (!a || a.target === '_blank' || e.metaKey || e.ctrlKey || e.shiftKey) return;
     let u; try { u = new URL(a.getAttribute('href'), location.href); } catch (err) { return; }
     if (u.origin !== location.origin || u.hash) return;
-    const here = p => p.replace(/index\.html$/, '');
+    const here = p => p.replace(/index\.html$/, '').replace(/\.html$/, '').replace(/(.)\/$/, '$1');
     if (here(u.pathname) === here(location.pathname)) { e.preventDefault(); scrollTo({ top: 0, behavior: 'smooth' }); }
   });
 })();
