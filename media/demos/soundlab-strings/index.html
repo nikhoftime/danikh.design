@@ -65,6 +65,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:cro
   }
   function audio() {
     if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
     ac = new AC(); master = ac.createGain(); master.gain.value = 1;
     // amp: tighten the lows, push hard into two clipping stages, then a guitar cab

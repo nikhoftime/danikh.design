@@ -232,6 +232,8 @@ document.querySelectorAll('button.frame-go').forEach(b => b.addEventListener('cl
   const audio = () => {
     try {
       if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
+      // iPhone: play like a media app, so the game is heard even with the silent switch on (iOS 17+)
+      try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
       const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
       ac = new AC(); master = ac.createGain(); master.gain.value = 0.16; master.connect(ac.destination);
     } catch (e) { ac = null; }

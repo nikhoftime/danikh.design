@@ -85,6 +85,7 @@ CHORDS.forEach((c,i)=>{const b=document.createElement('button');b.className='pad
 addEventListener('keydown',e=>{const i='1234'.indexOf(e.key);if(i>=0&&!e.repeat)strum(i,pads.children[i]);});
 // ---------- audio: Karplus-Strong plucked strings ----------
 let ac,bus,wet,cache={},cheers={};
+try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
 function initAudio(){if(ac)return;ac=new (window.AudioContext||window.webkitAudioContext)();
  const comp=ac.createDynamicsCompressor();comp.threshold.value=-14;comp.ratio.value=3;comp.connect(ac.destination);
  const tone=ac.createBiquadFilter();tone.type='lowpass';tone.frequency.value=4200;tone.Q.value=.3;
