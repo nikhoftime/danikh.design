@@ -194,7 +194,10 @@ document.querySelectorAll('button.frame-go').forEach(b => b.addEventListener('cl
   }
 
   // entrance: reveal the site once the pixels have landed (any input skips ahead)
-  let revealed = !intro, t0 = performance.now(), introTimer = 0;
+  // game clock: follows real time, but never jumps more than 50 ms per frame, so when the phone is busy
+  // (screen recording, low power mode) the animations slow down instead of skipping their stages
+  let gt = performance.now(), gRaw = 0;
+  let revealed = !intro, t0 = gt, introTimer = 0;
   const reveal = () => { if (revealed) return; revealed = true; clearTimeout(introTimer); root.classList.remove('intro'); };
   const armIntro = () => {
     clearTimeout(introTimer); introTimer = setTimeout(reveal, INTRO_END + 50);
@@ -213,7 +216,7 @@ document.querySelectorAll('button.frame-go').forEach(b => b.addEventListener('cl
       delay[k] = gi[k] * 6 + Math.random() * 420; if (delay[k] > maxDelay) maxDelay = delay[k];
       x[k] = y[k] = vx[k] = vy[k] = 0; flipUntil[k] = 0;
     }
-    FLY = 1000; INTRO_END = maxDelay + FLY + 150; t0 = performance.now(); nextFlip = 0; idle = 0;
+    FLY = 1000; INTRO_END = maxDelay + FLY + 150; t0 = gt; nextFlip = 0; idle = 0;
     if (full) { scrollTo(0, 0); revealed = false; root.classList.add('intro'); armIntro(); }
   }
 
@@ -263,6 +266,8 @@ document.querySelectorAll('button.frame-go').forEach(b => b.addEventListener('cl
     win: () => { [523, 659, 784, 1047, 784, 1047, 1319, 1568].forEach((f, i) => tone(f, f, 0.1, 'square', 0.4, i * 0.085)); },
     exit: () => { [784, 523, 392, 262].forEach((f, i) => tone(f, f, 0.07, 'square', 0.3, i * 0.055)); },
   };
+  // sound is a bonus: if the phone refuses it (recording, silent mode, interrupted audio), carry on silently
+  for (const k in sfx) { const f = sfx[k]; sfx[k] = (...a) => { try { f(...a); } catch (e) {} }; }
   const paintSound = () => { if (soundBtn) { soundBtn.textContent = muted ? 'Sound off' : 'Sound on'; soundBtn.setAttribute('aria-pressed', String(!muted)); } };
   paintSound();
 
@@ -340,7 +345,7 @@ document.querySelectorAll('button.frame-go').forEach(b => b.addEventListener('cl
     const bar = document.querySelector('.hero-bar');
     const floor = (bar ? bar.getBoundingClientRect().top : CH - 90) - cv.getBoundingClientRect().top - offY;
     shipY = floor - 22 - MARK.length * sc; shipX = W / 2;
-    const now = performance.now(); phase = 'boot'; phaseAt = now; flash(now, 0.45); shake(false);
+    const now = gt; phase = 'boot'; phaseAt = now; flash(now, 0.45); shake(false);
     nextStep = now + BOOT + 250; nextBomb = now + BOOT + 1100; safeUntil = now + BOOT + 500; lastShot = 0;
     document.body.classList.add('wm-game');
     if (gameBtn) gameBtn.textContent = 'Exit game';
@@ -415,7 +420,7 @@ document.querySelectorAll('button.frame-go').forEach(b => b.addEventListener('cl
       if (!game) return;
       if (e.key === 'Escape') exitGame();
       else if (e.key === 'r' || e.key === 'R') startGame();
-      else if (e.key === ' ' || e.key === 'Enter') { if (phase === 'play') firing = e.key === ' '; else if (phase === 'end' && banner && performance.now() - banner.at > 900) startGame(); }
+      else if (e.key === ' ' || e.key === 'Enter') { if (phase === 'play') firing = e.key === ' '; else if (phase === 'end' && banner && gt - banner.at > 900) startGame(); }
       else if (e.key === 'ArrowLeft') keyL = true;
       else if (e.key === 'ArrowRight') keyR = true;
       else return;
@@ -431,11 +436,16 @@ document.querySelectorAll('button.frame-go').forEach(b => b.addEventListener('cl
   const ease = t => 1 - Math.pow(1 - t, 4);
   const clamp = v => v < 0 ? 0 : v > 1 ? 1 : v;
   let lastNow = 0;
+  // a failing step (a sound the phone refuses, say) must never freeze the animation: log it and keep going
   function frame(now) {
+    try { frameBody(now); } catch (e) { try { console.error(e); } catch (_) {} running = true; requestAnimationFrame(frame); }
+  }
+  function frameBody(now) {
     if (document.hidden) { running = false; return; }
     // behind the page (scrolled past the hero): keep animating, but at half the frame rate to stay light
     if (!game && scrollY > innerHeight * 1.05 && now - (frame.last || 0) < 32) { requestAnimationFrame(frame); return; }
     frame.last = now;
+    gt += Math.min(50, Math.max(0, now - (gRaw || now))); gRaw = now; now = gt;
     const t = now - t0, dt = Math.min(3, Math.max(0.5, (now - (lastNow || now - 16.7)) / 16.7)); lastNow = now;
     heal += ((hover && !game ? 1 : 0) - heal) * 0.07;
     idle += ((hover || game || reduce || t < INTRO_END + 400 ? 0 : 1) - idle) * 0.05;
@@ -545,8 +555,8 @@ document.querySelectorAll('button.frame-go').forEach(b => b.addEventListener('cl
         if (b.y > CH - offY) { bombs.splice(i, 1); continue; }
         if (hit && b.y + cell > shipY && b.y < shipY + shipH && Math.abs(b.x - shipX) < shipW / 2) {
           bombs.splice(i, 1); lives--; safeUntil = now + 1500; burst(shipX, shipY + shipH / 2, 26, 0.6);
-          if (lives <= 0) endGame(false, now);
-          else { sfx.hurt(); shake(false); flash(now, 0.22); buzz(60); }
+          if (lives <= 0) { endGame(false, now); break; }  // endGame clears the bombs: stop looping over them
+          sfx.hurt(); shake(false); flash(now, 0.22); buzz(60);
           continue;
         }
         // a two-pixel bomb that flickers as it falls
