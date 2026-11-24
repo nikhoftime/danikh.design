@@ -1,8 +1,6 @@
 {
   "buildCommand": "python3 build.py",
   "outputDirectory": "dist",
-  "cleanUrls": true,
-  "trailingSlash": false,
   "headers": [
     {
       "source": "/media/(.*)",
@@ -21,6 +19,20 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/projects",
+      "destination": "/projects/index.html"
+    },
+    {
+      "source": "/projects/:slug([^./]+)",
+      "destination": "/projects/:slug.html"
+    },
+    {
+      "source": "/information",
+      "destination": "/information.html"
     }
   ]
 }

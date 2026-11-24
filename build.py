@@ -364,7 +364,7 @@ def work():
         ts = [t.strip() for t in p['TAGS'].split(',')]
         fs = filter_tags(p['TAGS'])
         wip = '<span class="wip caps"><i></i>In progress</span>' if p.get('STATUS') else ''
-        rows += f'''<a class="proj reveal{' early' if p.get('EARLIER') else ''}" id="{p["SLUG"]}" href="{p["SLUG"]}.html" data-tags="{' '.join(slug(t) for t in fs)}">
+        rows += f'''<a class="proj reveal{' early' if p.get('EARLIER') else ''}" id="{p["SLUG"]}" href="../projects/{p["SLUG"]}.html" data-tags="{' '.join(slug(t) for t in fs)}">
   <div class="proj-img"><img src="{media(p["COVER"], pre)}" width="{MANIFEST[p["COVER"]]["w"]}" height="{MANIFEST[p["COVER"]]["h"]}" alt="{esc(p["TITLE"])} cover" loading="{'eager' if i < 2 else 'lazy'}" decoding="async">{wip}<span class="view caps">View project ↗</span></div>
   <div class="proj-info">
     <h2>{esc(p.get("CARD", p["TITLE"]))}</h2>
