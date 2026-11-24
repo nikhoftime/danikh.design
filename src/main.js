@@ -691,7 +691,11 @@ if (head) {
 const hero = document.querySelector('.hero');
 if (hero) {
   const imgs = (Object.keys(WD).length ? Object.values(WD) : [...document.querySelectorAll('.h-work .card img')].map(i => i.getAttribute('src'))).map(src => ({ src, t: '' }));
-  hero.classList.add('wl-hero'); hero.insertAdjacentHTML('afterbegin', '<div class="wl-bg">' + mk(imgs, NC, 6) + '</div>'); io.observe(hero);
+  hero.classList.add('wl-hero');
+  // the collage lives at the page root, so it always sits behind the wordmark and the page content
+  const bg = document.createElement('div'); bg.className = 'wl-bg'; bg.innerHTML = mk(imgs, NC, 6, '', true); document.body.prepend(bg);
+  const place = () => { bg.style.top = (hero.getBoundingClientRect().top + scrollY) + 'px'; bg.style.height = hero.offsetHeight + 'px'; };
+  place(); addEventListener('resize', place); addEventListener('load', place); io.observe(bg);
 }
 })();
 

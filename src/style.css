@@ -553,8 +553,18 @@ main figure video[data-auto]{background:var(--card)}
   .wh-stage{touch-action:pan-y}
 }
 
-/* the hero wall is a still collage; the archive band keeps moving */
-.wl-bg .wl-col{animation:none!important}
+/* both walls drift slowly; the hero one is slower and calmer */
+.wl-bg .wl-col{animation:wlm calc(var(--s) * 1.6) linear infinite;will-change:transform}.wl-bg .wl-col.rev{animation-direction:reverse}
+.wl-bg .wl-col:nth-child(2){animation-delay:-20s}.wl-bg .wl-col:nth-child(3){animation-delay:-45s}.wl-bg .wl-col:nth-child(5){animation-delay:-30s}
+.wl-bg.off .wl-col{animation-play-state:paused}
+.wl-bg{inset:auto 0 auto 0}
+@media (prefers-reduced-motion:reduce){.wl-bg .wl-col,.wl-band .wl-col{animation:none}}
+/* phones: the collage fills the whole hero, dimmed behind the wordmark instead of cut out */
+@media (max-width:700px){
+  .wl-bg{-webkit-mask-image:none;mask-image:none}
+  .wl-bg .wl-wall{inset:-30% -30%;opacity:.5}
+  .wl-bg::after{background:radial-gradient(ellipse 90% 30% at 50% 50%,rgba(15,14,14,.75),rgba(15,14,14,.25) 70%,transparent),linear-gradient(var(--bg),transparent 10%,transparent 88%,var(--bg))}
+}
 .wl-band .wl-col{animation:wlm var(--s) linear infinite;will-change:transform}.wl-band .wl-col.rev{animation-direction:reverse}
 
 /* project text runs the full width of the images */
