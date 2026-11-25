@@ -7,7 +7,7 @@ CLIENT (Concept)
 TEAM Chew Yan Xin, Jovan Tan Kim Swee & Danikh Nizam
 YEAR 2026
 SUM The brief | Observe an everyday situation closely, question the habits around it, and propose how design could change the way people act or live.
-SUM What we made | A system of urban planters that replaces the painted yellow smoking box with soft, green boundaries. Planters, seats, a sensor-integrated bin and an abstract responsive panel can be arranged for smoking or non-smoking areas.
+SUM What we made | A system of urban planters that reimagines Singapore's designated smoking areas, moving beyond the painted yellow box to soft, green boundaries. Planters, seats, a sensor-integrated bin and an abstract responsive panel can be arranged for smoking or non-smoking areas.
 SUM My role | I designed the panel's abstract graphic, both of its visuals and the live responsive panel artefact. I also built the final 3D models in Rhino, prepared the rendering files in Twinmotion and KeyShot, and prepared the STL files for most printed parts. I spray-painted the physical models, made some of the plants and narrated the film. The concept was developed together as a team; the ashtray bin, panel mould and poster were made by teammates.
 MEDIUM Rhino, HTML/CSS/JavaScript, Physical Model
 P Beyond Boundaries is a system of urban planters that shapes how people behave in shared spaces. Instead of painted lines, planters, seats, a sensor-integrated bin and a responsive panel use soft, green boundaries to define a space, and the same pieces can be arranged for smoking or non-smoking areas.
