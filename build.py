@@ -592,6 +592,8 @@ EXPERIENCE = [
                  'Ran usability tests of the AI-assisted filing experience with participants unfamiliar with the process.'],
          # the website keeps public-sector work general; the CV keeps the detail above
          site_where='MCCY HQ',
+         ref=dict(quote='He has a real gift for seeing service experiences through the eyes of both citizens and staff, spotting pain points, and turning these insights into opportunities to improve service delivery and operational efficiency.',
+                  by='Terrence Sim', title='Head, Transformation Office, MCCY', file='files/Danikh_Nizam_Reference_Letter_MCCY.pdf'),
          site_points=['Contributed to public-sector digital transformation through UX research, service design and workflow analysis.',
                       'Designed, prototyped and usability-tested new service experiences for citizens and officers, exploring how Agentic AI workflows can guide people through complex processes.']),
     dict(org='Interactive 3D Design Lab (i3D)', url='https://www.i3d.design/', where='NUS Department of Design',
@@ -636,6 +638,7 @@ def info():
     <p class="xp-role">{esc(e["role"])} <span class="mute">· {esc(e.get("site_where", e["where"]))}</span></p>
     {f'<ul>{pts}</ul>' if pts else ''}
     {f'<p class="xp-note mute">{esc(e["note"])}</p>' if e.get('note') else ''}
+    {f'<figure class="xp-ref"><blockquote>“{esc(e["ref"]["quote"])}”</blockquote><figcaption><span>{esc(e["ref"]["by"])}</span> <span class="mute">· {esc(e["ref"]["title"])}</span><a class="ul caps" href="{pre}{e["ref"]["file"]}"{ext}>Read the full letter ↗</a></figcaption></figure>' if e.get('ref') else ''}
   </div>
 </article>'''
     edu = ''.join(f'''<div class="side-item"><h4>{esc(a)}</h4><p>{esc(b)}</p><p class="caps mute">{c}</p>

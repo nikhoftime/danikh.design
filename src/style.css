@@ -583,3 +583,10 @@ main figure video[data-auto]{background:var(--card)}
 .ps-role .caps{color:#ff5a1f}
 .ps-role p:not(.caps){color:var(--fg)}
 @media(max-width:820px){.p-all{grid-template-columns:1fr}}
+
+/* reference quote under an experience entry */
+.xp-ref{margin:22px 0 0;padding:4px 0 4px 20px;border-left:2px solid #ff5a1f}
+.xp-ref blockquote{margin:0;font-size:clamp(17px,1.5vw,20px);line-height:1.45;letter-spacing:-.005em}
+.xp-ref figcaption{margin-top:12px;font-size:14px;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:baseline}
+.xp-ref figcaption a{margin-left:auto;font-size:12px}
+@media (max-width:700px){.xp-ref figcaption a{margin-left:0;flex-basis:100%;margin-top:6px}}
